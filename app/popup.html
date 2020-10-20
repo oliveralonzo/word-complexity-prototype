@@ -1,0 +1,60 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="option-slider">
+            <h2>How much?</h2>
+            <input type="range" min="0" max="4" value="1" steps="1" list="tickmarks">
+            <datalist id="tickmarks" class="datalist">
+                <option label="Words"></option>
+                <option label="Sentences"></option>
+                <option label="Paragraph"></option>
+                <option label="Document"></option>
+            </datalist>
+        </div>
+
+        <div class="option-slider">
+            <h2>Where?</h2>
+            <input type="range" min="0" max="4" value="1" steps="1" list="howmuchlst">
+            <datalist id="howmuchlst" class="datalist">
+                <option label="In place"></option>
+                <option label="Highlight"></option>
+                <option label="Pop-up"></option>
+                <option label="Side"></option>
+            </datalist>
+        </div>
+        <div id="complexity">
+            <h2>Highlight Complex?</h2>
+            <label class="switch"><input type="checkbox" id="togBtn">
+                <div class="slider round"></div>
+            </label>
+        </div>
+
+        <div class="option-slider">
+            <h2>How long?</h2>
+            <input type="range" min="0" max="4" value="1" steps="1" list="howmuchlst">
+            <datalist id="howmuchlst" class="datalist">
+                <option label="Temporary"></option>
+                <option label="Until Click"></option>
+                <option label="Permanent"></option>
+            </datalist>
+        </div>
+
+        <div class="option-slider">
+            <h2>Display Confidence</h2>
+            <input type="range" min="0" max="4" value="1" steps="1" list="howmuchlst">
+            <datalist id="howmuchlst" class="datalist">
+                <option label="No"></option>
+                <option label="Discrete"></option>
+                <option label="Continuous"></option>
+            </datalist>
+        </div>
+    </div>
+
+</body>
+
+</html>
