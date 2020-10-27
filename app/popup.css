@@ -5,18 +5,18 @@
 
 .container {
     margin: auto;
-    width: 100%;
+    width: 350px;
+    padding-left: 50px;
 }
 .option-slider, #complexity {
      text-align: center;
-      margin-top: 1em;
+      margin-top: 1.5em;
       margin-bottom: 1em;
       width: 250px;
   }
 
-  
-  /*complexity toggle styling*/
 
+  /*complexity toggle styling*/
 .switch {
     position: relative;
     display: inline-block;
@@ -86,3 +86,106 @@
   }
   
   /*--------- END --------*/
+
+
+  input[type=range] {
+    -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+    width: 100%; /* Specific width is required for Firefox. */
+    background: transparent; /* Otherwise white in Chrome */
+  }
+  
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+  }
+  
+  input[type=range]:focus {
+    outline: none; /* Removes the blue border. You should probably do some kind of focus styling for accessibility reasons though. */
+  }
+  
+  input[type=range]::-ms-track {
+    width: 100%;
+    cursor: pointer;
+  
+    /* Hides the slider so custom styles can be added */
+    background: transparent; 
+    border-color: transparent;
+    color: transparent;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+   /* border: 1px solid #000000;*/
+    height: 15px;
+    width: 15px;
+    border-radius: 10px;
+    background: #DCDCDC;
+    cursor: pointer;
+    margin-top: -6px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+   /* box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;  Add cool effects to your sliders! */
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    cursor: pointer;
+    background: #C0C0C0;
+    border-radius: 1.3px;
+  }
+  
+  input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #C0C0C0;
+  }
+  
+  input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 2px;
+    cursor: pointer;
+    background: #C0C0C0;
+    border-radius: 1.3px;
+  }
+  
+  input[type=range]::-ms-track {
+    width: 100%;
+    height: 2px;
+    cursor: pointer;
+    background: transparent;
+    border-color: transparent;
+    border-width: 16px 0;
+    color: transparent;
+  }
+  input[type=range]::-ms-fill-lower {
+    background: #C0C0C0;
+    border-radius: 2.6px;
+  }
+  input[type=range]:focus::-ms-fill-lower {
+    background: #C0C0C0;
+  }
+  input[type=range]::-ms-fill-upper {
+    background: #C0C0C0;
+    border: 0.2px solid #010101;
+    border-radius: 2.6px;
+  }
+  input[type=range]:focus::-ms-fill-upper {
+    background: #C0C0C0;
+  }
+
+  .sliderticks {
+    display: flex;
+    justify-content: space-between;
+    /*padding: 0 9px;*/
+    padding-left: 10px;
+    padding-right: 6px;
+  }
+  
+  .sliderticks p {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    width: 1px;
+    background: #D3D3D3;
+    height: 10px;
+    line-height: 40px;
+    margin: 0 0 20px 0;
+    white-space: nowrap;
+  }

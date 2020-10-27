@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
-    "name": "Sample Name",
-    "version": "1.0.0",
-    "description": "This is a sample description",
-    "short_name": "Short Sample Name",
+    "name": "Word Complexity Prototype",
+    "version": "0.0.1",
+    "description": "Highlight and replace complex words/paragraph/sentences",
+    "short_name": "WC Prototype",
     "permissions": ["activeTab", "declarativeContent", "storage", "<all_urls>"],
     "content_scripts": [
       {
@@ -13,7 +13,7 @@
       }
     ],
     "browser_action": {
-      "default_title": "Does a thing when you do a thing",
+      "default_title": "UI",
       "default_popup": "popup.html",
       "default_icon": {
       }
