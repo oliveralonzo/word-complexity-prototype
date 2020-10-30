@@ -1,0 +1,6 @@
+
+# Default ignored files
+key.txt
+api/.idea
+api/api/__pychache__
+api/decomplexify/__pychache__
