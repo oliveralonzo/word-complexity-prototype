@@ -2,5 +2,5 @@
 # Default ignored files
 key.txt
 api/.idea
-api/api/__pychache__
-api/decomplexify/__pychache__
+api/api/__pycache__
+api/decomplexify/__pycache__
