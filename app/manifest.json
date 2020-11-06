@@ -4,12 +4,13 @@
     "version": "0.0.1",
     "description": "Highlight and replace complex words/paragraph/sentences",
     "short_name": "WC Prototype",
-    "permissions": ["activeTab", "declarativeContent", "storage", "<all_urls>"],
+    "permissions": ["activeTab", "declarativeContent", "storage", "<all_urls>", "tabs"],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "css": ["background.css"],
-        "js": ["background.js"]
+        "js": ["content.js"],
+        "css": ["styles.css"],
+        "all_frames": true
       }
     ],
     "browser_action": {
@@ -17,5 +18,9 @@
       "default_popup": "popup.html",
       "default_icon": {
       }
+    },
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
     }
    }
