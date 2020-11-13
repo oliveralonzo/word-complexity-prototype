@@ -1,54 +1,64 @@
 console.log("content js on");
-var words_to_send = [];
+// var url = null;
+// console.log("running along fine");
+// chrome.runtime.onMessage.addListener(
+//     function (request) {
+//         if(request.message === "New URL!") {
+//             console.log("passed through");
+//             url = request.url;
+//             console.log(url); 
+//         }
+//     });
 
+// console.log("running along fine b");
+
+//const currTabURL = new URL(url).origin;
+const currTabURL = "url..."
+var complexWords = {currTabURL:{}};
+console.log(complexWords.currTabURL);
+var wordsIdentified = false;
 // find all <p> tags and highlight words with length greater than 6
+// need to find a way to void picking up letters
+const paragraphs = document.getElementsByTagName("p");
+for (var i = 0; i < paragraphs.length; i++) {
+    var currText = paragraphs[i].innerHTML.split(" ");
+    console.log(" adding span first time");
+    var complex = currText.map((word, index) => {
+        var wordWithNewTag = identifyWords(word, index);
+        return wordWithNewTag;
+    });
+    var output = complex.join(" ");
+    paragraphs[i].innerHTML = output;
+
+}
+console.log(complexWords);
+console.log(Object.keys(complexWords["currTabURL"]).length);
+wordsIdentified = true;
+if(Object.keys(complexWords["currTabURL"]).length == 104){
+chrome.runtime.sendMessage( {
+    wordUpdate: "True",
+    toSimplify: complexWords["currTabURL"]});
+}
+
 chrome.runtime.onMessage.addListener(
     function (request) {
-        var paragraphs = document.getElementsByTagName("p");
+
         if (request.mash === "True") {
-            console.log("can highlight now cntnt");
-            
-            for (var i = 0; i < paragraphs.length; i++) {
-                var currText = paragraphs[i].innerHTML.split(" ");
-
-                var complex = currText.map(word => toHighlightWord(word));
-
-                var output = complex.join(" ");
-                console.log(output);
-                paragraphs[i].innerHTML = output;
-
-            }
+            let elements = document.getElementsByClassName('complex-word');
+            console.log(" n highlighted");
+            //elements.forEach( word => word.classList.add('highlight'));
+            [].forEach.call(elements, function (word) {
+                word.classList.add('highlight');
+            });
         } else {
-            // for (var i = 0; i < paragraphs.length; i++) {
-            //     var currText = paragraphs[i].innerHTML.split(" ");
-
-            //     var complex = currText.map(word => unHighlightWord(word));
-
-            //     var output = complex.join(" ");
-            //     paragraphs[i].innerHTML = output;
-
-            // }  
-            
             let highlighted = document.getElementsByClassName("highlight");
-            console.log(highlighted.length);
-            console.log(highlighted[1]);
             var numm = 0;
             // If it exists, remove it.
-            if(highlighted.length > 0) { 
-                console.log("my js is ruf");
-                while(highlighted.length){
+            if (highlighted.length > 0) {
+                console.log("unhighlight");
+                while (highlighted.length) {
                     numm = numm + 1;
                     highlighted[0].classList.remove("highlight");
-                    // // get the element's parent node
-                    // var parent = el.parentNode;
-
-                    // // move all children out of the element
-                    // while (el.firstChild) parent.insertBefore(el.firstChild, el);
-
-                    // // remove the empty element
-                    // parent.removeChild(el);
-                    highlighted[0].replace("<span class>", "");
-                    highlighted[0].replace("</span>", "");    
                 }
             }
             console.log("replaced " + numm);
@@ -58,10 +68,12 @@ chrome.runtime.onMessage.addListener(
 
 
 // helper function to identify words with length above 6
-function toHighlightWord(word) {
+function identifyWords(word, index) {
     if (word.length > 6) {
-        words_to_send.push(word);
-        return "<span class='highlight'>" + word + "</span>";
+       // complexWords.push(word);
+        let id = "id"+index;
+        complexWords.currTabURL[id] = [word];
+        return "<span class='complex-word' id= "+ id +" >" + word + "</span>";
     }
     else {
         return word;
@@ -71,7 +83,7 @@ function toHighlightWord(word) {
 // remove highlight tag
 function unHighlightWord(word) {
     if (word.includes('highlight')) {
-        var clean_word = word.replace("highlight","");
+        var clean_word = word.replace("highlight", "");
         console.log(clean_word);
         return clean_word;
     }
