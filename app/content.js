@@ -13,12 +13,16 @@ console.log("content js on");
 // console.log("running along fine b");
 
 //const currTabURL = new URL(url).origin;
+
+// construct list for id-text association
 const currTabURL = "url..."
 var complexWords = {currTabURL:{}};
 console.log(complexWords.currTabURL);
 var wordsIdentified = false;
+
+
 // find all <p> tags and highlight words with length greater than 6
-// need to find a way to void picking up letters
+// need to find a way to avoid picking up non-letters + urls
 const paragraphs = document.getElementsByTagName("p");
 for (var i = 0; i < paragraphs.length; i++) {
     var currText = paragraphs[i].innerHTML.split(" ");
@@ -40,6 +44,7 @@ chrome.runtime.sendMessage( {
     toSimplify: complexWords["currTabURL"]});
 }
 
+// listener - highlight or unhighlight words
 chrome.runtime.onMessage.addListener(
     function (request) {
 
@@ -62,6 +67,27 @@ chrome.runtime.onMessage.addListener(
                 }
             }
             console.log("replaced " + numm);
+        }
+    });
+
+
+
+// listener - replace words or not
+chrome.runtime.onMessage.addListener(
+    function (request) {
+
+        if (request.type === "InPlace") {
+            console.log(" bout to replace in place");
+            //elements.forEach( word => word.classList.add('highlight'));
+            newWords = request.toChange;
+            console.log(request);
+            console.log(request.toChange);
+            // newWords.forEach( wordObj => {
+            //     console.log(wordObj)
+            //     //currElement = getElementById(wordObj.)
+            // })
+        } else {
+            
         }
     });
 

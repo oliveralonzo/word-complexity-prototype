@@ -10,7 +10,7 @@ class Replacer(models.Model):
 
     def replaceWord(self, to_replace):
         text = lorem.sentence().split(" ")
-        rand_index = random.randint(0, len(text))
+        rand_index = random.randint(0, len(text) - 1)
         word = text[rand_index]
         word = re.sub(r'[^\w\s]', '', word)
         return word

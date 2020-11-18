@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Replacer
@@ -8,15 +9,15 @@ class SupplyLoremIpsum(APIView):
     """
     need - error handling
     """
-    def get(self, request):
-        data = self.request.query_params
+    def post(self, request):
+        data = self.request.data
+        print(data)
         if "type" not in data:
             # no type category
-            print(data)
-            return Response()
+            return Response("No type provided", status=status.HTTP_404_NOT_FOUND)
         try:
-            print("nbafnksdfn")
             if data["type"] == "word":
+                print(data["type"], data["text"])
                 word = self.replaceTool.replaceWord(data["text"])
                 return Response(word)
             elif data["type"] == "sentence":
@@ -27,4 +28,4 @@ class SupplyLoremIpsum(APIView):
                 print(data["type"], data["text"])
                 return Response(paragraph)
         except KeyError as e:
-            return Response("Invalid type provided").status_code(400)
+            return Response("Invalid type provided", status=status.HTTP_404_NOT_FOUND)
