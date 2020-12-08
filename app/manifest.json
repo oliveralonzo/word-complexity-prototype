@@ -4,13 +4,14 @@
     "version": "0.0.1",
     "description": "Highlight and replace complex words/paragraph/sentences",
     "short_name": "WC Prototype",
-    "permissions": ["activeTab", "declarativeContent", "storage", "<all_urls>", "tabs"],
+    "permissions": ["activeTab", "declarativeContent", "storage", "<all_urls>", "tabs", "http://127.0.0.1:8000/decomplexify/"],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
         "js": ["content.js"],
         "css": ["styles.css"],
-        "all_frames": true
+        "all_frames": true,
+        "run_at": "document_end"
       }
     ],
     "browser_action": {

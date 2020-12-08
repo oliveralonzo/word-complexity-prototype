@@ -20,7 +20,7 @@ from decomplexify.views import SupplyLoremIpsum
 
 urlpatterns = [
     path('decomplexify/', SupplyLoremIpsum.as_view()),
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -48,6 +48,7 @@ var toSendBack = []
       if (request.highlight === "True") {
         console.log("can highlight now");
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+          console.log("sending message bckg");
           chrome.tabs.sendMessage(tabs[0].id, { mash: "True" });
         });
       } else if (request.highlight === "False") {
@@ -62,28 +63,53 @@ var toSendBack = []
 
 
   chrome.runtime.onMessage.addListener(
-    function (request) {
+    async function (request) {
+      console.log(request);
       if (request.wordUpdate === "True") {
         console.log("got fresh words");
         data = request.toSimplify;
         console.log(data);
         var keys = Object.keys(data).reverse();
         console.log(keys);
-        for (var i = 10; i < 12; i++) {
+        for (var i = 0; i < keys.length; i++) {
           wordID = keys[i];
-          console.log(data[wordID]);
-          newWord = getSimpleWord(data[wordID]);
-          toSendBack.push({wordID: newWord});
+          console.log("About to simplify word: ", data[wordID]);
+          newWord = "";
+          await getSimpleWord(data[wordID], wordID);
+          // while (newWord.length > 5){
+          //   newWord = getSimpleWord(data[wordID]);
+          // }
+          
+         // console.log("adding new word ", newWord);
+         // toSendBack.push({wordID: wordID, word: newWord});
         }
         // send to content script and modify those words 
         // todo: send to active tab
         console.log(typeof(toSendBack), toSendBack);
         toSend = JSON.stringify(toSendBack);
+        if(toSend.length > 5) {
+
+
+        // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        //   var port = chrome.tabs.connect(tabs[0].id, {name: "newWords"});
+        //   port.postMessage({ type: "InPlace",
+        //   toChange: toSend });
+        // });
+          // var port = chrome.runtime.connect(tabs[0].id, {name: "newWords"});
+          // port.postMessage({ type: "InPlace",
+          // toChange: toSend });
+
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           chrome.tabs.sendMessage(tabs[0].id, { type: "InPlace",
                                           toChange: toSend });
         });
-
+      } //else {
+      //   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      //     chrome.tabs.sendMessage(tabs[0].id, { type: "InPlac",
+      //                                     toChange: toSend });
+      //   });
+      // }
+        console.log("Should be sent");
       } else {
         console.log("No fresh yes")
       }
@@ -91,25 +117,28 @@ var toSendBack = []
 
     });
 
-  function getSimpleWord(word) {
+ async function getSimpleWord(word, wordID) {
     freshWord = "";
-    while (freshWord ===""){
-    fetch('http://127.0.0.1:8000/decomplexify/', {
-      //mode: 'same-origin',
+    let response = await fetch('http://127.0.0.1:8000/decomplexify/', {
+      mode: 'cors',
       method: "POST",
       body: JSON.stringify({ "type": "word", "text":word[0] }),
       headers: {
         'Content-Type': 'application/json'
       },
-    })
-      .then(res => res.text())
-      .then(data => {
-        console.log(data);
-        freshWord = data;
-      })
+      redirect: 'follow'
+    });
+
+    if(!response.ok){
+      throw new Error(`HTTP error status: ${response.status}`);
+    }else {
+      freshWordPromise = await response.text()
+      console.log(freshWordPromise);
+      freshWordPromise = freshWordPromise.replace(/^"(.*)"$/, '$1');
+      toSendBack.push({wordID: wordID, word: freshWordPromise});
+      return freshWordPromise;
     }
-    return freshWord;
-  
+
   }
 
 
