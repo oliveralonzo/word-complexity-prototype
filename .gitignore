@@ -4,3 +4,4 @@ key.txt
 api/.idea
 api/api/__pycache__
 api/decomplexify/__pycache__
+api/db.sqlite3
