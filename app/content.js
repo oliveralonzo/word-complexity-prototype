@@ -1,4 +1,15 @@
 console.log("content js on");
+document.addEventListener("DOMContentLoaded", function (event) {
+    // var complexWordGroup = document.getElementsByClassName('complex-word')
+    // Array.from(complexWordGroup).forEach(function (element) {
+    //     element.addEventListener("click", function changeWord(event) {
+    //         console.log("we got a click", event);
+    //         console.log(event.target);
+
+    //     });
+    // });
+
+    });
 // var url = null;
 // console.log("running along fine");
 // chrome.runtime.onMessage.addListener(
@@ -20,6 +31,8 @@ var complexWords = {currTabURL:{}};
 console.log(complexWords.currTabURL);
 var wordsIdentified = false;
 var freshWords = null;
+var canConvert = false;
+var newWords = null;
 
 
 // find all <p> tags and highlight words with length greater than 6
@@ -85,17 +98,27 @@ chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
 
         if (request.type === "InPlace") {
+            canConvert = true;
             console.log(" bout to replace in place");
             console.log(request.toChange);
             //elements.forEach( word => word.classList.add('highlight'));
             newWords = request.toChange;
             newWords = JSON.parse(newWords);
             console.log(newWords);
-            newWords.forEach( function(wordObj) {
-                console.log(wordObj);
-                console.log(wordObj.wordID)
-                document.getElementById(wordObj.wordID).innerText = wordObj.word;
+            // newWords.forEach( function(wordObj) {
+            //     console.log(wordObj);
+            //     console.log(wordObj.wordID)
+            //     document.getElementById(wordObj.wordID).innerText = wordObj.word;
 
+            // });
+
+            var complexWordGroup = document.getElementsByClassName('complex-word-button')
+            Array.from(complexWordGroup).forEach(function (element) {
+                element.addEventListener("click", function changeWord(event) {
+                    console.log("we got a click", event);
+                    setToOtherWord(event.target)
+        
+                });
             });
         } else {
             console.log("No words received.")
@@ -103,11 +126,19 @@ chrome.runtime.onMessage.addListener(
         return true;
     });
 
-
-
-function reply_click(node){
-    console.log(node);
+// swap word in place
+function setToOtherWord(node){
+    let id = node.id;
+    console.log(id)
+    let complex = newWords.find(({wordID}) => wordID === id);
+    let foundIndex = newWords.findIndex(word => word.wordID == id);
+    
+    let currWord = node.innerText;
+    node.innerText = complex.word;
+    newWords[foundIndex].word = currWord;
+    //newWords[id] = currWord;
 }
+
 
 // helper function to identify words with length above 6 - identify complex words
 // increase index for IDs
@@ -132,7 +163,7 @@ function identifyWords(word, index) {
         let id = "id"+index;
         complexWords.currTabURL[id] = [wordToCheck];
         console.log("Complex word " + id + " word is " + wordToCheck + " word length is " + word.length);
-        complexTagged = "<button class='link'><span class='complex-word' id= "+ id +">" + wordToCheck + "</span></button>";
+        complexTagged = "<button class='link complex-word-button'><span class='complex-word' id= "+ id +">" + wordToCheck + "</span></button>";
         freshHTML = word.substring(0,matchInd) + complexTagged + word.substring(matchInd + matchLength, word.length);
         console.log(freshHTML)
         ++idx;
