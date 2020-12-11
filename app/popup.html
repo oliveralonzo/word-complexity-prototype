@@ -9,12 +9,12 @@
     <div class="container">
         <div class="option-slider">
             <h2>How much?</h2>
-            <input type="range" min="1" max="4" value="1" steps="1" list="tickmarks">
-            <datalist id="tickmarks" class="datalist">
-                <option label="Words">0</option>
-                <option label="Sentences">1</option>
-                <option label="Paragraph">2</option>
-                <option label="Document">3</option>
+            <input type="range" min="1" max="4" value="1" steps="1" list="textSetting" id="textSettingInput">
+            <datalist class="datalist">
+                <option value="Words" label="Words">0</option>
+                <option value="Sentences" label="Sentences">1</option>
+                <option value="Paragraph" label="Paragraph">2</option>
+                <option value="Document" label="Document">3</option>
             </datalist>
 
             <div class="sliderticks">
@@ -27,8 +27,8 @@
 
         <div class="option-slider">
             <h2>Where?</h2>
-            <input type="range" min="1" max="4" value="1" steps="1" list="howmuchlst">
-            <datalist id="howmuchlst" class="datalist">
+            <input type="range" min="1" max="4" value="1" steps="1" list="howmuchlst" id="showWordType">
+            <datalist class="datalist">
                 <option label="In place"></option>
                 <option label="Highlight"></option>
                 <option label="Pop-up"></option>
@@ -51,8 +51,8 @@
 
         <div class="option-slider">
             <h2>How long?</h2>
-            <input type="range" min="1" max="3" value="1" steps="1" list="howmuchlst">
-            <datalist id="howmuchlst" class="datalist">
+            <input type="range" min="1" max="3" value="1" steps="1" list="howmuchlst" id="showDuration">
+            <datalist class="datalist">
                 <option label="Temporary"></option>
                 <option label="Until Click"></option>
                 <option label="Permanent"></option>
@@ -67,8 +67,8 @@
 
         <div class="option-slider">
             <h2>Display Confidence</h2>
-            <input type="range" min="1" max="3" value="1" steps="1" list="howmuchlst">
-            <datalist id="howmuchlst" class="datalist">
+            <input type="range" min="1" max="3" value="1" steps="1" list="howmuchlst" id="confidenceMeasure">
+            <datalist class="datalist">
                 <option label="No"></option>
                 <option label="Discrete"></option>
                 <option label="Continuous"></option>

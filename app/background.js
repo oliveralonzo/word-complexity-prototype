@@ -1,115 +1,49 @@
+// background.js - coordinates tasks between popup.js and content.js, API calls, 
+
 document.addEventListener("DOMContentLoaded", function (event) {
 
-console.log("background js on");
+  console.log("background js on");
 
-var toSendBack = []
+  var toSendBack = []
 
-
-  // chrome.tabs.query({'active': true, 'windowId': chrome.windows.WINDOW_ID_CURRENT},
-  //    function(tabs){
-  //      console.log("Sending url..." + tabs[0].url);
-  //     chrome.tabs.sendMessage(tabs[0].id, {url: tabs[0].url });
-  //    }
-  // );
-
-  chrome.tabs.onActivated.addListener(
-    function (activeInfo) {
-      // read changeInfo data and do something with it
-      // like send the new url to contentscripts.js
-      console.log(JSON.stringify(activeInfo));
-      activeinf = null;
-      urli = null;
-      chrome.tabs.get(activeInfo.tabId, function (tab) {
-        console.log("you are here: " + tab.url);
-        activeinf = activeInfo;
-        urli = tab.url;
-        // chrome.tabs.sendMessage( activeInfo.tabId, {
-        //   message: "New URL!",
-        //   url: tab.url
-        // });
-        console.log(activeinf, urli);
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          chrome.tabs.sendMessage(activeinf.tabId, {
-            message: "New URL!",
-            url: urli
-          });
-        });
-      });
-
-
-      console.log("sent message")
-    }
-  );
-
-
-  // todo: send to active tab
+  /* 
+   * Listener to capture highlight value from popup.js
+   *  - future work --> this value can go straight from popup to content, which would negate the need for this
+   *  - ideal request
+   *    {'highlight': True/False}
+   */
   chrome.runtime.onMessage.addListener(
     function (request) {
       if (request.highlight === "True") {
         console.log("can highlight now");
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           console.log("sending message bckg");
-          chrome.tabs.sendMessage(tabs[0].id, { mash: "True" });
+          chrome.tabs.sendMessage(tabs[0].id, { highlight: "True" });
         });
       } else if (request.highlight === "False") {
         console.log("unhighlight now");
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, { mash: "False" });
+          chrome.tabs.sendMessage(tabs[0].id, { highlight: "False" });
         });
       }
-      // sendResponse({farewell: "goodbye"});
-
     });
 
-
+  /* 
+     * Listener to capture text that needs to be simplified
+     *  - ideal request
+     *  - async/await due to async API calls
+     *    {'wordUpdate': True/False},
+     *    {'toSimplify': [...words to simplify]}
+     *    {'toSimplifySentence': [...sentences to simplify]}
+     */
   chrome.runtime.onMessage.addListener(
     async function (request) {
       console.log(request);
       if (request.wordUpdate === "True") {
-        console.log("got fresh words");
         data = request.toSimplify;
-        console.log(data);
-        var keys = Object.keys(data).reverse();
-        console.log(keys);
-        for (var i = 0; i < keys.length; i++) {
-          wordID = keys[i];
-          console.log("About to simplify word: ", data[wordID]);
-          newWord = "";
-          await getSimpleWord(data[wordID], wordID);
-          // while (newWord.length > 5){
-          //   newWord = getSimpleWord(data[wordID]);
-          // }
-          
-         // console.log("adding new word ", newWord);
-         // toSendBack.push({wordID: wordID, word: newWord});
-        }
-        // send to content script and modify those words 
-        // todo: send to active tab
-        console.log(typeof(toSendBack), toSendBack);
-        toSend = JSON.stringify(toSendBack);
-        if(toSend.length > 5) {
-
-
-        // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        //   var port = chrome.tabs.connect(tabs[0].id, {name: "newWords"});
-        //   port.postMessage({ type: "InPlace",
-        //   toChange: toSend });
-        // });
-          // var port = chrome.runtime.connect(tabs[0].id, {name: "newWords"});
-          // port.postMessage({ type: "InPlace",
-          // toChange: toSend });
-
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, { type: "InPlace",
-                                          toChange: toSend });
-        });
-      } //else {
-      //   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      //     chrome.tabs.sendMessage(tabs[0].id, { type: "InPlac",
-      //                                     toChange: toSend });
-      //   });
-      // }
-        console.log("Should be sent");
+        sentenceData = request.toSimplifySentence;
+        await getNewText(data, "word");
+        await getNewText(sentenceData, "sentence");
       } else {
         console.log("No fresh yes")
       }
@@ -117,52 +51,113 @@ var toSendBack = []
 
     });
 
- async function getSimpleWord(word, wordID) {
-    freshWord = "";
+
+  /* 
+   * Perform API call to simplify text
+   * POST request body example : {"type": "word", "text": "apple" } - stringified
+   * - text - "apple" - the full string that needs to be simplified
+   * - wordID - "id50" - the id used to identify this word's span element within the document body
+   * - type - "word" - type of text being sent
+   * result: a "simplified" version of the provided text argument
+   */
+  async function getSimpleWord(text, wordID, type) {
+
     let response = await fetch('http://127.0.0.1:8000/decomplexify/', {
       mode: 'cors',
       method: "POST",
-      body: JSON.stringify({ "type": "word", "text":word[0] }),
+      body: JSON.stringify({ "type": type, "text": text }),
       headers: {
         'Content-Type': 'application/json'
       },
       redirect: 'follow'
     });
 
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(`HTTP error status: ${response.status}`);
-    }else {
-      freshWordPromise = await response.text()
-      console.log(freshWordPromise);
-      freshWordPromise = freshWordPromise.replace(/^"(.*)"$/, '$1');
-      toSendBack.push({wordID: wordID, word: freshWordPromise});
-      return freshWordPromise;
+    } else {
+      freshTextPromise = await response.text()
+      console.log(freshTextPromise);
+      freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, '$1');
+      toSendBack.push({ wordID: wordID, text: freshTextPromise });
+      return freshTextPromise;
     }
 
   }
 
 
+  /*
+   * Takes in a set of text - obtains simplified replacements - sends replacements to content.js
+   * data - text to be simplified
+   * type - type of text being requested
+   */
+  async function getNewText(data, type) {
+    var keys = Object.keys(data).reverse();
+    for (var i = 0; i < keys.length; i++) {
+
+      textID = keys[i];
+      console.log("About to simplify text: ", data[textID]);
+      newText = "";
+
+      await getSimpleWord(data[textID][0], textID, type);
+    }
+    // send to content script and modify those words 
+    // todo: send to active tab
+    console.log("This is my obj to send back tocontne ", toSendBack);
+    toSend = JSON.stringify(toSendBack);
+    if ((type === "word" && toSendBack.length > 5) || (type === "sentence" && toSendBack.length > 5)) {
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "InPlace",
+          toChange: toSend,
+          textType: type
+        });
+      });
+
+    }
+
+    toSendBack = [];
+  }
+
+
+
+  /* 
+   * Below is some code working towards getting the current url - may be useful to have url for future work - not currently in use
+   */
+  // chrome.tabs.query({'active': true, 'windowId': chrome.windows.WINDOW_ID_CURRENT},
+  //    function(tabs){
+  //      console.log("Sending url..." + tabs[0].url);
+  //     chrome.tabs.sendMessage(tabs[0].id, {url: tabs[0].url });
+  //    }
+  // );
+
+  // chrome.tabs.onActivated.addListener(
+  //   function (activeInfo) {
+  //     // read changeInfo data and do something with it
+  //     // like send the new url to contentscripts.js
+  //     console.log(JSON.stringify(activeInfo));
+  //     activeinf = null;
+  //     urli = null;
+  //     chrome.tabs.get(activeInfo.tabId, function (tab) {
+  //       console.log("You are here: " + tab.url);
+  //       activeinf = activeInfo;
+  //       urli = tab.url;
+  //       // chrome.tabs.sendMessage( activeInfo.tabId, {
+  //       //   message: "New URL!",
+  //       //   url: tab.url
+  //       // });
+  //       console.log(activeinf, urli);
+  //       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  //         chrome.tabs.sendMessage(activeinf.tabId, {
+  //           message: "New URL!",
+  //           url: urli
+  //         });
+  //       });
+  //     });
+
+
+  //     console.log("sent message")
+  //   }
+  // );
+
 });
-
-
-
-// listener waiting on message from popup.js
-// on true - sends message to content.js to highlight
-// on false - sends message to content.js to undo highlight
-// chrome.runtime.onMessage.addListener(
-//   function(request) {
-//     if (request.highlight === "True"){
-//         console.log("can highlight now");
-//         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//             chrome.tabs.sendMessage(tabs[0].id, {mash: "True"});
-//           });
-//     } else {
-//         console.log("unhighlight now");
-//         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//             chrome.tabs.sendMessage(tabs[0].id, {mash: "False"});
-//           });
-//     }
-//      // sendResponse({farewell: "goodbye"});
-
-//   });
-// });
