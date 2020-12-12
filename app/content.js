@@ -1,3 +1,6 @@
+// content.js - modification and behaviors for active tab page
+
+
 // construct list for id-text association
 const currTabWords = "url..."
 var complexText = { currTabWords: {}, currTabSentences: {} };

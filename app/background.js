@@ -1,4 +1,4 @@
-// background.js - coordinates tasks between popup.js and content.js, API calls, 
+// background.js - coordinates tasks between popup.js and content.js, API calls 
 
 document.addEventListener("DOMContentLoaded", function (event) {
 
