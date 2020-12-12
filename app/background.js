@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   console.log("background js on");
 
-  var toSendBack = []
+  var toSendBack = [];
 
   /* 
    * Listener to capture highlight value from popup.js
@@ -15,13 +15,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
   chrome.runtime.onMessage.addListener(
     function (request) {
       if (request.highlight === "True") {
-        console.log("can highlight now");
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          console.log("sending message bckg");
           chrome.tabs.sendMessage(tabs[0].id, { highlight: "True" });
         });
       } else if (request.highlight === "False") {
-        console.log("unhighlight now");
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           chrome.tabs.sendMessage(tabs[0].id, { highlight: "False" });
         });
@@ -45,9 +42,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
         await getNewText(data, "word");
         await getNewText(sentenceData, "sentence");
       } else {
-        console.log("No fresh yes")
+        console.log("request.wordUpdate not True");
       }
-      // sendResponse({farewell: "goodbye"});
 
     });
 
@@ -91,20 +87,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * type - type of text being requested
    */
   async function getNewText(data, type) {
-    var keys = Object.keys(data).reverse();
+    var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
 
       textID = keys[i];
-      console.log("About to simplify text: ", data[textID]);
       newText = "";
 
       await getSimpleWord(data[textID][0], textID, type);
     }
     // send to content script and modify those words 
-    // todo: send to active tab
-    console.log("This is my obj to send back tocontne ", toSendBack);
     toSend = JSON.stringify(toSendBack);
-    if ((type === "word" && toSendBack.length > 5) || (type === "sentence" && toSendBack.length > 5)) {
+    if (toSendBack.length === keys.length) {
 
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {

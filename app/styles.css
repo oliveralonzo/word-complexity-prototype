@@ -1,11 +1,6 @@
-.highlight-word {
+.highlight-sentence, .highlight-word {
     background-color: #bdc3c7;
   }
-
-.highlight-sentence {
-    background-color: #bdc3c7;
-  }
-
 
 .link{
     background:none;

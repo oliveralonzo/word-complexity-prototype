@@ -2,9 +2,7 @@
 
 
 document.addEventListener("DOMContentLoaded", function (event) {
-  console.log("popup js on");
   var checkbox = document.getElementById("togBtn");
-  var checkRecord = false;
 
 
   /* Capture input for textSetting slider
@@ -16,18 +14,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
   textSettingNode = document.getElementById("textSettingInput");
   textSettingNode.addEventListener('input', function () {
     if (this.value == 1) {
-      console.log("Words");
       chrome.storage.sync.set({ 'textSetting': 'Word' }, function () {
         // Notify that we saved.
-        console.log('textSetting value saved');
         sendtoContentJS({ textSetting: 'Word' });
       });
       //sendtoContentJS({ 'textSetting': 'Word' });
     } else if (this.value == 2) {
-      console.log("Sentences");
       chrome.storage.sync.set({ 'textSetting': 'Sentence' }, function () {
         // Notify that we saved.
-        console.log('textSetting value saved');
         sendtoContentJS({ textSetting: 'Sentence' });
       });
     }
@@ -53,10 +47,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         /// i want to signal that content js has to make word level changes to do
       }
     } else {
-      chrome.storage.sync.set({ 'textSetting': 'Word' }, function () {
-        // Notify that we saved.
-        console.log('textSetting value init saved');
-      });
+      chrome.storage.sync.set({ 'textSetting': 'Word' });
       textSettingNode.value = 1;
       sendtoContentJS({ textSetting: 'Word' });
     }
@@ -70,9 +61,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   storageGetHelper('highlight').then(function (value) {
     if (value.highlight === true) {
-      console.log("setting to true");
       checkbox.checked = true;
-      checkRecord = true;
     }
   })
 
@@ -84,23 +73,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (checkbox) {
 
     checkbox.addEventListener('change', async function () {
-      if (checkbox.checked && checkRecord === false) {
+      if (checkbox.checked) {
 
         chrome.runtime.sendMessage({ highlight: "True" });
-        checkRecord = true;
+        chrome.storage.sync.set({ 'highlight': true });
+      //  checkRecord = true;
+      } else if (checkbox.checked === false) {
 
-        chrome.storage.sync.set({ 'highlight': true }, function () {
-          // Notify that we saved.
-          console.log('highlight on setting value saved');
-        });
-
-      } else if (checkbox.checked === false && checkRecord === true) {
         chrome.runtime.sendMessage({ highlight: "False" });
-        checkRecord = false;
-        chrome.storage.sync.set({ 'highlight': false }, function () {
-          // Notify that we saved.
-          console.log('highlight off setting value saved');
-        });
+        chrome.storage.sync.set({ 'highlight': false });
       }
     });
   } else {
