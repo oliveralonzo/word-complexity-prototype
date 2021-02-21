@@ -36,6 +36,7 @@ chrome.runtime.sendMessage({
 chrome.runtime.onMessage.addListener(function (request) {
   if (request.textSetting === "Sentence") {
     //textSetting = request.textSetting;
+    console.log("Received text-type = Sentence input from popup", request);
     if (textSetting != "Sentence") {
       Array.from(complexWordGroup).forEach(function (element) {
         element.disabled = true;
@@ -48,7 +49,26 @@ chrome.runtime.onMessage.addListener(function (request) {
       textSetting = request.textSetting;
     }
   } else if (request.textSetting === "Word") {
+    console.log("Received text-type = word from popup", request);
     if (textSetting != "Word") {
+      Array.from(complexSentencesGroup).forEach(function (element) {
+        element.removeEventListener("click", function changeWord(event) {
+          setToOtherWord(event.target, request.textSetting);
+        });
+      });
+
+      Array.from(complexWordGroup).forEach(function (element) {
+        element.disabled = false;
+        element.addEventListener("click", function changeWord(event) {
+          setToOtherWord(event.target, request.textSetting);
+        });
+      });
+      textSetting = request.textSetting;
+    }
+  } else if (request.textSetting === "Paragraph") {
+    console.log("Received text-type = Paragraph input from popup", request);
+    identifyParagraphs();
+    if (textSetting != "Paragraph") {
       Array.from(complexSentencesGroup).forEach(function (element) {
         element.removeEventListener("click", function changeWord(event) {
           setToOtherWord(event.target, request.textSetting);
@@ -273,6 +293,27 @@ function identifySentences(complex) {
       sentence = [];
     }
   }, complex);
+}
+
+function identifyParagraphs() {
+  console.log("Identifying paragraphs");
+  document.querySelectorAll("p").forEach(function (paragraph) {
+    // paragraph.classList.add("complex-paragraph");
+    let para = paragraph.textContent;
+    let sentences = para.split(".");
+    let count = 0;
+    sentences.forEach((sentence) => {
+      if (sentence.split(" ").length > 20) {
+        count++;
+      }
+    });
+    console.log("COUNT = ", count);
+    if (count > 2) {
+      paragraph.classList.add("complex-paragraph");
+      addHighlights("highlight-paragraph", "complex-paragraph");
+    }
+    // paragraph.classList.toggle('pilcrow');
+  });
 }
 
 /*
