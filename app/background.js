@@ -1,54 +1,51 @@
-// background.js - coordinates tasks between popup.js and content.js, API calls 
+// background.js - coordinates tasks between popup.js and content.js, API calls
 
 document.addEventListener("DOMContentLoaded", function (event) {
-
   console.log("background js on");
 
   var toSendBack = [];
 
-  /* 
+  /*
    * Listener to capture highlight value from popup.js
    *  - future work --> this value can go straight from popup to content, which would negate the need for this
    *  - ideal request
    *    {'highlight': True/False}
    */
-  chrome.runtime.onMessage.addListener(
-    function (request) {
-      if (request.highlight === "True") {
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, { highlight: "True" });
-        });
-      } else if (request.highlight === "False") {
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, { highlight: "False" });
-        });
-      }
-    });
+  chrome.runtime.onMessage.addListener(function (request) {
+    if (request.highlight === "True") {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { highlight: "True" });
+      });
+    } else if (request.highlight === "False") {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { highlight: "False" });
+      });
+    }
+  });
 
-  /* 
-     * Listener to capture text that needs to be simplified
-     *  - ideal request
-     *  - async/await due to async API calls
-     *    {'wordUpdate': True/False},
-     *    {'toSimplify': [...words to simplify]}
-     *    {'toSimplifySentence': [...sentences to simplify]}
-     */
-  chrome.runtime.onMessage.addListener(
-    async function (request) {
-      console.log(request);
-      if (request.wordUpdate === "True") {
-        data = request.toSimplify;
-        sentenceData = request.toSimplifySentence;
-        await getNewText(data, "word");
-        await getNewText(sentenceData, "sentence");
-      } else {
-        console.log("request.wordUpdate not True");
-      }
+  /*
+   * Listener to capture text that needs to be simplified
+   *  - ideal request
+   *  - async/await due to async API calls
+   *    {'wordUpdate': True/False},
+   *    {'toSimplify': [...words to simplify]}
+   *    {'toSimplifySentence': [...sentences to simplify]}
+   */
+  chrome.runtime.onMessage.addListener(async function (request) {
+    if (request.wordUpdate === "True") {
+      data = request.toSimplify;
+      sentenceData = request.toSimplifySentence;
+      paragraphData = request.toSimplifyParagraph;
 
-    });
+      await getNewText(data, "word");
+      await getNewText(sentenceData, "sentence");
+      await getNewText(paragraphData, "paragraph");
+    } else {
+      console.log("request.wordUpdate not True");
+    }
+  });
 
-
-  /* 
+  /*
    * Perform API call to simplify text
    * POST request body example : {"type": "word", "text": "apple" } - stringified
    * - text - "apple" - the full string that needs to be simplified
@@ -57,29 +54,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * result: a "simplified" version of the provided text argument
    */
   async function getSimpleWord(text, wordID, type) {
-
-    let response = await fetch('http://127.0.0.1:8000/decomplexify/', {
-      mode: 'cors',
+    let response = await fetch("http://127.0.0.1:8000/decomplexify/", {
+      mode: "cors",
       method: "POST",
-      body: JSON.stringify({ "type": type, "text": text }),
+      body: JSON.stringify({ type: type, text: text }),
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      redirect: 'follow'
+      redirect: "follow",
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error status: ${response.status}`);
     } else {
-      freshTextPromise = await response.text()
+      freshTextPromise = await response.text();
       console.log(freshTextPromise);
-      freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, '$1');
+      freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, "$1");
       toSendBack.push({ wordID: wordID, text: freshTextPromise });
       return freshTextPromise;
     }
-
   }
-
 
   /*
    * Takes in a set of text - obtains simplified replacements - sends replacements to content.js
@@ -89,32 +83,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
   async function getNewText(data, type) {
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
-
       textID = keys[i];
-      newText = "";
 
       await getSimpleWord(data[textID][0], textID, type);
     }
-    // send to content script and modify those words 
+    // send to content script and modify those words
     toSend = JSON.stringify(toSendBack);
     if (toSendBack.length === keys.length) {
-
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
           type: "InPlace",
           toChange: toSend,
-          textType: type
+          textType: type,
         });
       });
-
     }
 
     toSendBack = [];
   }
 
-
-
-  /* 
+  /*
    * Below is some code working towards getting the current url - may be useful to have url for future work - not currently in use
    */
   // chrome.tabs.query({'active': true, 'windowId': chrome.windows.WINDOW_ID_CURRENT},
@@ -148,9 +136,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   //       });
   //     });
 
-
   //     console.log("sent message")
   //   }
   // );
-
 });

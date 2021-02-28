@@ -2,13 +2,27 @@
 
 // construct list for id-text association
 const currTabWords = "url...";
-var complexText = { currTabWords: {}, currTabSentences: {} };
+var complexText = {
+  currTabWords: {},
+  currTabSentences: {},
+  currTabParagraphs: {},
+};
 var sentenceIDNum = 21;
 var complexWordGroup = null;
 var complexSentencesGroup = null;
+var complexParagraphGroup = null;
 var replacedWords = null;
 var replacedSentences = null;
+var replacedParagraphs = null;
 var textSetting = null;
+var highlightToggle = null;
+chrome.storage.sync.get(["highlight"], (status) => {
+  if (status.value === null) {
+    highlightToggle = false;
+  } else {
+    highlightToggle = status.value;
+  }
+});
 var idx = 0; // used for id index of words
 
 // find all <p> tags and highlight words with length greater than 6
@@ -19,11 +33,15 @@ for (var i = 0; i < paragraphs.length; i++) {
   replaceText(currElement);
 }
 
+console.log("complex sentence text = ", complexText["currTabSentences"]);
+console.log("complex para text = ", complexText["currTabParagraphs"]);
+
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
   wordUpdate: "True",
   toSimplify: complexText["currTabWords"],
   toSimplifySentence: complexText["currTabSentences"],
+  toSimplifyParagraph: complexText["currTabParagraphs"],
 });
 
 /*
@@ -37,10 +55,15 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.textSetting === "Sentence") {
     //textSetting = request.textSetting;
     console.log("Received text-type = Sentence input from popup", request);
+
+    // if (highlightToggle)
     if (textSetting != "Sentence") {
       Array.from(complexWordGroup).forEach(function (element) {
         element.disabled = true;
+        // removeHighlights("highlight-" + textSetting.toLowerCase());
       });
+
+      // removeListeners(complexSentencesGroup)
       Array.from(complexSentencesGroup).forEach(function (element) {
         element.addEventListener("click", function changeWord(event) {
           setToOtherWord(event.target, request.textSetting);
@@ -52,10 +75,12 @@ chrome.runtime.onMessage.addListener(function (request) {
     console.log("Received text-type = word from popup", request);
     if (textSetting != "Word") {
       Array.from(complexSentencesGroup).forEach(function (element) {
+        // removeHighlights("highlight-" + textSetting.toLowerCase());
         element.removeEventListener("click", function changeWord(event) {
           setToOtherWord(event.target, request.textSetting);
         });
       });
+      // removeListeners(complexWordGroup);
 
       Array.from(complexWordGroup).forEach(function (element) {
         element.disabled = false;
@@ -67,15 +92,18 @@ chrome.runtime.onMessage.addListener(function (request) {
     }
   } else if (request.textSetting === "Paragraph") {
     console.log("Received text-type = Paragraph input from popup", request);
-    identifyParagraphs();
+
     if (textSetting != "Paragraph") {
       Array.from(complexSentencesGroup).forEach(function (element) {
+        // removeHighlights("highlight-" + textSetting.toLowerCase());
         element.removeEventListener("click", function changeWord(event) {
           setToOtherWord(event.target, request.textSetting);
         });
       });
 
-      Array.from(complexWordGroup).forEach(function (element) {
+      // removeListeners(complexParagraphGroup);
+
+      Array.from(complexParagraphGroup).forEach(function (element) {
         element.disabled = false;
         element.addEventListener("click", function changeWord(event) {
           setToOtherWord(event.target, request.textSetting);
@@ -131,6 +159,20 @@ function addHighlights(styleClass, className) {
   });
 }
 
+function removeListeners(groupType) {
+  groups = [complexWordGroup, complexSentencesGroup, complexParagraphGroup];
+  for (let i = 0; i < groups.length; i++) {
+    if (groups[i] != groupType) {
+      Array.from(groups[i]).forEach(function (element) {
+        element.disabled = true;
+        element.removeEventListener("click", function changeWord(event) {
+          setToOtherWord(event.target, request.textSetting);
+        });
+      });
+    }
+  }
+}
+
 /*
  * Listener to pull in simplified words
  * expects {type: "InPlace", sentenceStart: stringified list of new words, textType: "word"/"sentence"/etc}
@@ -142,8 +184,10 @@ chrome.runtime.onMessage.addListener(function (request) {
     newWords = JSON.parse(newWords);
     if (request.textType === "sentence") {
       replacedSentences = JSON.parse(request.toChange);
-    } else {
+    } else if (request.textType === "word") {
       replacedWords = JSON.parse(request.toChange);
+    } else if (request.textType === "paragraph") {
+      replacedParagraphs = JSON.parse(request.toChange);
     }
   } else {
     console.log("No words received.");
@@ -158,7 +202,10 @@ function setToOtherWord(node, type) {
     wordSet = replacedSentences;
   } else if (type === "Word") {
     wordSet = replacedWords;
+  } else if ((type = "Paragraph")) {
+    wordSet = replacedParagraphs;
   }
+
   let complex = wordSet.find(({ wordID }) => wordID === id);
   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
   let currWord = node.innerText;
@@ -277,7 +324,6 @@ function identifySentences(complex) {
         let id = "sentence" + (sentenceIDNum - 1);
         complexText.currTabSentences[id] = [[cleanSentence, fullSentence]];
       } else {
-        console.log("Sentence does not qualify.");
         sentenceIDNum--;
       }
       sentenceStart = {};
@@ -296,21 +342,24 @@ function identifySentences(complex) {
 }
 
 function identifyParagraphs() {
-  console.log("Identifying paragraphs");
+  let paraIndex = 0;
   document.querySelectorAll("p").forEach(function (paragraph) {
     // paragraph.classList.add("complex-paragraph");
-    let para = paragraph.textContent;
-    let sentences = para.split(".");
+    paraIndex += 1;
+    let paraText = paragraph.textContent;
+    let sentences = paraText.split(".");
     let count = 0;
     sentences.forEach((sentence) => {
       if (sentence.split(" ").length > 20) {
         count++;
       }
     });
-    console.log("COUNT = ", count);
     if (count > 2) {
+      let paraId = "paragraph" + paraIndex;
+      complexText.currTabParagraphs[paraId] = [paraText];
+      paragraph.setAttribute("id", "paragraph" + paraIndex);
       paragraph.classList.add("complex-paragraph");
-      addHighlights("highlight-paragraph", "complex-paragraph");
+      // addHighlights("highlight-paragraph", "complex-paragraph");
     }
     // paragraph.classList.toggle('pilcrow');
   });
@@ -337,11 +386,15 @@ function replaceText(node) {
         return wordWithNewTag;
       });
       identifySentences(complex);
+      identifyParagraphs();
       var output = complex.join(" ");
       node.innerHTML = output;
       complexWordGroup = document.getElementsByClassName("complex-word-button");
       complexSentencesGroup = document.getElementsByClassName(
         "complex-sentence"
+      );
+      complexParagraphGroup = document.getElementsByClassName(
+        "complex-paragraph"
       );
     }
   } else {
