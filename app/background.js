@@ -14,11 +14,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
   chrome.runtime.onMessage.addListener(function (request) {
     if (request.highlight === "True") {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { highlight: "True" });
+        chrome.tabs.sendMessage(tabs[0].id, {
+          highlight: "True",
+          settingType: "highlightComplex",
+        });
       });
     } else if (request.highlight === "False") {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { highlight: "False" });
+        chrome.tabs.sendMessage(tabs[0].id, {
+          highlight: "False",
+          settingType: "highlightComplex",
+        });
       });
     }
   });
@@ -36,10 +42,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
       data = request.toSimplify;
       sentenceData = request.toSimplifySentence;
       paragraphData = request.toSimplifyParagraph;
+      documentData = request.toSimplifyDocumentParagraphs;
 
       await getNewText(data, "word");
       await getNewText(sentenceData, "sentence");
       await getNewText(paragraphData, "paragraph");
+      await getNewText(paragraphData, "document");
     } else {
       console.log("request.wordUpdate not True");
     }

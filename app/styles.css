@@ -1,6 +1,7 @@
 .highlight-sentence,
 .highlight-word,
-.highlight-paragraph {
+.highlight-paragraph,
+.highlight-document {
   background-color: #bdc3c7;
 }
 

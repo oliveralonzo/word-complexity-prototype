@@ -14,18 +14,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (this.value == 1) {
       chrome.storage.sync.set({ textSetting: "Word" }, function () {
         // Notify that we saved.
-        sendtoContentJS({ textSetting: "Word" });
+        sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
       });
       //sendtoContentJS({ 'textSetting': 'Word' });
     } else if (this.value == 2) {
       chrome.storage.sync.set({ textSetting: "Sentence" }, function () {
         // Notify that we saved.
-        sendtoContentJS({ textSetting: "Sentence" });
+        sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
       });
     } else if (this.value == 3) {
       chrome.storage.sync.set({ textSetting: "Paragraph" }, function () {
         // Notify that we saved.
-        sendtoContentJS({ textSetting: "Paragraph" });
+        sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
+      });
+    } else if (this.value == 4) {
+      chrome.storage.sync.set({ textSetting: "Document" }, function () {
+        // Notify that we saved.
+        sendtoContentJS({ textSetting: "Document", settingType: "howMuch" });
       });
     }
   });
@@ -40,15 +45,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (!(Object.keys(value).length === 0)) {
       if (value.textSetting === "Sentence") {
         /// tell content js to make sentence level changesw
-        sendtoContentJS({ textSetting: "Sentence" });
+        sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
         textSettingNode.value = 2;
       } else if (value.textSetting === "Word") {
-        sendtoContentJS({ textSetting: "Word" });
+        sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
         textSettingNode.value = 1;
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Paragraph") {
-        sendtoContentJS({ textSetting: "Paragraph" });
+        sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
         textSettingNode.value = 3;
+        /// i want to signal that content js has to make word level changes to do
+      } else if (value.textSetting === "Document") {
+        sendtoContentJS({
+          textSetting: "ParagDocumentraph",
+          settingType: "howMuch",
+        });
+        textSettingNode.value = 4;
         /// i want to signal that content js has to make word level changes to do
       }
     } else {
@@ -66,7 +78,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   storageGetHelper("highlight").then(function (value) {
     if (value.highlight === true) {
-      chrome.runtime.sendMessage({ highlight: "True" });
+      chrome.runtime.sendMessage({
+        highlight: "True",
+        settingType: "highlightComplex",
+      });
       checkbox.checked = true;
     }
   });
@@ -78,11 +93,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (checkbox) {
     checkbox.addEventListener("change", async function () {
       if (checkbox.checked) {
-        chrome.runtime.sendMessage({ highlight: "True" });
+        chrome.runtime.sendMessage({
+          highlight: "True",
+          settingType: "highlightComplex",
+        });
         chrome.storage.sync.set({ highlight: true });
         //  checkRecord = true;
       } else if (checkbox.checked === false) {
-        chrome.runtime.sendMessage({ highlight: "False" });
+        chrome.runtime.sendMessage({
+          highlight: "False",
+          settingType: "highlightComplex",
+        });
         chrome.storage.sync.set({ highlight: false });
       }
     });
