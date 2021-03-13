@@ -10,7 +10,7 @@ class SupplyLoremIpsum(APIView):
     """
     need - error handling
     """
-    def post(self, request):
+    def post(self, request, amount = None):
         data = self.request.data
         if "type" not in data:
             # no type category
@@ -28,5 +28,10 @@ class SupplyLoremIpsum(APIView):
                 paragraph = self.replaceTool.replaceParagraph(data["text"])
                 print(data["type"], data["text"])
                 return Response(paragraph)
+            elif data["type"] == 'document':
+                print("Successfully routed to document")
+                print("amount = ", amount)
+                paragraphs = self.replaceTool.replaceParagraphs(data["text"], amount)
+                return Response(paragraphs)
         except KeyError as e:
             return Response("Invalid type provided", status=status.HTTP_404_NOT_FOUND)

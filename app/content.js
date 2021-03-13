@@ -21,6 +21,10 @@ var replacedDocumentParagraphs = null;
 var textSetting = null;
 var highlightToggle = null;
 
+var complexDocumentParagraphsCount = 0;
+
+// var initialDocument = document.getElementById("")
+
 chrome.storage.sync.get(["highlight"], (status) => {
   if (status.value === null) {
     highlightToggle = false;
@@ -52,6 +56,7 @@ for (var i = 0; i < paragraphs.length; i++) {
 
 console.log("complex sentence text = ", complexText["currTabSentences"]);
 console.log("complex para text = ", complexText["currTabParagraphs"]);
+console.log("Complex document = ", complexText["currTabDocumentParagraphs"]);
 
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
@@ -163,14 +168,10 @@ chrome.runtime.onMessage.addListener(function (request) {
 
       Array.from(complexDocumentParagraphGroup).forEach(function (element) {
         // element.disabled = false;
-        element.addEventListener("click", () => {
-          alert("Document clicked");
+        element.addEventListener("click", function changeWord(event) {
+          setToOtherWord(event.target, request.textSetting);
         });
       });
-
-      // complexDocumentParagraphGroup.addEventListener("click", () => {
-      //   console.log("Document replace clicked");
-      // });
 
       if (textSetting != "Document") {
         let complexGroup = getGroupType(textSetting);
@@ -282,31 +283,101 @@ chrome.runtime.onMessage.addListener(function (request) {
       replacedWords = JSON.parse(request.toChange);
     } else if (request.textType === "paragraph") {
       replacedParagraphs = JSON.parse(request.toChange);
+      console.log("Replaced paragraphs received", replacedParagraphs);
     } else if (request.textType === "document") {
       replacedDocumentParagraphs = JSON.parse(request.toChange);
+      console.log("Replaced document received", replacedDocumentParagraphs);
     }
   } else {
     console.log("No words received.");
   }
 });
 
+// function getPTags(node, simplerParagraphs, wordSet) {
+//   if (!node) return;
+//   if (
+//     node.nodeName === "P"
+//     // &&
+//     // node.innerText.split(".").length > 3 &&
+//     // node.innerText.split(" ").length > 25
+//   ) {
+//     let currDoc = node.innerText;
+//     node.innerText = simplerParagraphs.shift();
+//     wordSet[0].text += currDoc + "\n \n";
+//     return;
+//   }
+
+//   for (let i = 0; i < node.childNodes.length; i++) {
+//     getPTags(node.childNodes[i], simplerParagraphs, wordSet);
+//   }
+// }
+
+function getPTags(node) {
+  if (!node) return;
+  if (node.nodeName === "P") {
+    complexDocumentParagraphsCount += 1;
+    node.classList.add("complex-document");
+  }
+
+  for (let i = 0; i < node.childNodes.length; i++) {
+    getPTags(node.childNodes[i]);
+  }
+}
+
 // swap word in place
 function setToOtherWord(node, type) {
   let id = node.id;
   let wordSet = null;
+  // let simplerParagraphs = null;
   if (type === "Sentence") {
     wordSet = replacedSentences;
   } else if (type === "Word") {
     wordSet = replacedWords;
   } else if (type === "Paragraph") {
     wordSet = replacedParagraphs;
-  } else if (type === "Document") wordSet = replacedDocumentParagraphs;
+  } else if (type === "Document") {
+    wordSet = replacedDocumentParagraphs;
+    console.log("Replaced documents", wordSet);
 
-  let complex = wordSet.find(({ wordID }) => wordID === id);
-  let foundIndex = wordSet.findIndex((word) => word.wordID == id);
-  let currWord = node.innerText;
-  node.innerText = complex.text;
-  wordSet[foundIndex].text = currWord;
+    //[wordid: "document1", text: [""]]
+    // simplerParagraphs = wordSet[0].text.split("\\n \\n");
+    // wordSet[0].text = "";
+    // console.log("Wordset before -> ", wordSet);
+    // let childList = document.getElementById("story_text");
+    // getPTags(childList, simplerParagraphs, wordSet);
+
+    let simplerParagraphs = wordSet[0].text.split("\\n \\n");
+    wordSet[0].text = [];
+    Array.from(complexDocumentParagraphGroup).forEach((node) => {
+      console.log("Before ~~~~~", node);
+      let currDoc = node.innerHTML;
+      node.innerHTML = simplerParagraphs.shift();
+      console.log("After ~~~~~ ", node);
+      wordSet[0].text += currDoc + "\\n \\n";
+    });
+    wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n+$/g, "");
+
+    // for (let i = 0; i < childList.length; i++) {
+    //   console.log("Replaced para idx ", i);
+    //   if (childList[i].nodeName === "P") {
+    //     console.log("here bro");
+    //     let currDoc = childList[i].innerText;
+    //     childList[i].innerText = simplerParagraphs[idxP++];
+
+    //     wordSet[0].text += currDoc + "\n \n";
+    //   }
+    //}
+
+    console.log(wordSet);
+  }
+
+  if (type !== "Document") {
+    let complex = wordSet.find(({ wordID }) => wordID === id);
+    let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+    let currWord = node.innerHTML;
+    node.innerHTML = complex.text;
+    wordSet[foundIndex].text = currWord;
+  }
 }
 
 /* helper function to identify words with length above 6 - identify complex words
@@ -442,7 +513,7 @@ function identifyParagraphs() {
   document.querySelectorAll("p").forEach(function (paragraph) {
     // paragraph.classList.add("complex-paragraph");
     paraIndex += 1;
-    let paraText = paragraph.textContent;
+    let paraText = paragraph.innerText;
     let sentences = paraText.split(".");
     let count = 0;
     sentences.forEach((sentence) => {
@@ -462,22 +533,25 @@ function identifyParagraphs() {
 }
 
 function identifyDocument() {
-  // let paraIndex = 0;
-  // document.querySelectorAll("p").forEach(function (paragraph) {
-  //   paraIndex += 1;
-  //   let paraText = paragraph.textContent;
-
-  //   let paraId = "paragraph" + paraIndex;
-  //   complexText.currTabDocumentParagraphs[paraId] = [paraText];
-  //   paragraph.setAttribute("id", "paragraph" + paraIndex);
-  //   paragraph.classList.add("complex-paragraph");
-  //   // addHighlights("highlight-paragraph", "complex-paragraph");
-  // });
   let complexParagraphs = document.getElementsByClassName("complex-paragraph");
+  let doc = document.getElementById("story_text");
+
+  let allParagraphs = document.getElementsByTagName("P");
+
+  complexText.currTabDocumentParagraphs["document" + 1] = [doc.textContent];
   if (complexParagraphs.length > 2) {
-    let content = document.getElementById("story_text");
-    content.classList.add("complex-document");
+    Array.from(allParagraphs).forEach((node) => {
+      if (node.innerText.split(" ").length > 20) getPTags(node);
+    });
   }
+
+  // Need to verified what needs to be sent
+  // complexText.currTabDocumentParagraphs["document" + 1] = [doc.textContent];
+  // if (complexParagraphs.length > 2) {
+  //   let content = document.getElementById("story_text");
+  //   // content.classList.add("complex-document");
+  //   getPTags(content);
+  // }
 }
 
 /*

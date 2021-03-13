@@ -42,12 +42,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
       data = request.toSimplify;
       sentenceData = request.toSimplifySentence;
       paragraphData = request.toSimplifyParagraph;
-      documentData = request.toSimplifyDocumentParagraphs;
-
+      documentData = request.toSimplifyDocument;
+      // alert("Got request" + documentData);
       await getNewText(data, "word");
       await getNewText(sentenceData, "sentence");
       await getNewText(paragraphData, "paragraph");
-      await getNewText(paragraphData, "document");
+      await getNewText(documentData, "document");
     } else {
       console.log("request.wordUpdate not True");
     }
@@ -62,7 +62,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * result: a "simplified" version of the provided text argument
    */
   async function getSimpleWord(text, wordID, type) {
-    let response = await fetch("http://127.0.0.1:8000/decomplexify/", {
+    let url = "http://127.0.0.1:8000/decomplexify/";
+    // Number of paragraphs
+    let amount = type === "document" ? "10/" : "";
+    let response = await fetch(url + amount, {
       mode: "cors",
       method: "POST",
       body: JSON.stringify({ type: type, text: text }),
@@ -75,8 +78,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (!response.ok) {
       throw new Error(`HTTP error status: ${response.status}`);
     } else {
+      // if (type === "document") alert("got " + type);
       freshTextPromise = await response.text();
-      console.log(freshTextPromise);
       freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, "$1");
       toSendBack.push({ wordID: wordID, text: freshTextPromise });
       return freshTextPromise;
@@ -89,6 +92,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * type - type of text being requested
    */
   async function getNewText(data, type) {
+    if (type === "document") {
+      console.log("Received Document data", data);
+    }
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
       textID = keys[i];
