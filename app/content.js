@@ -20,12 +20,6 @@ var originalComplexSentencesGroup = [];
 var originalComplexParagraphGroup = [];
 var originalComplexDocumentParagraphGroup = [];
 
-//Bind fucntions
-var bindWords;
-var bindSentences;
-var bindParagraphs;
-var bindDocument;
-
 var replacedWords = null;
 var replacedSentences = null;
 var replacedParagraphs = null;
@@ -34,8 +28,6 @@ var textSetting = null;
 var highlightToggle = null;
 
 var complexDocumentParagraphsCount = 0;
-
-// var initialDocument = document.getElementById("")
 
 chrome.storage.sync.get(["highlight"], (status) => {
   if (status.value === null) {
@@ -46,15 +38,12 @@ chrome.storage.sync.get(["highlight"], (status) => {
 });
 
 chrome.storage.sync.get("textSetting", (status) => {
-  console.log("textSetting = ", status.textSetting);
   if (status.textSetting === null) {
     textSetting = "Word";
   } else {
     textSetting = status.textSetting;
   }
 });
-
-console.log("textSetting set to ", textSetting);
 
 var idx = 0; // used for id index of words
 
@@ -119,6 +108,7 @@ chrome.runtime.onMessage.addListener(function (request) {
           complexSentencesGroup[i].innerHTML !==
           originalComplexSentencesGroup[i]
         ) {
+          removeSimplifiedHighlights(complexSentencesGroup[i]);
           replacedSentences[i].text = complexSentencesGroup[i].innerText;
         }
         complexSentencesGroup[i].innerHTML = originalComplexSentencesGroup[i];
@@ -147,13 +137,13 @@ chrome.runtime.onMessage.addListener(function (request) {
 
       for (let i = 0; i < complexWordGroup.length; i++) {
         if (complexWordGroup[i].innerHTML !== originalComplexWordGroup[i]) {
+          removeSimplifiedHighlights(complexWordGroup[i]);
           replacedWords[i].text = complexWordGroup[i].innerText;
         }
         complexWordGroup[i].innerHTML = originalComplexWordGroup[i];
       }
 
       if (highlightToggle) {
-        console.log("About to add highlights" + textSetting.toLowerCase());
         addHighlights(
           "highlight-" + request.textSetting.toLowerCase(),
           "complex-" + request.textSetting.toLowerCase()
@@ -178,13 +168,13 @@ chrome.runtime.onMessage.addListener(function (request) {
           complexParagraphGroup[i].innerHTML !==
           originalComplexParagraphGroup[i]
         ) {
+          removeSimplifiedHighlights(complexParagraphGroup[i]);
           replacedParagraphs[i].text = complexParagraphGroup[i].innerText;
         }
         complexParagraphGroup[i].innerHTML = originalComplexParagraphGroup[i];
       }
 
       if (highlightToggle) {
-        console.log("About to add highlights" + textSetting.toLowerCase());
         addHighlights(
           "highlight-" + request.textSetting.toLowerCase(),
           "complex-" + request.textSetting.toLowerCase()
@@ -210,6 +200,7 @@ chrome.runtime.onMessage.addListener(function (request) {
           complexDocumentParagraphGroup[i].innerHTML !==
           originalComplexDocumentParagraphGroup[i]
         ) {
+          removeSimplifiedHighlights(replacedDocumentParagraphs[i]);
           replacedDocumentParagraphs[i].text =
             complexDocumentParagraphGroup[i].innerText;
         }
@@ -218,7 +209,6 @@ chrome.runtime.onMessage.addListener(function (request) {
       }
 
       if (highlightToggle) {
-        console.log("About to add highlights" + textSetting.toLowerCase());
         addHighlights(
           "highlight-" + request.textSetting.toLowerCase(),
           "complex-" + request.textSetting.toLowerCase()
@@ -228,14 +218,11 @@ chrome.runtime.onMessage.addListener(function (request) {
       Array.from(complexDocumentParagraphGroup).forEach(function (element) {
         element.addEventListener("click", changeText);
       });
-
-      console.log("textSetting as of now", textSetting);
     }
   }
 });
 
 const changeText = (event) => {
-  console.log("text setting is ", textSetting);
   setToOtherWord(event.target, textSetting);
 };
 
@@ -269,7 +256,6 @@ chrome.runtime.onMessage.addListener(function (request) {
         removeHighlights("highlight-paragraph");
       }
     }
-    console.log("Highlight value", highlightToggle);
   }
 });
 
@@ -279,6 +265,10 @@ function removeHighlights(className) {
   while (highlighted.length) {
     highlighted[0].classList.remove(className);
   }
+}
+
+function removeSimplifiedHighlights(element) {
+  element.classList.remove(`highlight-simplified-${textSetting.toLowerCase()}`);
 }
 
 function addHighlights(styleClass, className) {
@@ -363,13 +353,23 @@ const setToOtherWord = (node, type) => {
     wordSet = replacedParagraphs;
   } else if (type === "Document") {
     wordSet = replacedDocumentParagraphs;
-    console.log("Replaced documents", wordSet);
 
     let simplerParagraphs = wordSet[0].text.split("\\n \\n");
     wordSet[0].text = [];
     Array.from(complexDocumentParagraphGroup).forEach((node) => {
       let currDoc = node.innerHTML;
       node.innerHTML = simplerParagraphs.shift();
+      if (highlightToggle) {
+        if (
+          !node.classList.contains(
+            `highlight-simplified-${textSetting.toLowerCase()}`
+          )
+        ) {
+          addSimplifiedHighlights(node);
+        } else {
+          removeSimplifiedHighlights(node);
+        }
+      }
       wordSet[0].text += currDoc + "\\n \\n";
     });
     wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n+$/g, "");
@@ -380,9 +380,24 @@ const setToOtherWord = (node, type) => {
     let foundIndex = wordSet.findIndex((word) => word.wordID == id);
     let currWord = node.innerHTML;
     node.innerHTML = complex.text;
+    if (highlightToggle) {
+      if (
+        !node.classList.contains(
+          `highlight-simplified-${textSetting.toLowerCase()}`
+        )
+      ) {
+        addSimplifiedHighlights(node);
+      } else {
+        removeSimplifiedHighlights(node);
+      }
+    }
     wordSet[foundIndex].text = currWord;
   }
 };
+
+function addSimplifiedHighlights(element) {
+  element.classList.add(`highlight-simplified-${textSetting.toLowerCase()}`);
+}
 
 /* helper function to identify words with length above 6 - identify complex words
  * increase index for IDs
