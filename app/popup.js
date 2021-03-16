@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Document") {
         sendtoContentJS({
-          textSetting: "ParagDocumentraph",
+          textSetting: "Document",
           settingType: "howMuch",
         });
         textSettingNode.value = 4;

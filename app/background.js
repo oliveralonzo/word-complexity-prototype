@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   async function getSimpleWord(text, wordID, type) {
     let url = "http://127.0.0.1:8000/decomplexify/";
     // Number of paragraphs
-    let amount = type === "document" ? "10/" : "";
+    let amount = type === "document" ? "11/" : "";
     let response = await fetch(url + amount, {
       mode: "cors",
       method: "POST",

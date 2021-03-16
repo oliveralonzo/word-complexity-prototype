@@ -5,6 +5,13 @@
   background-color: #bdc3c7;
 }
 
+.highlight-simplified-sentence,
+.highlight-simplified-word,
+.highlight-simplified-pragraph,
+.highlight-simplified {
+  background-color: #fff9de;
+}
+
 .link {
   background: none;
   border: none;
