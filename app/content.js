@@ -88,9 +88,66 @@ chrome.runtime.sendMessage({
 });
 
 function removePreviousAttributes() {
-  let complexGroup = getGroupType(request.textSetting);
-  removeListeners(complexGroup, request.textSetting);
-  removeHighlights("highlight-" + textSetting.toLowerCase());
+  removeListeners();
+  removeHighlights();
+}
+
+function revertContentToOriginal() {
+  const groups = {
+    Word: complexWordGroup,
+    Sentence: complexSentencesGroup,
+    Paragraph: complexParagraphGroup,
+    Document: complexDocumentParagraphGroup,
+  };
+  const originalGroups = {
+    Word: originalComplexWordGroup,
+    Sentence: originalComplexSentencesGroup,
+    Paragraph: originalComplexParagraphGroup,
+    Document: originalComplexDocumentParagraphGroup,
+  };
+
+  if (textSetting !== "Document") {
+    for (let i = 0; i < groups[textSetting].length; i++) {
+      if (groups[textSetting][i].innerHTML !== originalGroups[textSetting][i]) {
+        removeSimplifiedHighlights(groups[textSetting][i]);
+        groups[textSetting][i].text = groups[textSetting][i].innerText;
+      }
+      groups[textSetting][i].innerHTML = originalGroups[textSetting][i];
+    }
+  } else {
+    let text = "";
+    let simplerParagraphs = replacedDocumentParagraphs[0].text.split("\\n \\n");
+
+    for (let i = 0; i < originalComplexDocumentParagraphGroup.length; i++) {
+      if (
+        complexDocumentParagraphGroup[i].innerHTML !==
+        originalComplexDocumentParagraphGroup[i]
+      ) {
+        removeSimplifiedHighlights(complexDocumentParagraphGroup[i]);
+
+        let currDoc = complexDocumentParagraphGroup[i].innerHTML;
+        complexDocumentParagraphGroup[i].innerHTML = simplerParagraphs[i];
+
+        text += currDoc + "\\n \\n";
+      }
+    }
+    if (text) {
+      replacedDocumentParagraphs[0].text = text.replace(/^\\n+|\\n \\n+$/g, "");
+    }
+  }
+}
+
+function addListeners() {
+  const groups = {
+    Word: complexWordGroup,
+    Sentence: complexSentencesGroup,
+    Paragraph: complexParagraphGroup,
+    Document: complexDocumentParagraphGroup,
+  };
+
+  Array.from(groups[textSetting]).forEach(function (element) {
+    element.addEventListener("click", changeText);
+  });
 }
 
 /*
@@ -102,179 +159,20 @@ function removePreviousAttributes() {
 */
 chrome.runtime.onMessage.addListener(function (request) {
   if (request.settingType === "howMuch") {
-    if (request.textSetting === "Sentence") {
-      console.log("Received text-type = Sentence input from popup", request);
-
-      if (textSetting !== "Sentence") {
-        let complexGroup = getGroupType(request.textSetting);
-        // removeListeners(complexGroup, request.textSetting);
-        removeListeners();
-        removeHighlights();
-        // removeHighlights("highlight-" + textSetting.toLowerCase());
-      }
-
-      textSetting = request.textSetting;
-
-      for (let i = 0; i < complexSentencesGroup.length; i++) {
-        if (
-          complexSentencesGroup[i].innerHTML !==
-          originalComplexSentencesGroup[i]
-        ) {
-          removeSimplifiedHighlights(complexSentencesGroup[i]);
-          replacedSentences[i].text = complexSentencesGroup[i].innerText;
-        }
-        complexSentencesGroup[i].innerHTML = originalComplexSentencesGroup[i];
-      }
-
-      if (highlightToggle) {
-        addHighlights(
-          "highlight-" + request.textSetting.toLowerCase(),
-          "complex-" + request.textSetting.toLowerCase()
-        );
-      }
-
-      Array.from(complexSentencesGroup).forEach(function (element) {
-        element.addEventListener("click", changeText);
-      });
-    } else if (request.textSetting === "Word") {
-      console.log("Received text-type = word from popup", request);
-
-      if (textSetting != "Word") {
-        // let complexGroup = getGroupType(request.textSetting);
-        // removeHighlights("highlight-" + textSetting.toLowerCase());
-        // removeListeners(complexGroup, request.textSetting);
-
-        removeListeners();
-        removeHighlights();
-      }
-
-      textSetting = request.textSetting;
-
-      for (let i = 0; i < complexWordGroup.length; i++) {
-        if (complexWordGroup[i].innerHTML !== originalComplexWordGroup[i]) {
-          removeSimplifiedHighlights(complexWordGroup[i]);
-          replacedWords[i].text = complexWordGroup[i].innerText;
-        }
-        complexWordGroup[i].innerHTML = originalComplexWordGroup[i];
-      }
-
-      if (highlightToggle) {
-        addHighlights(
-          "highlight-" + request.textSetting.toLowerCase(),
-          "complex-" + request.textSetting.toLowerCase()
-        );
-      }
-      Array.from(complexWordGroup).forEach(function (element) {
-        element.addEventListener("click", changeText);
-      });
-    } else if (request.textSetting === "Paragraph") {
-      console.log("Received text-type = Paragraph input from popup", request);
-
-      if (textSetting != "Paragraph") {
-        // let complexGroup = getGroupType(request.textSetting);
-        // removeHighlights("highlight-" + textSetting.toLowerCase());
-        // removeListeners(complexGroup, request.textSetting);
-        removeListeners();
-        removeHighlights();
-      }
-
-      textSetting = request.textSetting;
-
-      for (let i = 0; i < complexParagraphGroup.length; i++) {
-        if (
-          complexParagraphGroup[i].innerHTML !==
-          originalComplexParagraphGroup[i]
-        ) {
-          removeSimplifiedHighlights(complexParagraphGroup[i]);
-          replacedParagraphs[i].text = complexParagraphGroup[i].innerText;
-        }
-        complexParagraphGroup[i].innerHTML = originalComplexParagraphGroup[i];
-      }
-
-      if (highlightToggle) {
-        addHighlights(
-          "highlight-" + request.textSetting.toLowerCase(),
-          "complex-" + request.textSetting.toLowerCase()
-        );
-      }
-
-      Array.from(complexParagraphGroup).forEach(function (element) {
-        element.addEventListener("click", changeText);
-      });
-    } else if (request.textSetting === "Document") {
-      console.log("Received text-type = Document input from popup", request);
-
-      if (textSetting != "Document") {
-        // let complexGroup = getGroupType(request.textSetting);
-        // removeHighlights("highlight-" + textSetting.toLowerCase());
-        // removeListeners(complexGroup, request.textSetting);
-        removeListeners();
-        removeHighlights();
-      }
-
-      textSetting = request.textSetting;
-
-      let text = "";
-      let simplerParagraphs = replacedDocumentParagraphs[0].text.split(
-        "\\n \\n"
-      );
-
-      for (let i = 0; i < originalComplexDocumentParagraphGroup.length; i++) {
-        if (
-          complexDocumentParagraphGroup[i].innerHTML !==
-          originalComplexDocumentParagraphGroup[i]
-        ) {
-          removeSimplifiedHighlights(complexDocumentParagraphGroup[i]);
-
-          let currDoc = complexDocumentParagraphGroup[i].innerHTML;
-          complexDocumentParagraphGroup[i].innerHTML = simplerParagraphs[i];
-
-          text += currDoc + "\\n \\n";
-        }
-      }
-      if (text) {
-        replacedDocumentParagraphs[0].text = text.replace(
-          /^\\n+|\\n \\n+$/g,
-          ""
-        );
-      }
-
-      // if (
-      //   complexDocumentParagraphGroup !== originalComplexDocumentParagraphGroup
-      // ) {
-      //   complexDocumentParagraphGroup = [];
-      //   for (let i = 0; i < originalComplexDocumentParagraphGroup.length; i++) {
-      //     complexDocumentParagraphGroup.push(
-      //       originalComplexDocumentParagraphGroup[i].innerHTML
-      //     );
-      //   }
-      // }
-
-      console.log(
-        "Length of complexDoc~~~~",
-        complexDocumentParagraphGroup.length
-      );
-
-      // if (
-      //   complexDocumentParagraphGroup !== originalComplexDocumentParagraphGroup
-      // ) {
-      //   for (let i = 0; i < complexDocumentParagraphGroup.length; i++) {
-      //     removeSimplifiedHighlights(complexDocumentParagraphGroup[i]);
-      //   }
-      //   complexDocumentParagraphGroup = originalComplexDocumentParagraphGroup;
-      // }
-
-      if (highlightToggle) {
-        addHighlights(
-          "highlight-" + request.textSetting.toLowerCase(),
-          "complex-" + request.textSetting.toLowerCase()
-        );
-      }
-
-      Array.from(complexDocumentParagraphGroup).forEach(function (element) {
-        element.addEventListener("click", changeText);
-      });
+    if (request.textSetting !== textSetting) {
+      removeListeners();
+      removeHighlights();
     }
+
+    textSetting = request.textSetting;
+
+    revertContentToOriginal();
+
+    if (highlightToggle) {
+      addHighlights();
+    }
+
+    addListeners();
   }
 });
 
@@ -294,46 +192,18 @@ chrome.runtime.onMessage.addListener(function (request) {
     if (request.highlight === "True") {
       chrome.storage.sync.set({ highlight: true });
       highlightToggle = true;
-      if (textSetting === "Word") {
-        addHighlights("highlight-word", "complex-word");
-      } else if (textSetting === "Sentence") {
-        addHighlights("highlight-sentence", "complex-sentence");
-      } else if (textSetting === "Paragraph") {
-        addHighlights("highlight-paragraph", "complex-paragraph");
-      }
+      addHighlights();
     } else {
       chrome.storage.sync.set({ highlight: false });
       highlightToggle = false;
-      if (textSetting === "Word") {
-        // removeHighlights("highlight-word");
-        removeHighlights();
-      } else if (textSetting === "Sentence") {
-        // removeHighlights("highlight-sentence");
-        removeHighlights();
-      } else if (textSetting === "Paragraph") {
-        removeHighlights();
-        // removeHighlights("highlight-paragraph");
-      } else if (textSetting === "Document") {
-        removeHighlights();
-      }
+      removeHighlights();
     }
   }
 });
 
-// function removeHighlights(className) {
-//   console.log("Removed highlights - ", className);
-//   let highlighted = document.getElementsByClassName(className);
-//   while (highlighted.length) {
-//     highlighted[0].classList.remove(className);
-//   }
-// }
-
 function removeHighlights() {
   let className = `highlight-${this.textSetting.toLowerCase()}`;
   let highlighted = document.getElementsByClassName(className);
-  // while (highlighted.length) {
-  //   highlighted[0].classList.remove(className);
-  // }
   Array.from(highlighted).forEach((element) => {
     element.classList.remove(className);
   });
@@ -343,29 +213,15 @@ function removeSimplifiedHighlights(element) {
   element.classList.remove(`highlight-simplified-${textSetting.toLowerCase()}`);
 }
 
-function addHighlights(styleClass, className) {
+function addHighlights() {
+  let styleClass = `highlight-${textSetting.toLowerCase()}`;
+  let className = `complex-${textSetting.toLowerCase()}`;
   console.log("Added highlights - ", className);
   elements = document.getElementsByClassName(className);
   [].forEach.call(elements, function (word) {
     word.classList.add(styleClass);
   });
 }
-
-// function removeListeners(groupType) {
-//   groups = [
-//     complexWordGroup,
-//     complexSentencesGroup,
-//     complexParagraphGroup,
-//     complexDocumentParagraphGroup,
-//   ];
-//   for (let i = 0; i < groups.length; i++) {
-//     if (groups[i].length > 0 && groups[i] != groupType) {
-//       Array.from(groups[i]).forEach(function (element) {
-//         element.removeEventListener("click", changeText);
-//       });
-//     }
-//   }
-// }
 
 function removeListeners() {
   const groups = {
@@ -377,18 +233,6 @@ function removeListeners() {
   Array.from(groups[textSetting]).forEach(function (element) {
     element.removeEventListener("click", changeText);
   });
-}
-
-function getGroupType(textSetting) {
-  if (textSetting === "Word") {
-    return complexWordGroup;
-  } else if (textSetting === "Paragraph") {
-    return complexParagraphGroup;
-  } else if (textSetting === "Document") {
-    return complexDocumentParagraphGroup;
-  } else if (textSetting === "Sentence") {
-    return complexSentencesGroup;
-  }
 }
 
 /*
@@ -408,10 +252,6 @@ chrome.runtime.onMessage.addListener(function (request) {
       replacedParagraphs = JSON.parse(request.toChange);
     } else if (request.textType === "document") {
       replacedDocumentParagraphs = JSON.parse(request.toChange);
-      console.log(
-        "replacedDocumentParagraphs ---> ",
-        replacedDocumentParagraphs
-      );
     }
   } else {
     console.log("No words received.");
@@ -619,7 +459,6 @@ function identifySentences(complex) {
 function identifyParagraphs() {
   let paraIndex = 0;
   document.querySelectorAll("p").forEach(function (paragraph) {
-    // paragraph.classList.add("complex-paragraph");
     paraIndex += 1;
     let paraText = paragraph.innerText;
     let sentences = paraText.split(".");
@@ -634,9 +473,7 @@ function identifyParagraphs() {
       complexText.currTabParagraphs[paraId] = [paraText];
       paragraph.setAttribute("id", "paragraph" + paraIndex);
       paragraph.classList.add("complex-paragraph");
-      // addHighlights("highlight-paragraph", "complex-paragraph");
     }
-    // paragraph.classList.toggle('pilcrow');
   });
 }
 
