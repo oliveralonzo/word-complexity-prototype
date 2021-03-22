@@ -73,11 +73,6 @@ for (let i = 0; i < complexDocumentParagraphGroup.length; i++) {
   );
 }
 
-console.log(
-  "original complexPara ---> ",
-  originalComplexDocumentParagraphGroup
-);
-
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
   wordUpdate: "True",
@@ -105,12 +100,18 @@ function revertContentToOriginal() {
     Paragraph: originalComplexParagraphGroup,
     Document: originalComplexDocumentParagraphGroup,
   };
+  const replacedGroups = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+    Document: replacedDocumentParagraphs,
+  };
 
   if (textSetting !== "Document") {
     for (let i = 0; i < groups[textSetting].length; i++) {
       if (groups[textSetting][i].innerHTML !== originalGroups[textSetting][i]) {
         removeSimplifiedHighlights(groups[textSetting][i]);
-        groups[textSetting][i].text = groups[textSetting][i].innerText;
+        replacedGroups[textSetting][i].text = groups[textSetting][i].innerText;
       }
       groups[textSetting][i].innerHTML = originalGroups[textSetting][i];
     }
