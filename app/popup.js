@@ -1,7 +1,7 @@
 // popup.js - define behavior for the popup/user interface
 
 document.addEventListener("DOMContentLoaded", function (event) {
-  var checkbox = document.getElementById("togBtn");
+  const checkbox = document.getElementById("togBtn");
 
   /* Capture input for textSetting slider
    *   - listener open to any change of textSettingSlider
@@ -31,6 +31,32 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ textSetting: "Document" }, function () {
         // Notify that we saved.
         sendtoContentJS({ textSetting: "Document", settingType: "howMuch" });
+      });
+    }
+  });
+
+  /* Capture input for where? slider
+   */
+  whereToSettingNode = document.getElementById("whereTo");
+  whereToSettingNode.addEventListener("input", function () {
+    if (this.value == 1) {
+      chrome.storage.sync.set({ whereToSetting: "Word" }, function () {
+        sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+      });
+    } else if (this.value == 2) {
+      chrome.storage.sync.set({ whereToSetting: "Highlight" }, function () {
+        sendtoContentJS({
+          whereToSetting: "Highlight",
+          settingType: "whereTo",
+        });
+      });
+    } else if (this.value == 3) {
+      chrome.storage.sync.set({ whereToSetting: "Popup" }, function () {
+        sendtoContentJS({ whereToSetting: "Popup", settingType: "whereTo" });
+      });
+    } else if (this.value == 4) {
+      chrome.storage.sync.set({ whereToSetting: "Side" }, function () {
+        sendtoContentJS({ whereToSetting: "Side", settingType: "whereTo" });
       });
     }
   });
@@ -66,7 +92,39 @@ document.addEventListener("DOMContentLoaded", function (event) {
     } else {
       chrome.storage.sync.set({ textSetting: "Word" });
       textSettingNode.value = 1;
-      sendtoContentJS({ textSetting: "Word" });
+      sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
+    }
+  });
+
+  storageGetHelper("whereToSetting").then(function (value) {
+    if (!(Object.keys(value).length === 0)) {
+      if (value.whereToSetting === "InPlace") {
+        sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+        whereToSettingNode.value = 1;
+      } else if (value.whereToSetting === "Highlight") {
+        sendtoContentJS({
+          whereToSetting: "Highlight",
+          settingType: "whereTo",
+        });
+        whereToSettingNode.value = 2;
+      } else if (value.whereToSetting === "Popup") {
+        sendtoContentJS({
+          whereToSetting: "Popup",
+          settingType: "whereTo",
+        });
+        whereToSettingNode.value = 3;
+      } else if (value.whereToSetting === "Side") {
+        sendtoContentJS({
+          whereToSetting: "Side",
+          settingType: "whereTo",
+        });
+        whereToSettingNode.value = 4;
+      }
+    } else {
+      chrome.storage.sync.set({ whereToSetting: "InPlace" });
+      whereToSettingNode.value = 1;
+      sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+      alert("Sent where to setting from else ");
     }
   });
 
