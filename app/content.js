@@ -178,7 +178,9 @@ function addListeners() {
     } else if (whereToSetting === "Highlight") {
       element.addEventListener("click", changeText);
     } else if (whereToSetting === "Popup") {
-      element.addEventListener("click", changeText);
+      // element.addEventListener("click", changeText);
+      element.addEventListener("mouseover", showToolTip);
+      element.addEventListener("mouseout", removeToolTip);
     } else {
       element.addEventListener("click", changeText);
     }
@@ -287,11 +289,12 @@ function removeListeners() {
   const eventHandlers = {
     InPlace: changeText,
     Highlight: changeText,
-    // Popup: showToolTip,
+    Popup: showToolTip,
     // Side: showToolTip,
   };
   Array.from(groups[textSetting]).forEach(function (element) {
     element.removeEventListener("click", eventHandlers[whereToSetting]);
+    element.removeEventListener("mouseover", showToolTip);
   });
 }
 
@@ -372,7 +375,7 @@ const setToOtherWord = (node, type) => {
         }
         wordSet[0].text += currDoc + "\\n \\n";
       } else if (whereToSetting === "Popup") {
-        showToolTip(node, currDoc);
+        // showToolTip(node, currDoc);
       }
 
       // wordSet[0].text += currDoc + "\\n \\n";
@@ -418,7 +421,7 @@ const setToOtherWord = (node, type) => {
       }
       wordSet[foundIndex].text = currWord;
     } else if (whereToSetting === "Popup") {
-      showToolTip(node, complex.text);
+      // showToolTip(node, wordSet[foundIndex].text);
     }
 
     // wordSet[foundIndex].text = currWord;
@@ -441,19 +444,44 @@ function addComplexHighlights(element) {
   element.classList.add(`highlight-${textSetting.toLowerCase()}`);
 }
 
-function showToolTip(element, simplifiedText) {
-  const parent = element.parentNode;
-  console.log("This is parent -> ", parent);
+/* Onlick tooltip for future use
+ */
+// function showToolTip(element, simplifiedText) {
+//   const parent = element.parentNode;
+//   console.log("This is parent -> ", parent);
+//   const tooltipWrap = document.createElement("div");
+//   tooltipWrap.classList.add("tooltip1");
+//   tooltipWrap.appendChild(document.createTextNode(simplifiedText));
+//   parent.appendChild(tooltipWrap);
 
-  const tooltipWrap = document.createElement("div");
-  tooltipWrap.classList.add("tooltip1");
-  tooltipWrap.appendChild(document.createTextNode(simplifiedText));
-  parent.appendChild(tooltipWrap);
+//   parent.insertBefore(element, tooltipWrap);
+// }
 
-  parent.insertBefore(element, tooltipWrap);
+const showToolTip = function (element) {
+  const node = element.target;
+  const wordSet = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+    Document: replacedDocumentParagraphs,
+  };
 
-  // const firstChild = document.body.firstChild;
-  // firstChild.parentNode.insertBefore(tooltipWrap, firstChild);
+  let id = node.id;
+  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  node.setAttribute("data-text", complex.text);
+  node.classList.add("tooltip1");
+};
+
+// function removeToolTip() {
+//   document.querySelectorAll(".tooltip1").forEach(function (a) {
+//     a.remove();
+//   });
+// }
+
+function removeToolTip() {
+  document.querySelectorAll(".tooltip1").forEach(function (a) {
+    a.classList.remove("tooltip1");
+  });
 }
 
 /* helper function to identify words with length above 6 - identify complex words
@@ -478,12 +506,7 @@ function identifyWords(word, index) {
   ) {
     let id = "id" + index;
     complexText.currTabWords[id] = [wordToCheck];
-    complexTagged =
-      "<button class='link complex-word-button' ><span class='complex-word' id= " +
-      id +
-      ">" +
-      wordToCheck +
-      "</span></button>";
+    complexTagged = `<span class='complex-word' id=${id}>${wordToCheck}</span>`;
     freshHTML =
       word.substring(0, matchInd) +
       complexTagged +
@@ -652,7 +675,7 @@ function replaceText(node) {
       identifyDocument();
       var output = complex.join(" ");
       node.innerHTML = output;
-      complexWordGroup = document.getElementsByClassName("complex-word-button");
+      complexWordGroup = document.getElementsByClassName("complex-word");
       complexSentencesGroup = document.getElementsByClassName(
         "complex-sentence"
       );
