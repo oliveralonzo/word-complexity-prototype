@@ -166,22 +166,15 @@ function addListeners() {
     Document: complexDocumentParagraphGroup,
   };
 
-  const eventHandlers = {
-    InPlace: changeText,
-    Highlight: changeText,
-    // Popup: showToolTip,
-    // Side: showToolTip,
-  };
   Array.from(groups[textSetting]).forEach(function (element) {
     if (whereToSetting === "InPlace") {
       element.addEventListener("click", changeText);
     } else if (whereToSetting === "Highlight") {
       element.addEventListener("click", changeText);
     } else if (whereToSetting === "Popup") {
-      // element.addEventListener("click", changeText);
       element.addEventListener("mouseover", showToolTip);
       element.addEventListener("mouseout", removeToolTip);
-    } else {
+    } else if (whereToSetting === "Side") {
       element.addEventListener("click", changeText);
     }
   });
@@ -333,83 +326,26 @@ function getPTags(node) {
   }
 }
 
-const setToOtherWord = (node, type) => {
-  let id = node.id;
-  let wordSet = null;
-  if (type === "Sentence") {
-    wordSet = replacedSentences;
-  } else if (type === "Word") {
-    wordSet = replacedWords;
-  } else if (type === "Paragraph") {
-    wordSet = replacedParagraphs;
-  } else if (type === "Document") {
-    wordSet = replacedDocumentParagraphs;
+const setToOtherDocument = function (node, type) {
+  wordSet = replacedDocumentParagraphs;
 
-    let simplerParagraphs = wordSet[0].text.split("\\n \\n");
-    wordSet[0].text = "";
-    Array.from(complexDocumentParagraphGroup).forEach((node) => {
-      let currDoc = node.innerHTML;
-      // node.innerHTML = simplerParagraphs.shift();
-      if (whereToSetting === "InPlace") {
-        // let currDoc = node.innerHTML;
-        node.innerHTML = simplerParagraphs.shift();
-        if (
-          !node.classList.contains(`highlight-${textSetting.toLowerCase()}`)
-        ) {
-          addComplexHighlights(node);
-        } else {
-          removeComplexHighlights(node);
-        }
-        wordSet[0].text += currDoc + "\\n \\n";
-      } else if (whereToSetting === "Highlight") {
-        // let currDoc = node.innerHTML;
-        node.innerHTML = simplerParagraphs.shift();
-        if (
-          !node.classList.contains(
-            `highlight-simplified-${textSetting.toLowerCase()}`
-          )
-        ) {
-          addSimplifiedHighlights(node);
-        } else {
-          removeSimplifiedHighlights(node);
-        }
-        wordSet[0].text += currDoc + "\\n \\n";
-      } else if (whereToSetting === "Popup") {
-        // showToolTip(node, currDoc);
-      }
-
-      // wordSet[0].text += currDoc + "\\n \\n";
-    });
-    wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
-  }
-
-  if (type !== "Document") {
-    let complex = wordSet.find(({ wordID }) => wordID === id);
-    let foundIndex = wordSet.findIndex((word) => word.wordID == id);
-    let currWord = node.innerHTML;
-    // node.innerHTML = complex.text;
-    // if (highlightToggle) {
-    //   if (
-    //     !node.classList.contains(
-    //       `highlight-simplified-${textSetting.toLowerCase()}`
-    //     )
-    //   ) {
-    //     addSimplifiedHighlights(node);
-    //   } else {
-    //     removeSimplifiedHighlights(node);
-    //   }
-    // }
-
+  let simplerParagraphs = wordSet[0].text.split("\\n \\n");
+  wordSet[0].text = "";
+  Array.from(complexDocumentParagraphGroup).forEach((node) => {
+    let currDoc = node.innerHTML;
+    // node.innerHTML = simplerParagraphs.shift();
     if (whereToSetting === "InPlace") {
-      node.innerHTML = complex.text;
+      // let currDoc = node.innerHTML;
+      node.innerHTML = simplerParagraphs.shift();
       if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
         addComplexHighlights(node);
       } else {
         removeComplexHighlights(node);
       }
-      wordSet[foundIndex].text = currWord;
+      wordSet[0].text += currDoc + "\\n \\n";
     } else if (whereToSetting === "Highlight") {
-      node.innerHTML = complex.text;
+      // let currDoc = node.innerHTML;
+      node.innerHTML = simplerParagraphs.shift();
       if (
         !node.classList.contains(
           `highlight-simplified-${textSetting.toLowerCase()}`
@@ -419,12 +355,153 @@ const setToOtherWord = (node, type) => {
       } else {
         removeSimplifiedHighlights(node);
       }
-      wordSet[foundIndex].text = currWord;
+      wordSet[0].text += currDoc + "\\n \\n";
     } else if (whereToSetting === "Popup") {
-      // showToolTip(node, wordSet[foundIndex].text);
+      // showToolTip(node, currDoc);
     }
 
-    // wordSet[foundIndex].text = currWord;
+    // wordSet[0].text += currDoc + "\\n \\n";
+  });
+  wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
+};
+
+// const setToOtherWord = (node, type) => {
+//   let id = node.id;
+//   let wordSet = null;
+//   if (type === "Sentence") {
+//     wordSet = replacedSentences;
+//   } else if (type === "Word") {
+//     wordSet = replacedWords;
+//   } else if (type === "Paragraph") {
+//     wordSet = replacedParagraphs;
+//   } else if (type === "Document") {
+//     wordSet = replacedDocumentParagraphs;
+
+//     let simplerParagraphs = wordSet[0].text.split("\\n \\n");
+//     wordSet[0].text = "";
+//     Array.from(complexDocumentParagraphGroup).forEach((node) => {
+//       let currDoc = node.innerHTML;
+//       // node.innerHTML = simplerParagraphs.shift();
+//       if (whereToSetting === "InPlace") {
+//         // let currDoc = node.innerHTML;
+//         node.innerHTML = simplerParagraphs.shift();
+//         if (
+//           !node.classList.contains(`highlight-${textSetting.toLowerCase()}`)
+//         ) {
+//           addComplexHighlights(node);
+//         } else {
+//           removeComplexHighlights(node);
+//         }
+//         wordSet[0].text += currDoc + "\\n \\n";
+//       } else if (whereToSetting === "Highlight") {
+//         // let currDoc = node.innerHTML;
+//         node.innerHTML = simplerParagraphs.shift();
+//         if (
+//           !node.classList.contains(
+//             `highlight-simplified-${textSetting.toLowerCase()}`
+//           )
+//         ) {
+//           addSimplifiedHighlights(node);
+//         } else {
+//           removeSimplifiedHighlights(node);
+//         }
+//         wordSet[0].text += currDoc + "\\n \\n";
+//       } else if (whereToSetting === "Popup") {
+//         // showToolTip(node, currDoc);
+//       }
+
+//       // wordSet[0].text += currDoc + "\\n \\n";
+//     });
+//     wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
+//   }
+
+//   if (type !== "Document") {
+//     let complex = wordSet.find(({ wordID }) => wordID === id);
+//     let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+//     let currWord = node.innerHTML;
+//     // node.innerHTML = complex.text;
+//     // if (highlightToggle) {
+//     //   if (
+//     //     !node.classList.contains(
+//     //       `highlight-simplified-${textSetting.toLowerCase()}`
+//     //     )
+//     //   ) {
+//     //     addSimplifiedHighlights(node);
+//     //   } else {
+//     //     removeSimplifiedHighlights(node);
+//     //   }
+//     // }
+
+//     if (whereToSetting === "InPlace") {
+//       node.innerHTML = complex.text;
+//       if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+//         addComplexHighlights(node);
+//       } else {
+//         removeComplexHighlights(node);
+//       }
+//       wordSet[foundIndex].text = currWord;
+//     } else if (whereToSetting === "Highlight") {
+//       node.innerHTML = complex.text;
+//       if (
+//         !node.classList.contains(
+//           `highlight-simplified-${textSetting.toLowerCase()}`
+//         )
+//       ) {
+//         addSimplifiedHighlights(node);
+//       } else {
+//         removeSimplifiedHighlights(node);
+//       }
+//       wordSet[foundIndex].text = currWord;
+//     } else if (whereToSetting === "Popup") {
+//       // showToolTip(node, wordSet[foundIndex].text);
+//     }
+
+//     // wordSet[foundIndex].text = currWord;
+//   }
+// };
+
+const setToOtherText = function (node, type) {
+  const replacedGroups = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+  };
+
+  let id = node.id;
+  let wordSet = replacedGroups[type];
+
+  let complex = wordSet.find(({ wordID }) => wordID === id);
+  let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+  let currWord = node.innerHTML;
+
+  if (whereToSetting === "InPlace") {
+    node.innerHTML = complex.text;
+    if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+      addComplexHighlights(node);
+    } else {
+      removeComplexHighlights(node);
+    }
+    wordSet[foundIndex].text = currWord;
+  } else if (whereToSetting === "Highlight") {
+    node.innerHTML = complex.text;
+    if (
+      !node.classList.contains(
+        `highlight-simplified-${textSetting.toLowerCase()}`
+      )
+    ) {
+      addSimplifiedHighlights(node);
+    } else {
+      removeSimplifiedHighlights(node);
+    }
+    wordSet[foundIndex].text = currWord;
+  }
+};
+
+const setToOtherWord = (node, type) => {
+  if (type === "Document") {
+    setToOtherDocument(node, type);
+  } else {
+    setToOtherText(node, type);
   }
 };
 
