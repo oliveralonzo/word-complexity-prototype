@@ -172,7 +172,6 @@ function addListeners() {
     Document: complexDocumentParagraphGroup,
   };
 
-  console.log(whereToSetting);
   Array.from(groups[textSetting]).forEach(function (element) {
     switch (whereToSetting) {
       case "InPlace":
@@ -191,6 +190,38 @@ function addListeners() {
       default:
         console.log("Did not match any setting");
     }
+    element.classList.add("clickable-pointer");
+  });
+}
+
+function removeListeners() {
+  const groups = {
+    Word: complexWordGroup,
+    Sentence: complexSentencesGroup,
+    Paragraph: complexParagraphGroup,
+    Document: complexDocumentParagraphGroup,
+  };
+
+  Array.from(groups[textSetting]).forEach(function (element) {
+    switch (whereToSetting) {
+      case "InPlace":
+        element.removeEventListener("click", changeText);
+        break;
+      case "Highlight":
+        element.removeEventListener("click", changeText);
+        break;
+      case "Popup":
+        element.removeEventListener("mouseover", showToolTip);
+        element.removeEventListener("mouseout", removeToolTip);
+        console.log("Removed listners");
+        break;
+      case "Side":
+        console.log("Yet to be implemented");
+        break;
+      default:
+        console.log("Did not match any setting");
+    }
+    element.classList.remove("clickable-pointer");
   });
 }
 
@@ -222,7 +253,7 @@ chrome.runtime.onMessage.addListener(function (request) {
 });
 
 const changeText = (event) => {
-  setToOtherWord(event.target, textSetting);
+  setToOtherWord(event, textSetting);
 };
 
 /*
@@ -283,40 +314,6 @@ function addHighlights() {
   });
 }
 
-function removeListeners() {
-  const groups = {
-    Word: complexWordGroup,
-    Sentence: complexSentencesGroup,
-    Paragraph: complexParagraphGroup,
-    Document: complexDocumentParagraphGroup,
-  };
-
-  console.log(textSetting);
-
-  console.log("Complex word", complexWordGroup);
-
-  Array.from(groups[textSetting]).forEach(function (element) {
-    switch (whereToSetting) {
-      case "InPlace":
-        element.removeEventListener("click", changeText);
-        break;
-      case "Highlight":
-        element.removeEventListener("click", changeText);
-        break;
-      case "Popup":
-        element.removeEventListener("mouseover", showToolTip);
-        element.removeEventListener("mouseout", removeToolTip);
-        console.log("Removed listners");
-        break;
-      case "Side":
-        console.log("Yet to be implemented");
-        break;
-      default:
-        console.log("Did not match any setting");
-    }
-  });
-}
-
 /*
  * Listener to pull in simplified words
  * expects {type: "InPlace", sentenceStart: stringified list of new words, textType: "word"/"sentence"/etc}
@@ -353,6 +350,7 @@ function getPTags(node) {
 }
 
 const setToOtherDocument = function (node, type) {
+  node = node.currentTarget;
   wordSet = replacedDocumentParagraphs;
 
   let simplerParagraphs = wordSet[0].text.split("\\n \\n");
@@ -391,7 +389,10 @@ const setToOtherText = function (node, type) {
     Paragraph: replacedParagraphs,
   };
 
+  // let id = node.id;
+  node = node.currentTarget;
   let id = node.id;
+
   let wordSet = replacedGroups[type];
 
   let complex = wordSet.find(({ wordID }) => wordID === id);
@@ -401,7 +402,9 @@ const setToOtherText = function (node, type) {
   if (whereToSetting === "InPlace") {
     node.innerHTML = complex.text;
     if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-      addComplexHighlights(node);
+      if (highlightToggle) {
+        addComplexHighlights(node);
+      }
     } else {
       removeComplexHighlights(node);
     }
@@ -459,7 +462,8 @@ function addComplexHighlights(element) {
 // }
 
 const showToolTip = function (element) {
-  const node = element.target;
+  // const node = element.target;
+  const node = element.currentTarget;
   const wordSet = {
     Word: replacedWords,
     Sentence: replacedSentences,
