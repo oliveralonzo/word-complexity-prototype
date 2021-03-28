@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   whereToSettingNode = document.getElementById("whereTo");
   whereToSettingNode.addEventListener("input", function () {
     if (this.value == 1) {
-      chrome.storage.sync.set({ whereToSetting: "Word" }, function () {
+      chrome.storage.sync.set({ whereToSetting: "InPlace" }, function () {
         sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
       });
     } else if (this.value == 2) {
@@ -124,7 +124,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
       whereToSettingNode.value = 1;
       sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
-      alert("Sent where to setting from else ");
     }
   });
 
