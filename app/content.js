@@ -164,6 +164,11 @@ function revertDocumentToOrginal(group, originalGroup, replacedGroup) {
   }
 }
 
+/**
+ * Adds eventlistners to elements depending on the type of text selected
+ * (words, sentences, paragraphs, document) and the place selected
+ * (In place, highlight, popup, side).
+ */
 function addListeners() {
   const groups = {
     Word: complexWordGroup,
@@ -194,6 +199,11 @@ function addListeners() {
   });
 }
 
+/**
+ * Removes eventlistners from elements depending on the type of text
+ * previously selected (words, sentences, paragraphs, document) and/or
+ * the place selected (In place, highlight, popup, side).
+ */
 function removeListeners() {
   const groups = {
     Word: complexWordGroup,
@@ -257,11 +267,11 @@ const changeText = (event) => {
 };
 
 /*
-* Listen for highlight value
+* Adds or removes highlight to/from complex texts based on request
 *  - if highlight true
-        - supply highlight class for paragraph or text
+        - Add highlight class to words/sentences/paragraphs/Document
 *  - if highlight false
-*       - remove highlight class for paragraph text
+*       - remove highlight class from words/sentences/paragraphs/Document
 */
 function toggleHighlightComplex(request) {
   if (request.settingType == "highlightComplex") {
@@ -360,7 +370,9 @@ const setToOtherDocument = function (node, type) {
     if (whereToSetting === "InPlace") {
       node.innerHTML = simplerParagraphs.shift();
       if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-        addComplexHighlights(node);
+        if (highlightToggle) {
+          addComplexHighlights(node);
+        }
       } else {
         removeComplexHighlights(node);
       }
@@ -389,8 +401,12 @@ const setToOtherText = function (node, type) {
     Paragraph: replacedParagraphs,
   };
 
-  // let id = node.id;
-  node = node.currentTarget;
+  if (textSetting == "Word") {
+    node = node.target;
+  } else {
+    node = node.currentTarget;
+  }
+
   let id = node.id;
 
   let wordSet = replacedGroups[type];
@@ -462,8 +478,6 @@ function addComplexHighlights(element) {
 // }
 
 const showToolTip = function (element) {
-  // const node = element.target;
-  const node = element.currentTarget;
   const wordSet = {
     Word: replacedWords,
     Sentence: replacedSentences,
@@ -471,15 +485,24 @@ const showToolTip = function (element) {
     Document: replacedDocumentParagraphs,
   };
 
-  let id = node.id;
+  if (textSetting === "Word") {
+    element = element.target;
+  } else {
+    element = element.currentTarget;
+  }
+
+  let id = element.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
-  node.setAttribute("data-text", complex.text);
-  node.classList.add("tooltip1");
+  const tooltipWrap = document.createElement("div");
+  tooltipWrap.classList.add("tooltip1");
+  tooltipWrap.setAttribute("data-text", complex.text);
+  tooltipWrap.appendChild(document.createTextNode(complex.text));
+  element.appendChild(tooltipWrap);
 };
 
 const removeToolTip = () => {
   document.querySelectorAll(".tooltip1").forEach(function (a) {
-    a.classList.remove("tooltip1");
+    a.remove();
   });
 };
 
