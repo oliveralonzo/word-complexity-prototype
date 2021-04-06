@@ -485,25 +485,59 @@ const showToolTip = function (element) {
     Document: replacedDocumentParagraphs,
   };
 
-  if (textSetting === "Word") {
-    element = element.target;
+  if (textSetting !== "Document") {
+    showNonDocumentTooltip(element, wordSet);
   } else {
-    element = element.currentTarget;
+    showDocumentTooltip(element);
   }
-
-  let id = element.id;
-  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
-  const tooltipWrap = document.createElement("div");
-  tooltipWrap.classList.add("tooltip1");
-  tooltipWrap.setAttribute("data-text", complex.text);
-  tooltipWrap.appendChild(document.createTextNode(complex.text));
-  element.appendChild(tooltipWrap);
 };
 
 const removeToolTip = () => {
   document.querySelectorAll(".tooltip1").forEach(function (a) {
     a.remove();
   });
+};
+
+const showDocumentTooltip = function (node) {
+  node = node.target;
+
+  let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
+    "\\n \\n"
+  );
+  const tooltipWrap = document.createElement("div");
+
+  Array.from(simplifiedParagraphs).forEach((para) => {
+    tooltipWrap.innerHTML += `<p>${para}</p>`;
+  });
+
+  tooltipWrap.classList.add("tooltip1", "complex-document");
+  tooltipWrap.style.mergingTop = "30px";
+  let offset = Math.abs(node.getBoundingClientRect());
+
+  if (offset.top > tooltipWrap.offsetHeight) {
+    tooltipWrap.style.bottom = "10em";
+  } else {
+    tooltipWrap.style.top = "-15em";
+  }
+
+  node.appendChild(tooltipWrap);
+  node.insertBefore(tooltipWrap, node.firstChild);
+};
+
+const showNonDocumentTooltip = function (node, wordSet) {
+  if (textSetting === "Word") {
+    node = node.target;
+  } else {
+    node = node.currentTarget;
+  }
+
+  let id = node.id;
+  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  const tooltipWrap = document.createElement("div");
+  tooltipWrap.classList.add("tooltip1");
+  tooltipWrap.setAttribute("data-text", complex.text);
+  tooltipWrap.appendChild(document.createTextNode(complex.text));
+  node.appendChild(tooltipWrap);
 };
 
 /* helper function to identify words with length above 6 - identify complex words
