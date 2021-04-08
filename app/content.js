@@ -359,6 +359,76 @@ function getPTags(node) {
   }
 }
 
+function identifyPageMainContent(node) {
+  let queue = [node];
+  let mainDiv = node;
+  let maxMainCandiates = 0;
+
+  while (queue.length > 0) {
+    let currNode = queue.pop();
+    let childNodes = currNode.childNodes;
+    let candidateCount = 0;
+    Array.from(childNodes).forEach((child) => {
+      if (isMainContentCandidate(child)) {
+        candidateCount += 1;
+      } else {
+        if (child.tagName === "DIV") {
+          queue.unshift(child);
+        }
+      }
+    });
+    if (candidateCount > maxMainCandiates) {
+      mainDiv = currNode;
+      maxMainCandiates = candidateCount;
+    }
+  }
+
+  while (getMainContentCandidateSiblings(mainDiv).length > 0) {
+    mainDiv = mainDiv.parentNode;
+  }
+  return mainDiv;
+}
+
+function isMainContentCandidate(node) {
+  if (node.tagName === "P" || node.nodeType === Node.TEXT_NODE) {
+    let re = /[\.,"\-\!;`:\?']/;
+    if (re.test(node.innerText)) {
+      return true;
+    }
+  } else if (node.tagName === "DIV") {
+    Array.from(node.childNodes).forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        let re = /[\.,"\-\!;`:\?']/;
+        if (re.test(child.innerHTML)) {
+          return true;
+        }
+      }
+    });
+  }
+  return false;
+}
+
+function getMainContentCandidateSiblings(node) {
+  let siblings = [];
+  // if no parent, return no sibling
+  if (!node.parentNode) {
+    return siblings;
+  }
+  // first child of the parent node
+  let sibling = node.parentNode.firstChild;
+
+  // collecting siblings
+  while (sibling) {
+    if (sibling !== node) {
+      if (isMainContentCandidate(sibling)) {
+        siblings.push(sibling);
+      }
+    }
+    sibling = sibling.nextSibling;
+  }
+  return siblings;
+}
+
 const setToOtherDocument = function (node, type) {
   node = node.currentTarget;
   wordSet = replacedDocumentParagraphs;
@@ -498,6 +568,35 @@ const removeToolTip = () => {
   });
 };
 
+// const showDocumentTooltip = function (node) {
+//   node = node.target;
+
+//   let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
+//     "\\n \\n"
+//   );
+//   const tooltipWrap = document.createElement("div");
+
+//   Array.from(simplifiedParagraphs).forEach((para) => {
+//     tooltipWrap.innerHTML += `<p>${para}</p>`;
+//   });
+
+//   tooltipWrap.classList.add("tooltip1", "complex-document");
+//   tooltipWrap.style.mergingTop = "30px";
+//   let offset = Math.abs(node.getBoundingClientRect());
+
+//   if (offset.top > tooltipWrap.offsetHeight) {
+//     tooltipWrap.style.bottom = "10em";
+//   } else {
+//     tooltipWrap.style.top = "-15em";
+//   }
+
+//   node.appendChild(tooltipWrap);
+//   node.insertBefore(tooltipWrap, node.firstChild);
+
+//   // ----->
+//   const mainDiv = identifyPageMainContent(document.body);
+// };
+
 const showDocumentTooltip = function (node) {
   node = node.target;
 
@@ -511,17 +610,14 @@ const showDocumentTooltip = function (node) {
   });
 
   tooltipWrap.classList.add("tooltip1", "complex-document");
-  tooltipWrap.style.mergingTop = "30px";
-  let offset = Math.abs(node.getBoundingClientRect());
+  // tooltipWrap.style.mergingTop = "30px";
 
-  if (offset.top > tooltipWrap.offsetHeight) {
-    tooltipWrap.style.bottom = "10em";
-  } else {
-    tooltipWrap.style.top = "-15em";
-  }
+  const mainDiv = identifyPageMainContent(document.body);
 
-  node.appendChild(tooltipWrap);
-  node.insertBefore(tooltipWrap, node.firstChild);
+  mainDiv.appendChild(tooltipWrap);
+  mainDiv.insertBefore(tooltipWrap, mainDiv.firstChild);
+
+  // ----->
 };
 
 const showNonDocumentTooltip = function (node, wordSet) {
