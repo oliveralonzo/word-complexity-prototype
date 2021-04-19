@@ -56,6 +56,12 @@ chrome.storage.sync.get("whereToSetting", (status) => {
   }
 });
 
+chrome.storage.sync.get("howLongSetting", (status) => {
+  if (Object.keys(status).length === 0 || status.howLongSetting !== null) {
+    howLongSetting = status.howLongSetting;
+  }
+});
+
 var idx = 0; // used for id index of words
 
 // find all <p> tags and highlight words with length greater than 6
@@ -93,10 +99,55 @@ chrome.runtime.sendMessage({
   toSimplifyDocument: complexText["currTabDocumentParagraphs"],
 });
 
-function removePreviousAttributes() {
-  removeListeners();
-  removeHighlights();
-}
+/*
+ * Listen to the settings being changed on extension. Depending on the type of setting,
+ * appropriate actions are taken. The setting types are - "How Much", "Where",
+ * "Highlight Complex", "How Long", "Display Confidence"
+ */
+chrome.runtime.onMessage.addListener(function (request) {
+  switch (request.settingType) {
+    case "howMuch":
+      switchHowMuchSetting(request);
+      break;
+    case "highlightComplex":
+      toggleHighlightComplex(request);
+      break;
+    case "whereTo":
+      switchWhereToSetting(request);
+      break;
+    case "howLong":
+      switchHowLongSetting(request);
+      break;
+    case "displayConfidence":
+      console.log("Display Confidence selected!");
+      break;
+    default:
+      console.log("Did not receive any setting!");
+  }
+});
+
+/*
+ * Listener to pull in simplified words
+ * expects {type: "InPlace", sentenceStart: stringified list of new words, textType: "word"/"sentence"/etc}
+ * set complexWordGroup, complexSentencesGroup to appropriate element groups
+ */
+chrome.runtime.onMessage.addListener(function (request) {
+  if (request.type === "InPlace") {
+    newWords = request.toChange;
+    newWords = JSON.parse(newWords);
+    if (request.textType === "sentence") {
+      replacedSentences = JSON.parse(request.toChange);
+    } else if (request.textType === "word") {
+      replacedWords = JSON.parse(request.toChange);
+    } else if (request.textType === "paragraph") {
+      replacedParagraphs = JSON.parse(request.toChange);
+    } else if (request.textType === "document") {
+      replacedDocumentParagraphs = JSON.parse(request.toChange);
+    }
+  } else {
+    console.log("No words received.");
+  }
+});
 
 function revertContentToOriginal() {
   const groups = {
@@ -186,11 +237,18 @@ function addListeners() {
         element.addEventListener("click", changeText);
         break;
       case "Popup":
+        console.log(element);
         element.addEventListener("mouseover", showToolTip);
         element.addEventListener("mouseout", removeToolTip);
         break;
       case "Side":
-        console.log("Yet to be implemented");
+        if (howLongSetting === "Temporary") {
+          showSideTip(element);
+          // element.addEventListener("mouseover", showSideTip);
+          // element.addEventListener("mouseout", removeSideTip);
+        } else {
+          console.log("Yet to be implemented");
+        }
         break;
       default:
         console.log("Did not match any setting");
@@ -223,9 +281,15 @@ function removeListeners() {
       case "Popup":
         element.removeEventListener("mouseover", showToolTip);
         element.removeEventListener("mouseout", removeToolTip);
-        console.log("Removed listners");
         break;
       case "Side":
+        if (howLongSetting === "Temporary") {
+          removeTemporaryListeners(element);
+        } else if (howLongSetting === "UntilClick") {
+          removeUntilClickListeners(element);
+        } else if (howLongSetting === "Permanent") {
+          removePermanentListeners(element);
+        }
         console.log("Yet to be implemented");
         break;
       default:
@@ -235,32 +299,134 @@ function removeListeners() {
   });
 }
 
-/*
- * Listen to the settings being changed on extension. Depending on the type of setting,
- * appropriate actions are taken. The setting types are - "How Much", "Where",
- * "Highlight Complex", "How Long", "Display Confidence"
- */
-chrome.runtime.onMessage.addListener(function (request) {
-  switch (request.settingType) {
-    case "howMuch":
-      switchHowMuchSetting(request);
-      break;
-    case "highlightComplex":
-      toggleHighlightComplex(request);
-      break;
-    case "whereTo":
-      switchWhereToSetting(request);
-      break;
-    case "howLong":
-      console.log("howLong selected!");
-      break;
-    case "displayConfidence":
-      console.log("Display Confidence selected!");
-      break;
-    default:
-      console.log("Did not receive any setting!");
+function removeTemporaryListeners(element) {
+  if (textSetting !== "Document") {
+    element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
+    element.removeEventListener("mouseout", removeSideTip);
+  } else {
+    console.log(
+      "Removing temporary listeners for Document is yet to be impleemented"
+    );
   }
-});
+}
+
+function showSideTip(element) {
+  if (textSetting !== "Document") {
+    showNonDocumentSideTip(element);
+  } else {
+    showDocumentSideTip(element);
+  }
+}
+
+function showNonDocumentSideTip(element) {
+  if (howLongSetting === "Temporary") {
+    element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
+    element.addEventListener("mouseout", removeSideTip);
+  } else if (howLongSetting === "UntilClick") {
+    showNonDocumentSideTipUntilClick(element);
+  } else if (howLongSetting === "Permanent") {
+    showNonDocumentPermanentSideTip(element);
+  }
+}
+
+// const showTemporaryNonDocumentSideTip = function (node) {
+//   const wordSet = {
+//     Word: replacedWords,
+//     Sentence: replacedSentences,
+//     Paragraph: replacedParagraphs,
+//     Document: replacedDocumentParagraphs,
+//   };
+
+//   if (textSetting === "Word") {
+//     node = node.target;
+//   } else {
+//     node = node.currentTarget;
+//   }
+
+//   let distances = node.getBoundingClientRect();
+//   let leftside = window.innerWidth - distances.left - distances.width;
+//   // leftside = 0.97 * leftside;
+
+//   console.log(window.innerWidth, distances.right);
+//   console.log("Width - ", node.widt);
+//   console.log(leftside);
+//   console.log("~~~~~~~~~~", distances);
+
+//   let id = node.id;
+//   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+//   const tooltipWrap = document.createElement("div");
+//   tooltipWrap.classList.add("modal");
+//   tooltipWrap.setAttribute("data-text", complex.text);
+//   tooltipWrap.style.left = `${leftside}px`;
+//   tooltipWrap.appendChild(document.createTextNode(complex.text));
+//   node.appendChild(tooltipWrap);
+// };
+
+const showTemporaryNonDocumentSideTip = function (node) {
+  const wordSet = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+    Document: replacedDocumentParagraphs,
+  };
+
+  if (textSetting === "Word") {
+    node = node.target;
+  } else {
+    node = node.currentTarget;
+  }
+
+  let id = node.id;
+  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  const dialogBox = document.createElement("div");
+  const dialogContent = document.createElement("div");
+  dialogBox.classList.add("modal1");
+  dialogContent.classList.add("modal1-content");
+  dialogContent.setAttribute("data-text", complex.text);
+  dialogContent.appendChild(document.createTextNode(complex.text));
+  dialogBox.append(dialogContent);
+  node.appendChild(dialogBox);
+};
+
+function showNonDocumentSideTipUntilClick(element) {}
+
+function showNonDocumentPermanentSideTip(element) {}
+
+function showDocumentSideTip(element) {
+  if (howLongSetting === "Temporary") {
+  } else if (howLongSetting === "UntilClick") {
+  } else if (howLongSetting === "Permanent") {
+  }
+}
+
+const removeSideTip = function () {
+  console.log("Removing sidetip yet to be implemented");
+  document.querySelectorAll(".modal1").forEach(function (a) {
+    a.remove();
+  });
+};
+
+function switchHowLongSetting(request) {
+  if (request.howLongSetting === "Temporary") {
+    setToTemporary(request);
+  } else if (request.howLongSetting === "UntilClick") {
+    setToUntilClick(request);
+  } else if (request.howLongSetting === "Permanent") {
+    setToPermanent(request);
+  }
+}
+
+function setToTemporary(request) {
+  console.log("Setting to temporary");
+}
+
+function setToUntilClick(request) {
+  console.log("Setting to until click");
+}
+
+function setToPermanent(request) {
+  console.log("Setting to Permanent");
+}
 
 const changeText = (event) => {
   setToOtherWord(event, textSetting);
@@ -323,29 +489,6 @@ function addHighlights() {
     word.classList.add(styleClass);
   });
 }
-
-/*
- * Listener to pull in simplified words
- * expects {type: "InPlace", sentenceStart: stringified list of new words, textType: "word"/"sentence"/etc}
- * set complexWordGroup, complexSentencesGroup to appropriate element groups
- */
-chrome.runtime.onMessage.addListener(function (request) {
-  if (request.type === "InPlace") {
-    newWords = request.toChange;
-    newWords = JSON.parse(newWords);
-    if (request.textType === "sentence") {
-      replacedSentences = JSON.parse(request.toChange);
-    } else if (request.textType === "word") {
-      replacedWords = JSON.parse(request.toChange);
-    } else if (request.textType === "paragraph") {
-      replacedParagraphs = JSON.parse(request.toChange);
-    } else if (request.textType === "document") {
-      replacedDocumentParagraphs = JSON.parse(request.toChange);
-    }
-  } else {
-    console.log("No words received.");
-  }
-});
 
 function getPTags(node) {
   if (!node) return;
@@ -568,35 +711,6 @@ const removeToolTip = () => {
   });
 };
 
-// const showDocumentTooltip = function (node) {
-//   node = node.target;
-
-//   let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
-//     "\\n \\n"
-//   );
-//   const tooltipWrap = document.createElement("div");
-
-//   Array.from(simplifiedParagraphs).forEach((para) => {
-//     tooltipWrap.innerHTML += `<p>${para}</p>`;
-//   });
-
-//   tooltipWrap.classList.add("tooltip1", "complex-document");
-//   tooltipWrap.style.mergingTop = "30px";
-//   let offset = Math.abs(node.getBoundingClientRect());
-
-//   if (offset.top > tooltipWrap.offsetHeight) {
-//     tooltipWrap.style.bottom = "10em";
-//   } else {
-//     tooltipWrap.style.top = "-15em";
-//   }
-
-//   node.appendChild(tooltipWrap);
-//   node.insertBefore(tooltipWrap, node.firstChild);
-
-//   // ----->
-//   const mainDiv = identifyPageMainContent(document.body);
-// };
-
 const showDocumentTooltip = function (node) {
   node = node.target;
 
@@ -610,14 +724,10 @@ const showDocumentTooltip = function (node) {
   });
 
   tooltipWrap.classList.add("tooltip1", "complex-document");
-  // tooltipWrap.style.mergingTop = "30px";
-
   const mainDiv = identifyPageMainContent(document.body);
 
   mainDiv.appendChild(tooltipWrap);
   mainDiv.insertBefore(tooltipWrap, mainDiv.firstChild);
-
-  // ----->
 };
 
 const showNonDocumentTooltip = function (node, wordSet) {

@@ -61,6 +61,34 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   });
 
+  /* Capture input for how long?
+   */
+  howLongSettingNode = document.getElementById("showDuration");
+  howLongSettingNode.addEventListener("input", function () {
+    if (this.value == 1) {
+      chrome.storage.sync.set({ howLongSetting: "Temporary" }, function () {
+        sendtoContentJS({
+          howLongSetting: "Temporary",
+          settingType: "howLong",
+        });
+      });
+    } else if (this.value == 2) {
+      chrome.storage.sync.set({ howLongSetting: "UntilClick" }, function () {
+        sendtoContentJS({
+          howLongSetting: "UntilClick",
+          settingType: "howLong",
+        });
+      });
+    } else if (this.value == 3) {
+      chrome.storage.sync.set({ howLongSetting: "Permanent" }, function () {
+        sendtoContentJS({
+          howLongSetting: "Permanent",
+          settingType: "howLong",
+        });
+      });
+    }
+  });
+
   /*
    * storageGetHelper is used to check the current setting for type of text
    *   - checking chrome storage is asynchronous - which creates the need for the structure seen
@@ -124,6 +152,34 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
       whereToSettingNode.value = 1;
       sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+    }
+  });
+
+  storageGetHelper("howLong").then(function (value) {
+    if (!(Object.keys(value).length === 0)) {
+      if (value.howLongSetting === "Temporary") {
+        sendtoContentJS({
+          howLongSetting: "Temporary",
+          settingType: "howLong",
+        });
+        howLongSettingNode.value = 1;
+      } else if (value.howLongSetting === "UntilClick") {
+        sendtoContentJS({
+          howLongSetting: "UntilClick",
+          settingType: "howLong",
+        });
+        howLongSettingNode.value = 2;
+      } else if (value.howLongSetting === "Permanent") {
+        sendtoContentJS({
+          howLongSetting: "Permanent",
+          settingType: "howLong",
+        });
+        howLongSettingNode.value = 3;
+      }
+    } else {
+      chrome.storage.sync.set({ howLongSetting: "Temporary" });
+      howLongSettingNode.value = 1;
+      sendtoContentJS({ howLongSetting: "Temporary", settingType: "howLong" });
     }
   });
 
