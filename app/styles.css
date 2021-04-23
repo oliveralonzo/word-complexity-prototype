@@ -82,36 +82,55 @@
 
 .modal1 {
   display: block;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   position: fixed;
-  background: #49d0b8;
   color: #000000;
   width: max-content;
   max-width: 20%;
-  /* height: max-content; */
-  height: max-content;
   max-height: 90%;
   top: 0px;
   right: 0px;
-  overflow: auto;
   z-index: 1;
   margin: 10px;
-  padding: 6px 12px 6px 12px;
-  box-shadow: inset 0 0 8px #3fa391;
+  padding: 2px;
+  border: #000000;
+  border-style: solid;
+  border-width: 1px;
+  /* background: #ffffff; */
+  background: #fffebd;
+  overflow: auto;
 }
 
 .modal1-content {
   font-family: arial;
-  font-size: 1.5em;
+  font-size: 16px;
   content: attr(data-text);
+  overflow: auto;
+  height: max-content;
+  padding: 5px;
+}
+.dialogHeader {
+  border-radius: 8px !important;
+  background-color: #49d0b8;
+  height: 30px;
+  display: flex;
+  border-radius: 8px;
+  justify-content: space-between;
+  box-shadow: inset 0 0 8px #3fa391;
+}
+
+.dialogHeading {
+  margin: 0 10px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 /* The Close Button */
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
+  color: rgb(0, 0, 0);
+  font-size: 14px;
   font-weight: bold;
+  margin: 1px 5px;
 }
 
 .close:hover,

@@ -290,7 +290,6 @@ function removeListeners() {
         } else if (howLongSetting === "Permanent") {
           removePermanentListeners(element);
         }
-        console.log("Yet to be implemented");
         break;
       default:
         console.log("Did not match any setting");
@@ -304,9 +303,8 @@ function removeTemporaryListeners(element) {
     element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
     element.removeEventListener("mouseout", removeSideTip);
   } else {
-    console.log(
-      "Removing temporary listeners for Document is yet to be impleemented"
-    );
+    element.removeEventListener("mouseover", showTemporaryDocumentSideTip);
+    element.removeEventListener("mouseout", removeSideTip);
   }
 }
 
@@ -329,39 +327,6 @@ function showNonDocumentSideTip(element) {
   }
 }
 
-// const showTemporaryNonDocumentSideTip = function (node) {
-//   const wordSet = {
-//     Word: replacedWords,
-//     Sentence: replacedSentences,
-//     Paragraph: replacedParagraphs,
-//     Document: replacedDocumentParagraphs,
-//   };
-
-//   if (textSetting === "Word") {
-//     node = node.target;
-//   } else {
-//     node = node.currentTarget;
-//   }
-
-//   let distances = node.getBoundingClientRect();
-//   let leftside = window.innerWidth - distances.left - distances.width;
-//   // leftside = 0.97 * leftside;
-
-//   console.log(window.innerWidth, distances.right);
-//   console.log("Width - ", node.widt);
-//   console.log(leftside);
-//   console.log("~~~~~~~~~~", distances);
-
-//   let id = node.id;
-//   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
-//   const tooltipWrap = document.createElement("div");
-//   tooltipWrap.classList.add("modal");
-//   tooltipWrap.setAttribute("data-text", complex.text);
-//   tooltipWrap.style.left = `${leftside}px`;
-//   tooltipWrap.appendChild(document.createTextNode(complex.text));
-//   node.appendChild(tooltipWrap);
-// };
-
 const showTemporaryNonDocumentSideTip = function (node) {
   const wordSet = {
     Word: replacedWords,
@@ -379,14 +344,67 @@ const showTemporaryNonDocumentSideTip = function (node) {
   let id = node.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
   const dialogBox = document.createElement("div");
-  const dialogContent = document.createElement("div");
+  const dialogContent = getSideTipContentEl(complex.text);
+  const dialogHeader = getSideTipHeaderEl();
+
+  dialogBox.appendChild(dialogHeader);
+  dialogBox.appendChild(dialogContent);
+
   dialogBox.classList.add("modal1");
-  dialogContent.classList.add("modal1-content");
-  dialogContent.setAttribute("data-text", complex.text);
-  dialogContent.appendChild(document.createTextNode(complex.text));
-  dialogBox.append(dialogContent);
   node.appendChild(dialogBox);
 };
+
+const showTemporaryDocumentSideTip = function (node) {
+  node = node.target;
+
+  let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
+    "\\n \\n"
+  );
+  const dialogContent = document.createElement("div");
+  const textContent = document.createElement("div");
+  dialogContent.classList.add("modal1-content");
+
+  Array.from(simplifiedParagraphs).forEach((para) => {
+    textContent.innerHTML += `<p>${para}</p>`;
+  });
+  dialogContent.appendChild(textContent);
+  const dialogBox = document.createElement("div");
+  const dialogHeader = getSideTipHeaderEl();
+
+  dialogBox.appendChild(dialogHeader);
+  dialogBox.appendChild(dialogContent);
+  dialogBox.classList.add("modal1");
+
+  const mainDiv = identifyPageMainContent(document.body);
+
+  mainDiv.appendChild(dialogBox);
+};
+
+function getSideTipHeaderEl() {
+  const dialogHeader = document.createElement("div");
+  const dialogHeading = document.createElement("SPAN");
+  const closeButton = document.createElement("SPAN");
+  closeButton.appendChild(document.createTextNode("X"));
+  closeButton.classList.add("close");
+
+  let heading = document.createTextNode(
+    `Simplified ${textSetting.toLowerCase()}`
+  );
+  dialogHeading.classList.add("dialogHeading");
+  dialogHeading.appendChild(heading);
+  dialogHeader.classList.add("dialogHeader");
+  dialogHeader.appendChild(dialogHeading);
+  dialogHeader.appendChild(closeButton);
+  return dialogHeader;
+}
+
+function getSideTipContentEl(text) {
+  const dialogContent = document.createElement("div");
+  dialogContent.classList.add("modal1-content");
+  dialogContent.setAttribute("data-text", text);
+  dialogContent.appendChild(document.createTextNode(text));
+  return dialogContent;
+}
 
 function showNonDocumentSideTipUntilClick(element) {}
 
@@ -394,6 +412,8 @@ function showNonDocumentPermanentSideTip(element) {}
 
 function showDocumentSideTip(element) {
   if (howLongSetting === "Temporary") {
+    element.addEventListener("mouseover", showTemporaryDocumentSideTip);
+    element.addEventListener("mouseout", removeSideTip);
   } else if (howLongSetting === "UntilClick") {
   } else if (howLongSetting === "Permanent") {
   }
@@ -417,7 +437,8 @@ function switchHowLongSetting(request) {
 }
 
 function setToTemporary(request) {
-  console.log("Setting to temporary");
+  console.log("Setting to temporary. Logic Yet to be implemented");
+  removeListeners();
 }
 
 function setToUntilClick(request) {
