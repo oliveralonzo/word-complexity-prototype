@@ -237,24 +237,78 @@ function addListeners() {
         element.addEventListener("click", changeText);
         break;
       case "Popup":
-        console.log(element);
-        element.addEventListener("mouseover", showToolTip);
-        element.addEventListener("mouseout", removeToolTip);
+        addPopupListners(element);
         break;
       case "Side":
-        if (howLongSetting === "Temporary") {
-          showSideTip(element);
-          // element.addEventListener("mouseover", showSideTip);
-          // element.addEventListener("mouseout", removeSideTip);
-        } else {
-          console.log("Yet to be implemented");
-        }
+        addSideTipListeners(element);
         break;
       default:
         console.log("Did not match any setting");
     }
     element.classList.add("clickable-pointer");
   });
+}
+
+function addPopupListners(element) {
+  if (howLongSetting === "Temporary") {
+    addTemporaryPopupListners(element);
+  } else if (howLongSetting === "UntilClick") {
+    addUntilClickPopupListners(element);
+  } else if (howLongSetting === "Permanent") {
+    addPermanentPopupListners(element);
+  }
+}
+
+function addTemporaryPopupListners(element) {
+  element.addEventListener("mouseover", showToolTip);
+  element.addEventListener("mouseout", removeToolTip);
+}
+
+function addUntilClickPopupListners(element) {
+  element.addEventListener("click", toggleUntilClickPopup);
+}
+
+function findClosestComplexAncestor(el, sel) {
+  while (
+    (el = el.parentElement) &&
+    !(el.matches || el.matchesSelector).call(el, sel)
+  );
+  return el;
+}
+
+const toggleUntilClickPopup = function (el) {
+  const tooltip = this.firstChild;
+  const isToolTip =
+    tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
+  if (isToolTip) {
+    removeSpecificTooltip(tooltip);
+  } else {
+    showToolTip(el);
+  }
+};
+
+function addPermanentPopupListners(element) {
+  console.log("Permanent popup yet to be implemented");
+}
+
+function addSideTipListeners(element) {
+  if (howLongSetting === "Temporary") {
+    addTemporarySideTipListeners(element);
+  } else if (howLongSetting === "UntilClick") {
+    addUntilClickSideTipListeners(element);
+  } else if (howLongSetting === "Permanent") {
+    addPermanentSideTipListeners(element);
+  }
+}
+
+function addTemporarySideTipListeners(element) {
+  if (textSetting !== "Document") {
+    element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
+    element.addEventListener("mouseout", removeSideTip);
+  } else {
+    element.addEventListener("mouseover", showTemporaryDocumentSideTip);
+    element.addEventListener("mouseout", removeSideTip);
+  }
 }
 
 /**
@@ -279,17 +333,10 @@ function removeListeners() {
         element.removeEventListener("click", changeText);
         break;
       case "Popup":
-        element.removeEventListener("mouseover", showToolTip);
-        element.removeEventListener("mouseout", removeToolTip);
+        removePopupListners(element);
         break;
       case "Side":
-        if (howLongSetting === "Temporary") {
-          removeTemporaryListeners(element);
-        } else if (howLongSetting === "UntilClick") {
-          removeUntilClickListeners(element);
-        } else if (howLongSetting === "Permanent") {
-          removePermanentListeners(element);
-        }
+        removeSideTipListners(element);
         break;
       default:
         console.log("Did not match any setting");
@@ -298,7 +345,36 @@ function removeListeners() {
   });
 }
 
-function removeTemporaryListeners(element) {
+function removePopupListners(element) {
+  if (howLongSetting === "Temporary") {
+    removeTemporaryPopupListners(element);
+  } else if (howLongSetting === "UntilClick") {
+    removeUntilClickPopupListners(element);
+  } else if (howLongSetting === "Permanent") {
+    removePermanentPopupListners(element);
+  }
+}
+
+function removeTemporaryPopupListners(element) {
+  element.removeEventListener("mouseover", showToolTip);
+  element.removeEventListener("mouseout", removeToolTip);
+}
+
+function removeUntilClickPopupListners(element) {
+  element.removeEventListener("click", toggleUntilClickPopup);
+}
+
+function removeSideTipListners(element) {
+  if (howLongSetting === "Temporary") {
+    removeTemporarySideTipListeners(element);
+  } else if (howLongSetting === "UntilClick") {
+    removeUntilClickSideTipListeners(element);
+  } else if (howLongSetting === "Permanent") {
+    removePermanentSideTipListeners(element);
+  }
+}
+
+function removeTemporarySideTipListeners(element) {
   if (textSetting !== "Document") {
     element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
     element.removeEventListener("mouseout", removeSideTip);
@@ -308,24 +384,24 @@ function removeTemporaryListeners(element) {
   }
 }
 
-function showSideTip(element) {
-  if (textSetting !== "Document") {
-    showNonDocumentSideTip(element);
-  } else {
-    showDocumentSideTip(element);
-  }
-}
+// function showSideTip(element) {
+//   if (textSetting !== "Document") {
+//     showNonDocumentSideTip(element);
+//   } else {
+//     showDocumentSideTip(element);
+//   }
+// }
 
-function showNonDocumentSideTip(element) {
-  if (howLongSetting === "Temporary") {
-    element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
-    element.addEventListener("mouseout", removeSideTip);
-  } else if (howLongSetting === "UntilClick") {
-    showNonDocumentSideTipUntilClick(element);
-  } else if (howLongSetting === "Permanent") {
-    showNonDocumentPermanentSideTip(element);
-  }
-}
+// function showNonDocumentSideTip(element) {
+//   if (howLongSetting === "Temporary") {
+//     element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
+//     element.addEventListener("mouseout", removeSideTip);
+//   } else if (howLongSetting === "UntilClick") {
+//     showNonDocumentSideTipUntilClick(element);
+//   } else if (howLongSetting === "Permanent") {
+//     showNonDocumentPermanentSideTip(element);
+//   }
+// }
 
 const showTemporaryNonDocumentSideTip = function (node) {
   const wordSet = {
@@ -410,14 +486,14 @@ function showNonDocumentSideTipUntilClick(element) {}
 
 function showNonDocumentPermanentSideTip(element) {}
 
-function showDocumentSideTip(element) {
-  if (howLongSetting === "Temporary") {
-    element.addEventListener("mouseover", showTemporaryDocumentSideTip);
-    element.addEventListener("mouseout", removeSideTip);
-  } else if (howLongSetting === "UntilClick") {
-  } else if (howLongSetting === "Permanent") {
-  }
-}
+// function showDocumentSideTip(element) {
+//   if (howLongSetting === "Temporary") {
+//     element.addEventListener("mouseover", showTemporaryDocumentSideTip);
+//     element.addEventListener("mouseout", removeSideTip);
+//   } else if (howLongSetting === "UntilClick") {
+//   } else if (howLongSetting === "Permanent") {
+//   }
+// }
 
 const removeSideTip = function () {
   console.log("Removing sidetip yet to be implemented");
@@ -427,26 +503,9 @@ const removeSideTip = function () {
 };
 
 function switchHowLongSetting(request) {
-  if (request.howLongSetting === "Temporary") {
-    setToTemporary(request);
-  } else if (request.howLongSetting === "UntilClick") {
-    setToUntilClick(request);
-  } else if (request.howLongSetting === "Permanent") {
-    setToPermanent(request);
-  }
-}
-
-function setToTemporary(request) {
-  console.log("Setting to temporary. Logic Yet to be implemented");
   removeListeners();
-}
-
-function setToUntilClick(request) {
-  console.log("Setting to until click");
-}
-
-function setToPermanent(request) {
-  console.log("Setting to Permanent");
+  howLongSetting = request.howLongSetting;
+  addListeners();
 }
 
 const changeText = (event) => {
@@ -698,19 +757,6 @@ function addComplexHighlights(element) {
   element.classList.add(`highlight-${textSetting.toLowerCase()}`);
 }
 
-/* Onlick tooltip for future use
- */
-// function showToolTip(element, simplifiedText) {
-//   const parent = element.parentNode;
-//   console.log("This is parent -> ", parent);
-//   const tooltipWrap = document.createElement("div");
-//   tooltipWrap.classList.add("tooltip1");
-//   tooltipWrap.appendChild(document.createTextNode(simplifiedText));
-//   parent.appendChild(tooltipWrap);
-
-//   parent.insertBefore(element, tooltipWrap);
-// }
-
 const showToolTip = function (element) {
   const wordSet = {
     Word: replacedWords,
@@ -720,9 +766,9 @@ const showToolTip = function (element) {
   };
 
   if (textSetting !== "Document") {
-    showNonDocumentTooltip(element, wordSet);
+    showNonDocumentTooltip(element.currentTarget, wordSet);
   } else {
-    showDocumentTooltip(element);
+    showDocumentTooltip(this);
   }
 };
 
@@ -732,8 +778,18 @@ const removeToolTip = () => {
   });
 };
 
+// const removeSpecificTooltip = (id) => {
+//   let tooltip = document.getElementById(id);
+//   tooltip.remove();
+// };
+
+const removeSpecificTooltip = (el) => {
+  // let tooltip = document.getElementById(id);
+  el.remove();
+};
+
 const showDocumentTooltip = function (node) {
-  node = node.target;
+  // node = node.target;
 
   let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
     "\\n \\n"
@@ -752,19 +808,24 @@ const showDocumentTooltip = function (node) {
 };
 
 const showNonDocumentTooltip = function (node, wordSet) {
-  if (textSetting === "Word") {
-    node = node.target;
-  } else {
-    node = node.currentTarget;
-  }
+  // if (textSetting === "Word") {
+  //   node = node.target;
+  // } else {
+  //   node = node.currentTarget;
+  // }
+  // console.log("Element in show = ", node);
+  // console.log("This is target = ", node.target);
+  // console.log("This is currentTarget = ", node.currentTarget);
 
   let id = node.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
   const tooltipWrap = document.createElement("div");
   tooltipWrap.classList.add("tooltip1");
+  tooltipWrap.id = "Popup" + id;
   tooltipWrap.setAttribute("data-text", complex.text);
   tooltipWrap.appendChild(document.createTextNode(complex.text));
-  node.appendChild(tooltipWrap);
+  node.insertBefore(tooltipWrap, node.firstChild);
+  // node.appendChild(tooltipWrap);
 };
 
 /* helper function to identify words with length above 6 - identify complex words
