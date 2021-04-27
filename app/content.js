@@ -277,13 +277,22 @@ function findClosestComplexAncestor(el, sel) {
 }
 
 const toggleUntilClickPopup = function (el) {
-  const tooltip = this.firstChild;
-  const isToolTip =
-    tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
-  if (isToolTip) {
-    removeSpecificTooltip(tooltip);
+  if (textSetting !== "Document") {
+    const tooltip = this.firstChild;
+    const isToolTip =
+      tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
+    if (isToolTip) {
+      removeSpecificTooltip(tooltip);
+    } else {
+      showNonDocumentTooltip(el.currentTarget);
+    }
   } else {
-    showToolTip(el);
+    const tooltip = document.getElementsByClassName("tooltip1");
+    if (tooltip.length > 0) {
+      removeToolTip();
+    } else {
+      showDocumentTooltip(el.target);
+    }
   }
 };
 
@@ -299,6 +308,14 @@ function addSideTipListeners(element) {
   } else if (howLongSetting === "Permanent") {
     addPermanentSideTipListeners(element);
   }
+}
+
+function addUntilClickSideTipListeners() {
+  console.log("Add until click side tip listeners yet to be implemented");
+}
+
+function addPermanentSideTipListeners() {
+  console.log("Add Permanent side tip listeners yet to be implemented");
 }
 
 function addTemporarySideTipListeners(element) {
@@ -486,23 +503,16 @@ function showNonDocumentSideTipUntilClick(element) {}
 
 function showNonDocumentPermanentSideTip(element) {}
 
-// function showDocumentSideTip(element) {
-//   if (howLongSetting === "Temporary") {
-//     element.addEventListener("mouseover", showTemporaryDocumentSideTip);
-//     element.addEventListener("mouseout", removeSideTip);
-//   } else if (howLongSetting === "UntilClick") {
-//   } else if (howLongSetting === "Permanent") {
-//   }
-// }
-
 const removeSideTip = function () {
-  console.log("Removing sidetip yet to be implemented");
   document.querySelectorAll(".modal1").forEach(function (a) {
     a.remove();
   });
 };
 
 function switchHowLongSetting(request) {
+  console.log("from switch how long setting");
+  removePopups();
+  removeSideTip();
   removeListeners();
   howLongSetting = request.howLongSetting;
   addListeners();
@@ -534,16 +544,19 @@ function toggleHighlightComplex(request) {
 }
 
 function switchWhereToSetting(request) {
+  removePopups();
+  removeSideTip();
   removeListeners();
   whereToSetting = request.whereToSetting;
   addListeners();
 }
 
 function switchHowMuchSetting(request) {
-  if (request.textSetting !== textSetting) {
-    removeListeners();
-    removeHighlights();
-  }
+  removePopups();
+  removeSideTip();
+  removeListeners();
+  removeHighlights();
+  // }
   textSetting = request.textSetting;
   revertContentToOriginal();
 
@@ -551,6 +564,12 @@ function switchHowMuchSetting(request) {
     addHighlights();
   }
   addListeners();
+}
+
+function removePopups() {
+  document.querySelectorAll(".tooltip1").forEach(function (a) {
+    a.remove();
+  });
 }
 
 function removeHighlights() {
@@ -758,17 +777,10 @@ function addComplexHighlights(element) {
 }
 
 const showToolTip = function (element) {
-  const wordSet = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
-    Document: replacedDocumentParagraphs,
-  };
-
   if (textSetting !== "Document") {
-    showNonDocumentTooltip(element.currentTarget, wordSet);
+    showNonDocumentTooltip(element.currentTarget);
   } else {
-    showDocumentTooltip(this);
+    showDocumentTooltip(element.target);
   }
 };
 
@@ -778,19 +790,11 @@ const removeToolTip = () => {
   });
 };
 
-// const removeSpecificTooltip = (id) => {
-//   let tooltip = document.getElementById(id);
-//   tooltip.remove();
-// };
-
 const removeSpecificTooltip = (el) => {
-  // let tooltip = document.getElementById(id);
   el.remove();
 };
 
 const showDocumentTooltip = function (node) {
-  // node = node.target;
-
   let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
     "\\n \\n"
   );
@@ -807,15 +811,13 @@ const showDocumentTooltip = function (node) {
   mainDiv.insertBefore(tooltipWrap, mainDiv.firstChild);
 };
 
-const showNonDocumentTooltip = function (node, wordSet) {
-  // if (textSetting === "Word") {
-  //   node = node.target;
-  // } else {
-  //   node = node.currentTarget;
-  // }
-  // console.log("Element in show = ", node);
-  // console.log("This is target = ", node.target);
-  // console.log("This is currentTarget = ", node.currentTarget);
+const showNonDocumentTooltip = function (node) {
+  const wordSet = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+    Document: replacedDocumentParagraphs,
+  };
 
   let id = node.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);

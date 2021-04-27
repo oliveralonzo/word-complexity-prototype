@@ -65,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   howLongSettingNode = document.getElementById("showDuration");
   howLongSettingNode.addEventListener("input", function () {
-    console.log("duration -------> ", this.value);
     if (this.value == 1) {
       chrome.storage.sync.set({ howLongSetting: "Temporary" }, function () {
         sendtoContentJS({
