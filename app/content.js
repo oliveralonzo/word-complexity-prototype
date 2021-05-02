@@ -357,7 +357,12 @@ const changeTextOnMouseOver = function (event) {
     event.target === this
   ) {
     let el = document.getElementById(event.currentTarget.id);
-    setToOtherWord(el);
+    if (textSetting === "Document") {
+      setToOtherDocument(el);
+    } else {
+      setToOtherText(el);
+    }
+    // setToOtherWord(el);
   }
   // let x = event.clientX;
   // let y = event.clientY;
@@ -838,7 +843,7 @@ function getMainContentCandidateSiblings(node) {
 }
 
 const setToOtherDocument = function (node) {
-  node = node.currentTarget;
+  // node = node.currentTarget;
   wordSet = replacedDocumentParagraphs;
 
   let simplerParagraphs = wordSet[0].text.split("\\n \\n");
