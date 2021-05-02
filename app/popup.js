@@ -2,6 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", function (event) {
   const checkbox = document.getElementById("togBtn");
+  const highlightReplacedBtn = document.getElementById("highlightReplacedBtn");
 
   /* Capture input for textSetting slider
    *   - listener open to any change of textSettingSlider
@@ -199,6 +200,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   });
 
+  storageGetHelper("highlight").then(function (value) {
+    if (value.highlight === true) {
+      chrome.runtime.sendMessage({
+        highlight: "True",
+        settingType: "highlightReplaced",
+      });
+      checkbox.checked = true;
+    }
+  });
+
   /*
    * Given checkbox present, listener for: setting checkbox value and storing in chrome.storage.sync
    * send message to background through chrome.runtime - to signal highlight on
@@ -211,7 +222,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
           settingType: "highlightComplex",
         });
         chrome.storage.sync.set({ highlight: true });
-        //  checkRecord = true;
       } else if (checkbox.checked === false) {
         chrome.runtime.sendMessage({
           highlight: "False",
@@ -220,8 +230,28 @@ document.addEventListener("DOMContentLoaded", function (event) {
         chrome.storage.sync.set({ highlight: false });
       }
     });
-  } else {
-    console.log("not loaded");
+  }
+
+  /*
+   * Given checkbox present, listener for: setting checkbox value and storing in chrome.storage.sync
+   * send message to background through chrome.runtime - to signal highlight on
+   */
+  if (highlightReplacedBtn) {
+    highlightReplacedBtn.addEventListener("change", async function () {
+      if (highlightReplacedBtn.checked) {
+        chrome.runtime.sendMessage({
+          highlight: "True",
+          settingType: "highlightReplaced",
+        });
+        chrome.storage.sync.set({ highlightReplaced: true });
+      } else if (highlightReplacedBtn.checked === false) {
+        chrome.runtime.sendMessage({
+          highlight: "False",
+          settingType: "highlightReplaced",
+        });
+        chrome.storage.sync.set({ highlightReplaced: false });
+      }
+    });
   }
 
   /*

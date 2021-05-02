@@ -260,78 +260,15 @@ function addInPlaceListeners(element) {
 }
 
 function addTemporaryInPlaceListeners(element) {
-  // let delay;
-  // element.addEventListener("mouseover", () => {
-  //   delay = setTimeout(changeText, 1000, this);
-  // });
-  // element.addEventListener("mouseout", () => {
-  //   changeText;
-  //   clearTimeout(delay);
-  // });
-  // let timeout = null;
-  // console.log("Element is  ------> ", element);
-  // element.onmouseover = function (event) {
-  //   const el = document.getElementById(event.currentTarget.id);
-
-  //   // Set timeout to be a timer which will invoke callback after 1s
-  //   // console.log("reached here");
-  //   timeout = setTimeout(setToOtherWord, 1000, el);
-  // };
-
-  // element.onmouseout = function (event) {
-  //   // Clear any timers set to timeout
-  //   clearTimeout(timeout);
-  // };
-
   element.addEventListener("mouseenter", changeTextOnMouseOver);
   element.addEventListener("mouseleave", changeTextOnMouseOut);
-
-  // element.addEventListener("mouseover", changeText);
-  // element.addEventListener("mouseout", changeText);
 }
-
-// const changeTextOnMouseOver = function (event) {
-//   console.log("Mouse over event triggered");
-//   // console.log("event -> ", event);
-//   // console.log("this - >", this);
-//   // event.stopPropagation();
-//   // event.preventDefault();
-//   // let e = event.relatedTarget;
-//   // console.log(event.target);
-//   // console.log(this);
-//   // const e = event.target;
-
-//   console.log(event.relatedTarget);
-//   console.log(event.relatedTarget.parentNode);
-
-//   if (event.relatedTarget.parentNode === null) {
-//     return;
-//   }
-
-//   event.stopPropagation();
-//   event.preventDefault();
-//   console.log(event.target.id);
-//   let el = document.getElementById(event.currentTarget.id);
-//   setToOtherWord(el);
-//   // return false;
-// };
 
 function addUntilClickInPlaceListeners(element) {
   element.addEventListener("click", changeText);
 }
 
 function isParent(refNode, otherNode) {
-  // let parent = otherNode.parentNode;
-  // while (parent) {
-  //   if (refNode === parent) {
-  //     console.log("ref not parent of given", true);
-  //     return true;
-  //   }
-  //   parent = parent.parentNode;
-  // }
-  // console.log("ref not parent of given", false);
-  // return false;
-
   var parent = otherNode.parentNode;
   do {
     if (refNode == parent) {
@@ -344,13 +281,6 @@ function isParent(refNode, otherNode) {
 }
 
 const changeTextOnMouseOver = function (event) {
-  console.log("Mouse over event triggered");
-
-  // console.log("related target", event.relatedTarget);
-  // console.log("related parent", event.relatedTarget.parentNode);
-  // console.log("target ", event.target);
-  console.log("currentTarget =>", event.currentTarget);
-
   if (
     event.relatedTarget.parentNode &&
     !isParent(this, event.relatedTarget) &&
@@ -362,16 +292,7 @@ const changeTextOnMouseOver = function (event) {
     } else {
       setToOtherText(el);
     }
-    // setToOtherWord(el);
   }
-  // let x = event.clientX;
-  // let y = event.clientY;
-  // let elementMouseIsOver = document.elementFromPoint(x, y);
-  // console.log("pointer placed at", elementMouseIsOver);
-  // if (elementMouseIsOver !== event.currentTarget) {
-  //   // alert("Here");
-  //   changeTextOnMouseOut(event);
-  // }
 };
 
 const changeTextOnMouseOut = function (event) {
@@ -680,17 +601,8 @@ function switchHowLongSetting(request) {
 }
 
 const changeText = (event) => {
-  // let delay = setTimeout(function () {
-  //   showHideDivs(area.indx);
-  // }, 100);
-
   const clickedEl = event.currentTarget;
   setToOtherWord(clickedEl);
-  // if (textSetting === "Document") {
-  //   setToOtherDocument(clickedEl);
-  // } else {
-  //   setToOtherText(clickedEl);
-  // }
 };
 
 /*
@@ -876,52 +788,6 @@ const setToOtherDocument = function (node) {
   });
   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
 };
-
-// const setToOtherText = function (node) {
-//   const replacedGroups = {
-//     Word: replacedWords,
-//     Sentence: replacedSentences,
-//     Paragraph: replacedParagraphs,
-//   };
-
-//   if (textSetting == "Word") {
-//     node = node.target;
-//   } else {
-//     node = node.currentTarget;
-//   }
-
-//   let id = node.id;
-
-//   let wordSet = replacedGroups[textSetting];
-
-//   let complex = wordSet.find(({ wordID }) => wordID === id);
-//   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
-//   let currWord = node.innerHTML;
-
-//   if (whereToSetting === "InPlace") {
-//     node.innerHTML = complex.text;
-//     if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-//       if (highlightToggle) {
-//         addComplexHighlights(node);
-//       }
-//     } else {
-//       removeComplexHighlights(node);
-//     }
-//     wordSet[foundIndex].text = currWord;
-//   } else if (whereToSetting === "Highlight") {
-//     node.innerHTML = complex.text;
-//     if (
-//       !node.classList.contains(
-//         `highlight-simplified-${textSetting.toLowerCase()}`
-//       )
-//     ) {
-//       addSimplifiedHighlights(node);
-//     } else {
-//       removeSimplifiedHighlights(node);
-//     }
-//     wordSet[foundIndex].text = currWord;
-//   }
-// };
 
 const setToOtherText = function (node) {
   const replacedGroups = {
