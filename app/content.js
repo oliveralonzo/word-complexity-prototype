@@ -231,7 +231,7 @@ function addListeners() {
   Array.from(groups[textSetting]).forEach(function (element) {
     switch (whereToSetting) {
       case "InPlace":
-        element.addEventListener("click", changeText);
+        addInPlaceListeners(element);
         break;
       case "Highlight":
         element.addEventListener("click", changeText);
@@ -248,6 +248,140 @@ function addListeners() {
     element.classList.add("clickable-pointer");
   });
 }
+
+function addInPlaceListeners(element) {
+  if (howLongSetting === "Temporary") {
+    addTemporaryInPlaceListeners(element);
+  } else if (howLongSetting === "UntilClick") {
+    addUntilClickInPlaceListeners(element);
+  } else if (howLongSetting === "Permanent") {
+    addPermanentInPlaceListeners();
+  }
+}
+
+function addTemporaryInPlaceListeners(element) {
+  // let delay;
+  // element.addEventListener("mouseover", () => {
+  //   delay = setTimeout(changeText, 1000, this);
+  // });
+  // element.addEventListener("mouseout", () => {
+  //   changeText;
+  //   clearTimeout(delay);
+  // });
+  // let timeout = null;
+  // console.log("Element is  ------> ", element);
+  // element.onmouseover = function (event) {
+  //   const el = document.getElementById(event.currentTarget.id);
+
+  //   // Set timeout to be a timer which will invoke callback after 1s
+  //   // console.log("reached here");
+  //   timeout = setTimeout(setToOtherWord, 1000, el);
+  // };
+
+  // element.onmouseout = function (event) {
+  //   // Clear any timers set to timeout
+  //   clearTimeout(timeout);
+  // };
+
+  element.addEventListener("mouseenter", changeTextOnMouseOver);
+  element.addEventListener("mouseleave", changeTextOnMouseOut);
+
+  // element.addEventListener("mouseover", changeText);
+  // element.addEventListener("mouseout", changeText);
+}
+
+// const changeTextOnMouseOver = function (event) {
+//   console.log("Mouse over event triggered");
+//   // console.log("event -> ", event);
+//   // console.log("this - >", this);
+//   // event.stopPropagation();
+//   // event.preventDefault();
+//   // let e = event.relatedTarget;
+//   // console.log(event.target);
+//   // console.log(this);
+//   // const e = event.target;
+
+//   console.log(event.relatedTarget);
+//   console.log(event.relatedTarget.parentNode);
+
+//   if (event.relatedTarget.parentNode === null) {
+//     return;
+//   }
+
+//   event.stopPropagation();
+//   event.preventDefault();
+//   console.log(event.target.id);
+//   let el = document.getElementById(event.currentTarget.id);
+//   setToOtherWord(el);
+//   // return false;
+// };
+
+function addUntilClickInPlaceListeners(element) {
+  element.addEventListener("click", changeText);
+}
+
+function isParent(refNode, otherNode) {
+  // let parent = otherNode.parentNode;
+  // while (parent) {
+  //   if (refNode === parent) {
+  //     console.log("ref not parent of given", true);
+  //     return true;
+  //   }
+  //   parent = parent.parentNode;
+  // }
+  // console.log("ref not parent of given", false);
+  // return false;
+
+  var parent = otherNode.parentNode;
+  do {
+    if (refNode == parent) {
+      return true;
+    } else {
+      parent = parent.parentNode;
+    }
+  } while (parent);
+  return false;
+}
+
+const changeTextOnMouseOver = function (event) {
+  console.log("Mouse over event triggered");
+
+  // console.log("related target", event.relatedTarget);
+  // console.log("related parent", event.relatedTarget.parentNode);
+  // console.log("target ", event.target);
+  console.log("currentTarget =>", event.currentTarget);
+
+  if (
+    event.relatedTarget.parentNode &&
+    !isParent(this, event.relatedTarget) &&
+    event.target === this
+  ) {
+    let el = document.getElementById(event.currentTarget.id);
+    setToOtherWord(el);
+  }
+  // let x = event.clientX;
+  // let y = event.clientY;
+  // let elementMouseIsOver = document.elementFromPoint(x, y);
+  // console.log("pointer placed at", elementMouseIsOver);
+  // if (elementMouseIsOver !== event.currentTarget) {
+  //   // alert("Here");
+  //   changeTextOnMouseOut(event);
+  // }
+};
+
+const changeTextOnMouseOut = function (event) {
+  console.log("Mouse out called");
+  // console.log("relatedTarget => ", event.relatedTarget);
+
+  // if (
+  //   event.relatedTarget.parentNode &&
+  //   !isParent(this, event.relatedTarget) &&
+  //   event.target === this
+  // ) {
+  let el = document.getElementById(event.currentTarget.id);
+  setToOtherWord(el);
+  //}
+};
 
 function addPopupListners(element) {
   if (howLongSetting === "Temporary") {
@@ -344,7 +478,7 @@ function removeListeners() {
   Array.from(groups[textSetting]).forEach(function (element) {
     switch (whereToSetting) {
       case "InPlace":
-        element.removeEventListener("click", changeText);
+        removeInPlaceListeners(element);
         break;
       case "Highlight":
         element.removeEventListener("click", changeText);
@@ -360,6 +494,28 @@ function removeListeners() {
     }
     element.classList.remove("clickable-pointer");
   });
+}
+
+function removeInPlaceListeners(element) {
+  if (howLongSetting === "Temporary") {
+    removeTemporaryInPlaceListners(element);
+  } else if (howLongSetting === "UntilClick") {
+    removeUntilClickInPlaceListners(element);
+  } else if (howLongSetting === "Permanent") {
+    removePermanentInPlaceListners(element);
+  }
+}
+
+function removeTemporaryInPlaceListners(element) {
+  console.log("Removing inplace for ", textSetting);
+  // element.removeEventListener("mouseover", changeText);
+  // element.removeEventListener("mouseout", changeText);
+  element.removeEventListener("mouseenter", changeTextOnMouseOver);
+  element.removeEventListener("mouseleave", changeTextOnMouseOut);
+}
+
+function removeUntilClickInPlaceListners(element) {
+  element.removeEventListener("click", changeText);
 }
 
 function removePopupListners(element) {
@@ -519,7 +675,17 @@ function switchHowLongSetting(request) {
 }
 
 const changeText = (event) => {
-  setToOtherWord(event, textSetting);
+  // let delay = setTimeout(function () {
+  //   showHideDivs(area.indx);
+  // }, 100);
+
+  const clickedEl = event.currentTarget;
+  setToOtherWord(clickedEl);
+  // if (textSetting === "Document") {
+  //   setToOtherDocument(clickedEl);
+  // } else {
+  //   setToOtherText(clickedEl);
+  // }
 };
 
 /*
@@ -671,7 +837,7 @@ function getMainContentCandidateSiblings(node) {
   return siblings;
 }
 
-const setToOtherDocument = function (node, type) {
+const setToOtherDocument = function (node) {
   node = node.currentTarget;
   wordSet = replacedDocumentParagraphs;
 
@@ -706,22 +872,62 @@ const setToOtherDocument = function (node, type) {
   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
 };
 
-const setToOtherText = function (node, type) {
+// const setToOtherText = function (node) {
+//   const replacedGroups = {
+//     Word: replacedWords,
+//     Sentence: replacedSentences,
+//     Paragraph: replacedParagraphs,
+//   };
+
+//   if (textSetting == "Word") {
+//     node = node.target;
+//   } else {
+//     node = node.currentTarget;
+//   }
+
+//   let id = node.id;
+
+//   let wordSet = replacedGroups[textSetting];
+
+//   let complex = wordSet.find(({ wordID }) => wordID === id);
+//   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+//   let currWord = node.innerHTML;
+
+//   if (whereToSetting === "InPlace") {
+//     node.innerHTML = complex.text;
+//     if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+//       if (highlightToggle) {
+//         addComplexHighlights(node);
+//       }
+//     } else {
+//       removeComplexHighlights(node);
+//     }
+//     wordSet[foundIndex].text = currWord;
+//   } else if (whereToSetting === "Highlight") {
+//     node.innerHTML = complex.text;
+//     if (
+//       !node.classList.contains(
+//         `highlight-simplified-${textSetting.toLowerCase()}`
+//       )
+//     ) {
+//       addSimplifiedHighlights(node);
+//     } else {
+//       removeSimplifiedHighlights(node);
+//     }
+//     wordSet[foundIndex].text = currWord;
+//   }
+// };
+
+const setToOtherText = function (node) {
   const replacedGroups = {
     Word: replacedWords,
     Sentence: replacedSentences,
     Paragraph: replacedParagraphs,
   };
 
-  if (textSetting == "Word") {
-    node = node.target;
-  } else {
-    node = node.currentTarget;
-  }
-
   let id = node.id;
 
-  let wordSet = replacedGroups[type];
+  let wordSet = replacedGroups[textSetting];
 
   let complex = wordSet.find(({ wordID }) => wordID === id);
   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
@@ -752,11 +958,11 @@ const setToOtherText = function (node, type) {
   }
 };
 
-const setToOtherWord = (node, type) => {
-  if (type === "Document") {
-    setToOtherDocument(node, type);
+const setToOtherWord = (node) => {
+  if (textSetting === "Document") {
+    setToOtherDocument(node);
   } else {
-    setToOtherText(node, type);
+    setToOtherText(node);
   }
 };
 
@@ -776,11 +982,11 @@ function addComplexHighlights(element) {
   element.classList.add(`highlight-${textSetting.toLowerCase()}`);
 }
 
-const showToolTip = function (element) {
+const showToolTip = function (event) {
   if (textSetting !== "Document") {
-    showNonDocumentTooltip(element.currentTarget);
+    showNonDocumentTooltip(event.currentTarget);
   } else {
-    showDocumentTooltip(element.target);
+    showDocumentTooltip(event.target);
   }
 };
 
