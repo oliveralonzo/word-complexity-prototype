@@ -100,87 +100,87 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (!(Object.keys(value).length === 0)) {
       if (value.textSetting === "Sentence") {
         /// tell content js to make sentence level changesw
-        sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
+        // sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
         textSettingNode.value = 2;
       } else if (value.textSetting === "Word") {
-        sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
+        // sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
         textSettingNode.value = 1;
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Paragraph") {
-        sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
+        // sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
         textSettingNode.value = 3;
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Document") {
-        sendtoContentJS({
-          textSetting: "Document",
-          settingType: "howMuch",
-        });
+        // sendtoContentJS({
+        //   textSetting: "Document",
+        //   settingType: "howMuch",
+        // });
         textSettingNode.value = 4;
         /// i want to signal that content js has to make word level changes to do
       }
     } else {
       chrome.storage.sync.set({ textSetting: "Word" });
       textSettingNode.value = 1;
-      sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
+      // sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
     }
   });
 
   storageGetHelper("whereToSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
       if (value.whereToSetting === "InPlace") {
-        sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+        // sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
         whereToSettingNode.value = 1;
       } else if (value.whereToSetting === "Highlight") {
-        sendtoContentJS({
-          whereToSetting: "Highlight",
-          settingType: "whereTo",
-        });
+        // sendtoContentJS({
+        //   whereToSetting: "Highlight",
+        //   settingType: "whereTo",
+        // });
         whereToSettingNode.value = 2;
       } else if (value.whereToSetting === "Popup") {
-        sendtoContentJS({
-          whereToSetting: "Popup",
-          settingType: "whereTo",
-        });
+        // sendtoContentJS({
+        //   whereToSetting: "Popup",
+        //   settingType: "whereTo",
+        // });
         whereToSettingNode.value = 3;
       } else if (value.whereToSetting === "Side") {
-        sendtoContentJS({
-          whereToSetting: "Side",
-          settingType: "whereTo",
-        });
+        // sendtoContentJS({
+        //   whereToSetting: "Side",
+        //   settingType: "whereTo",
+        // });
         whereToSettingNode.value = 4;
       }
     } else {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
       whereToSettingNode.value = 1;
-      sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+      // sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
     }
   });
 
   storageGetHelper("howLongSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
       if (value.howLongSetting === "Temporary") {
-        sendtoContentJS({
-          howLongSetting: "Temporary",
-          settingType: "howLong",
-        });
+        // sendtoContentJS({
+        //   howLongSetting: "Temporary",
+        //   settingType: "howLong",
+        // });
         howLongSettingNode.value = 1;
       } else if (value.howLongSetting === "UntilClick") {
-        sendtoContentJS({
-          howLongSetting: "UntilClick",
-          settingType: "howLong",
-        });
+        // sendtoContentJS({
+        //   howLongSetting: "UntilClick",
+        //   settingType: "howLong",
+        // });
         howLongSettingNode.value = 2;
       } else if (value.howLongSetting === "Permanent") {
-        sendtoContentJS({
-          howLongSetting: "Permanent",
-          settingType: "howLong",
-        });
+        // sendtoContentJS({
+        //   howLongSetting: "Permanent",
+        //   settingType: "howLong",
+        // });
         howLongSettingNode.value = 3;
       }
     } else {
       chrome.storage.sync.set({ howLongSetting: "Temporary" });
       howLongSettingNode.value = 1;
-      sendtoContentJS({ howLongSetting: "Temporary", settingType: "howLong" });
+      // sendtoContentJS({ howLongSetting: "Temporary", settingType: "howLong" });
     }
   });
 
@@ -192,18 +192,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   storageGetHelper("highlight").then(function (value) {
     if (value.highlight === true) {
-      chrome.runtime.sendMessage({
-        highlight: "True",
-        settingType: "highlightComplex",
-      });
+      // chrome.runtime.sendMessage({
+      //   highlight: true,
+      //   settingType: "highlightComplex",
+      // });
       checkbox.checked = true;
     }
   });
 
-  storageGetHelper("highlight").then(function (value) {
+  storageGetHelper("highlightReplaced").then(function (value) {
     if (value.highlight === true) {
       chrome.runtime.sendMessage({
-        highlight: "True",
+        highlight: true,
         settingType: "highlightReplaced",
       });
       checkbox.checked = true;
@@ -217,14 +217,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (checkbox) {
     checkbox.addEventListener("change", async function () {
       if (checkbox.checked) {
+        console.log("sending highlight", checkbox);
         chrome.runtime.sendMessage({
-          highlight: "True",
+          highlight: true,
           settingType: "highlightComplex",
         });
         chrome.storage.sync.set({ highlight: true });
       } else if (checkbox.checked === false) {
         chrome.runtime.sendMessage({
-          highlight: "False",
+          highlight: false,
           settingType: "highlightComplex",
         });
         chrome.storage.sync.set({ highlight: false });
@@ -240,13 +241,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     highlightReplacedBtn.addEventListener("change", async function () {
       if (highlightReplacedBtn.checked) {
         chrome.runtime.sendMessage({
-          highlight: "True",
+          highlight: true,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: true });
       } else if (highlightReplacedBtn.checked === false) {
         chrome.runtime.sendMessage({
-          highlight: "False",
+          highlight: false,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: false });

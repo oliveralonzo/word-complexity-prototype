@@ -13,7 +13,7 @@ var complexSentencesGroup = null;
 var complexParagraphGroup = null;
 var complexDocumentParagraphGroup = null;
 
-//Initial values
+// Initial values
 var originalComplexWordGroup = [];
 var originalComplexSentencesGroup = [];
 var originalComplexParagraphGroup = [];
@@ -31,34 +31,42 @@ var highlightToggle = false;
 var whereToSetting = "InPlace";
 var howLongSetting = "Temporary";
 var confidenceSetting = "No";
+var highlightReplacedToggle = false;
 
 var complexDocumentParagraphsCount = 0;
 
-chrome.storage.sync.get(["highlight"], (status) => {
-  if (Object.keys(status).length === 0 || status.value === null) {
-    highlightToggle = false;
-  } else {
-    highlightToggle = status.value;
-  }
-});
-
-chrome.storage.sync.get("textSetting", (status) => {
-  if (Object.keys(status).length === 0 || status.textSetting === null) {
-    textSetting = "Word";
-  } else {
-    textSetting = status.textSetting;
-  }
-});
-
 chrome.storage.sync.get("whereToSetting", (status) => {
-  if (Object.keys(status).length === 0 || status.whereToSetting !== null) {
+  if (Object.keys(status).length > 0 && status.whereToSetting !== null) {
     whereToSetting = status.whereToSetting;
   }
 });
 
 chrome.storage.sync.get("howLongSetting", (status) => {
-  if (Object.keys(status).length === 0 || status.howLongSetting !== null) {
+  if (Object.keys(status).length > 0 && status.howLongSetting !== null) {
     howLongSetting = status.howLongSetting;
+  }
+});
+
+chrome.storage.sync.get("textSetting", (status) => {
+  if (Object.keys(status).length > 0 && status.textSetting !== null) {
+    textSetting = status.textSetting;
+  }
+  addListeners();
+});
+
+chrome.storage.sync.get("highlight", (status) => {
+  if (Object.keys(status).length > 0 && status.highlight !== null) {
+    highlightToggle = status.highlight;
+  }
+  toggleHighlightComplex({
+    settingType: "highlightComplex",
+    highlight: highlightToggle,
+  });
+});
+
+chrome.storage.sync.get("highlightReplaced", (status) => {
+  if (Object.keys(status).length > 0 && status.highlightReplaced !== null) {
+    highlightReplacedToggle = status.highlightReplaced;
   }
 });
 
@@ -613,8 +621,9 @@ const changeText = (event) => {
 *       - remove highlight class from words/sentences/paragraphs/Document
 */
 function toggleHighlightComplex(request) {
+  console.log(request);
   if (request.settingType == "highlightComplex") {
-    if (request.highlight === "True") {
+    if (request.highlight === true) {
       chrome.storage.sync.set({ highlight: true });
       highlightToggle = true;
       addHighlights();
@@ -635,14 +644,15 @@ function switchWhereToSetting(request) {
 }
 
 function switchHowMuchSetting(request) {
+  console.log("switching how much");
   removePopups();
   removeSideTip();
   removeListeners();
   removeHighlights();
   // }
-  textSetting = request.textSetting;
   revertContentToOriginal();
-
+  textSetting = request.textSetting;
+  console.log("reverted content");
   if (highlightToggle) {
     addHighlights();
   }
@@ -664,6 +674,7 @@ function removeHighlights() {
 }
 
 function addHighlights() {
+  console.log("Highlights called", textSetting);
   let styleClass = `highlight-${textSetting.toLowerCase()}`;
   let className = `complex-${textSetting.toLowerCase()}`;
   elements = document.getElementsByClassName(className);

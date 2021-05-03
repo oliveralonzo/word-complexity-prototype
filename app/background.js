@@ -12,17 +12,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
    *    {'highlight': True/False}
    */
   chrome.runtime.onMessage.addListener(function (request) {
-    if (request.highlight === "True") {
+    if (request.highlight === true) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
-          highlight: "True",
+          highlight: true,
           settingType: "highlightComplex",
         });
       });
-    } else if (request.highlight === "False") {
+    } else if (request.highlight === false) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
-          highlight: "False",
+          highlight: false,
           settingType: "highlightComplex",
         });
       });
