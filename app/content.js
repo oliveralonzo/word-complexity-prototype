@@ -422,9 +422,9 @@ function removeListeners() {
       case "InPlace":
         removeInPlaceListeners(element);
         break;
-      case "Highlight":
-        element.removeEventListener("click", changeText);
-        break;
+      // case "Highlight":
+      //   element.removeEventListener("click", changeText);
+      //   break;
       case "Popup":
         removePopupListners(element);
         break;

@@ -46,20 +46,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
       });
       enableHighlightReplacementSlider();
     } else if (this.value == 2) {
-      chrome.storage.sync.set({ whereToSetting: "Highlight" }, function () {
-        sendtoContentJS({
-          whereToSetting: "Highlight",
-          settingType: "whereTo",
-        });
-      });
-
-      disableHighlightReplacementSlider();
-    } else if (this.value == 3) {
       chrome.storage.sync.set({ whereToSetting: "Popup" }, function () {
         sendtoContentJS({ whereToSetting: "Popup", settingType: "whereTo" });
       });
       disableHighlightReplacementSlider();
-    } else if (this.value == 4) {
+    } else if (this.value == 3) {
       chrome.storage.sync.set({ whereToSetting: "Side" }, function () {
         sendtoContentJS({ whereToSetting: "Side", settingType: "whereTo" });
       });
@@ -135,24 +126,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
       if (value.whereToSetting === "InPlace") {
         // sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
         whereToSettingNode.value = 1;
-      } else if (value.whereToSetting === "Highlight") {
-        // sendtoContentJS({
-        //   whereToSetting: "Highlight",
-        //   settingType: "whereTo",
-        // });
-        whereToSettingNode.value = 2;
       } else if (value.whereToSetting === "Popup") {
         // sendtoContentJS({
         //   whereToSetting: "Popup",
         //   settingType: "whereTo",
         // });
-        whereToSettingNode.value = 3;
+        whereToSettingNode.value = 2;
       } else if (value.whereToSetting === "Side") {
         // sendtoContentJS({
         //   whereToSetting: "Side",
         //   settingType: "whereTo",
         // });
-        whereToSettingNode.value = 4;
+        whereToSettingNode.value = 3;
       }
     } else {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
