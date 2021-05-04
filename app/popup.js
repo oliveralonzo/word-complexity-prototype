@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ whereToSetting: "InPlace" }, function () {
         sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
       });
+      enableHighlightReplacementSlider();
     } else if (this.value == 2) {
       chrome.storage.sync.set({ whereToSetting: "Highlight" }, function () {
         sendtoContentJS({
@@ -51,14 +52,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
           settingType: "whereTo",
         });
       });
+
+      disableHighlightReplacementSlider();
     } else if (this.value == 3) {
       chrome.storage.sync.set({ whereToSetting: "Popup" }, function () {
         sendtoContentJS({ whereToSetting: "Popup", settingType: "whereTo" });
       });
+      disableHighlightReplacementSlider();
     } else if (this.value == 4) {
       chrome.storage.sync.set({ whereToSetting: "Side" }, function () {
         sendtoContentJS({ whereToSetting: "Side", settingType: "whereTo" });
       });
+      disableHighlightReplacementSlider();
     }
   });
 
@@ -241,13 +246,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     highlightReplacedBtn.addEventListener("change", async function () {
       if (highlightReplacedBtn.checked) {
         chrome.runtime.sendMessage({
-          highlight: true,
+          highlightReplaced: true,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: true });
       } else if (highlightReplacedBtn.checked === false) {
         chrome.runtime.sendMessage({
-          highlight: false,
+          highlightReplaced: false,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: false });
@@ -278,5 +283,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, data);
     });
+  }
+
+  function disableHighlightReplacementSlider() {
+    highlightReplacedBtn.disabled = true;
+    document.getElementById("highlightReplaced").style.opacity = 0.3;
+  }
+
+  function enableHighlightReplacementSlider() {
+    highlightReplacedBtn.disabled = false;
+    document.getElementById("highlightReplaced").style.opacity = 1;
   }
 });

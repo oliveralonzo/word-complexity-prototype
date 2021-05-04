@@ -674,7 +674,6 @@ function removeHighlights() {
 }
 
 function addHighlights() {
-  console.log("Highlights called", textSetting);
   let styleClass = `highlight-${textSetting.toLowerCase()}`;
   let className = `complex-${textSetting.toLowerCase()}`;
   elements = document.getElementsByClassName(className);
