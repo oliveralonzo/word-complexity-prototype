@@ -613,8 +613,15 @@ function switchHowLongSetting(request) {
   removePopups();
   removeSideTip();
   removeListeners();
+
+  removeHighlights();
+  removeReplacedHighlights();
+
+  revertContentToOriginal();
+
   howLongSetting = request.howLongSetting;
   addListeners();
+  addHighlights();
 }
 
 const changeText = (event) => {
