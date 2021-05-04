@@ -68,6 +68,11 @@ chrome.storage.sync.get("highlightReplaced", (status) => {
   if (Object.keys(status).length > 0 && status.highlightReplaced !== null) {
     highlightReplacedToggle = status.highlightReplaced;
   }
+  console.log("calling toggle now");
+  toggleHighlightReplaced({
+    settingType: "highlightReplaced",
+    highlightReplaced: highlightReplacedToggle,
+  });
 });
 
 var idx = 0; // used for id index of words
@@ -122,6 +127,9 @@ chrome.runtime.onMessage.addListener(function (request) {
       break;
     case "whereTo":
       switchWhereToSetting(request);
+      break;
+    case "highlightReplaced":
+      toggleHighlightReplaced(request);
       break;
     case "howLong":
       switchHowLongSetting(request);
@@ -241,9 +249,9 @@ function addListeners() {
       case "InPlace":
         addInPlaceListeners(element);
         break;
-      case "Highlight":
-        element.addEventListener("click", changeText);
-        break;
+      // case "Highlight":
+      //   element.addEventListener("click", changeText);
+      //   break;
       case "Popup":
         addPopupListners(element);
         break;
@@ -601,6 +609,7 @@ const removeSideTip = function () {
 
 function switchHowLongSetting(request) {
   console.log("from switch how long setting");
+  console.log(request);
   removePopups();
   removeSideTip();
   removeListeners();
@@ -621,7 +630,6 @@ const changeText = (event) => {
 *       - remove highlight class from words/sentences/paragraphs/Document
 */
 function toggleHighlightComplex(request) {
-  console.log(request);
   if (request.settingType == "highlightComplex") {
     if (request.highlight === true) {
       chrome.storage.sync.set({ highlight: true });
@@ -635,6 +643,23 @@ function toggleHighlightComplex(request) {
   }
 }
 
+function toggleHighlightReplaced(request) {
+  console.log("reached toggle. Request = ", request);
+  if (request.settingType == "highlightReplaced") {
+    if (request.highlightReplaced === true) {
+      console.log("Its true!!");
+      chrome.storage.sync.set({ highlightReplaced: true });
+      highlightReplacedToggle = true;
+      addReplacedHighlights();
+    } else {
+      console.log("Its false!!");
+      chrome.storage.sync.set({ highlightReplaced: false });
+      highlightReplacedToggle = false;
+      removeReplacedHighlights();
+    }
+  }
+}
+
 function switchWhereToSetting(request) {
   removePopups();
   removeSideTip();
@@ -644,13 +669,14 @@ function switchWhereToSetting(request) {
 }
 
 function switchHowMuchSetting(request) {
-  console.log("switching how much");
   removePopups();
   removeSideTip();
   removeListeners();
   removeHighlights();
-  // }
+  removeReplacedHighlights();
+
   revertContentToOriginal();
+
   textSetting = request.textSetting;
   console.log("reverted content");
   if (highlightToggle) {
@@ -679,6 +705,39 @@ function addHighlights() {
   elements = document.getElementsByClassName(className);
   [].forEach.call(elements, function (word) {
     word.classList.add(styleClass);
+  });
+}
+
+function addReplacedHighlights() {
+  console.log("Adding highlights");
+  const group = {
+    Word: complexWordGroup,
+    Sentence: complexSentencesGroup,
+    Paragraph: complexParagraphGroup,
+    Document: complexDocumentParagraphGroup,
+  };
+  const originalGroup = {
+    Word: originalComplexWordGroup,
+    Sentence: originalComplexSentencesGroup,
+    Paragraph: originalComplexParagraphGroup,
+    Document: originalComplexDocumentParagraphGroup,
+  };
+
+  const groupLength = group[textSetting].length;
+
+  for (let i = 0; i < groupLength; i++) {
+    if (group[textSetting][i].innerHTML !== originalGroup[textSetting][i]) {
+      addSimplifiedHighlights(group[textSetting][i]);
+    }
+  }
+}
+
+function removeReplacedHighlights() {
+  const replacedText = document.getElementsByClassName(
+    `highlight-simplified-${textSetting.toLowerCase()}`
+  );
+  Array.from(replacedText).forEach((el) => {
+    removeSimplifiedHighlights(el);
   });
 }
 
@@ -765,7 +824,6 @@ function getMainContentCandidateSiblings(node) {
 }
 
 const setToOtherDocument = function (node) {
-  // node = node.currentTarget;
   wordSet = replacedDocumentParagraphs;
 
   let simplerParagraphs = wordSet[0].text.split("\\n \\n");
@@ -799,6 +857,46 @@ const setToOtherDocument = function (node) {
   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
 };
 
+// const setToOtherText = function (node) {
+//   const replacedGroups = {
+//     Word: replacedWords,
+//     Sentence: replacedSentences,
+//     Paragraph: replacedParagraphs,
+//   };
+
+//   let id = node.id;
+
+//   let wordSet = replacedGroups[textSetting];
+
+//   let complex = wordSet.find(({ wordID }) => wordID === id);
+//   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+//   let currWord = node.innerHTML;
+
+//   if (whereToSetting === "InPlace") {
+//     node.innerHTML = complex.text;
+//     if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+//       if (highlightToggle) {
+//         addComplexHighlights(node);
+//       }
+//     } else {
+//       removeComplexHighlights(node);
+//     }
+//     wordSet[foundIndex].text = currWord;
+//   } else if (whereToSetting === "Highlight") {
+//     node.innerHTML = complex.text;
+//     if (
+//       !node.classList.contains(
+//         `highlight-simplified-${textSetting.toLowerCase()}`
+//       )
+//     ) {
+//       addSimplifiedHighlights(node);
+//     } else {
+//       removeSimplifiedHighlights(node);
+//     }
+//     wordSet[foundIndex].text = currWord;
+//   }
+// };
+
 const setToOtherText = function (node) {
   const replacedGroups = {
     Word: replacedWords,
@@ -807,36 +905,25 @@ const setToOtherText = function (node) {
   };
 
   let id = node.id;
-
   let wordSet = replacedGroups[textSetting];
-
   let complex = wordSet.find(({ wordID }) => wordID === id);
   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
   let currWord = node.innerHTML;
 
-  if (whereToSetting === "InPlace") {
-    node.innerHTML = complex.text;
-    if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-      if (highlightToggle) {
-        addComplexHighlights(node);
-      }
-    } else {
-      removeComplexHighlights(node);
-    }
-    wordSet[foundIndex].text = currWord;
-  } else if (whereToSetting === "Highlight") {
-    node.innerHTML = complex.text;
-    if (
-      !node.classList.contains(
-        `highlight-simplified-${textSetting.toLowerCase()}`
-      )
-    ) {
+  node.innerHTML = complex.text;
+
+  if (node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+    if (highlightReplacedToggle) {
       addSimplifiedHighlights(node);
-    } else {
-      removeSimplifiedHighlights(node);
     }
-    wordSet[foundIndex].text = currWord;
+    removeComplexHighlights(node);
+  } else {
+    if (highlightToggle) {
+      addComplexHighlights(node);
+    }
+    removeSimplifiedHighlights(node);
   }
+  wordSet[foundIndex].text = currWord;
 };
 
 const setToOtherWord = (node) => {

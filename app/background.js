@@ -29,6 +29,24 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   });
 
+  chrome.runtime.onMessage.addListener(function (request) {
+    if (request.highlightReplaced === true) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          highlightReplaced: true,
+          settingType: "highlightReplaced",
+        });
+      });
+    } else if (request.highlightReplaced === false) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          highlightReplaced: false,
+          settingType: "highlightReplaced",
+        });
+      });
+    }
+  });
+
   /*
    * Listener to capture text that needs to be simplified
    *  - ideal request

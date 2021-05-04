@@ -206,12 +206,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
   });
 
   storageGetHelper("highlightReplaced").then(function (value) {
-    if (value.highlight === true) {
-      chrome.runtime.sendMessage({
-        highlight: true,
-        settingType: "highlightReplaced",
-      });
-      checkbox.checked = true;
+    if (value.highlightReplaced === true) {
+      // chrome.runtime.sendMessage({
+      //   highlightReplaced: true,
+      //   settingType: "highlightReplaced",
+      // });
+      highlightReplacedBtn.checked = true;
     }
   });
 
