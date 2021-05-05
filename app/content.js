@@ -249,9 +249,6 @@ function addListeners() {
       case "InPlace":
         addInPlaceListeners(element);
         break;
-      // case "Highlight":
-      //   element.addEventListener("click", changeText);
-      //   break;
       case "Popup":
         addPopupListners(element);
         break;
@@ -313,16 +310,8 @@ const changeTextOnMouseOver = function (event) {
 
 const changeTextOnMouseOut = function (event) {
   console.log("Mouse out called");
-  // console.log("relatedTarget => ", event.relatedTarget);
-
-  // if (
-  //   event.relatedTarget.parentNode &&
-  //   !isParent(this, event.relatedTarget) &&
-  //   event.target === this
-  // ) {
   let el = document.getElementById(event.currentTarget.id);
   setToOtherWord(el);
-  //}
 };
 
 function addPopupListners(element) {
@@ -613,7 +602,7 @@ function switchHowLongSetting(request) {
   removePopups();
   removeSideTip();
   removeListeners();
-
+  removeSwappedClass();
   removeHighlights();
   removeReplacedHighlights();
 
@@ -680,6 +669,7 @@ function switchHowMuchSetting(request) {
   removeSideTip();
   removeListeners();
   removeHighlights();
+  removeSwappedClass();
   removeReplacedHighlights();
 
   revertContentToOriginal();
@@ -830,6 +820,46 @@ function getMainContentCandidateSiblings(node) {
   return siblings;
 }
 
+function removeSwappedClass() {
+  const swappedElements = document.getElementsByClassName("swapped");
+  Array.from(swappedElements).forEach((el) => {
+    el.classList.remove("swapped");
+  });
+}
+// const setToOtherDocument = function (node) {
+//   wordSet = replacedDocumentParagraphs;
+
+//   let simplerParagraphs = wordSet[0].text.split("\\n \\n");
+//   wordSet[0].text = "";
+//   Array.from(complexDocumentParagraphGroup).forEach((node) => {
+//     let currDoc = node.innerHTML;
+//     if (whereToSetting === "InPlace") {
+//       node.innerHTML = simplerParagraphs.shift();
+//       if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
+//         if (highlightToggle) {
+//           addComplexHighlights(node);
+//         }
+//       } else {
+//         removeComplexHighlights(node);
+//       }
+//       wordSet[0].text += currDoc + "\\n \\n";
+//     } else if (whereToSetting === "Highlight") {
+//       node.innerHTML = simplerParagraphs.shift();
+//       if (
+//         !node.classList.contains(
+//           `highlight-simplified-${textSetting.toLowerCase()}`
+//         )
+//       ) {
+//         addSimplifiedHighlights(node);
+//       } else {
+//         removeSimplifiedHighlights(node);
+//       }
+//       wordSet[0].text += currDoc + "\\n \\n";
+//     }
+//   });
+//   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
+// };
+
 const setToOtherDocument = function (node) {
   wordSet = replacedDocumentParagraphs;
 
@@ -837,72 +867,27 @@ const setToOtherDocument = function (node) {
   wordSet[0].text = "";
   Array.from(complexDocumentParagraphGroup).forEach((node) => {
     let currDoc = node.innerHTML;
-    if (whereToSetting === "InPlace") {
-      node.innerHTML = simplerParagraphs.shift();
-      if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-        if (highlightToggle) {
-          addComplexHighlights(node);
-        }
-      } else {
-        removeComplexHighlights(node);
+
+    node.innerHTML = simplerParagraphs.shift();
+
+    if (node.classList.contains("swapped")) {
+      node.classList.remove("swapped");
+      if (highlightToggle) {
+        addComplexHighlights(node);
       }
-      wordSet[0].text += currDoc + "\\n \\n";
-    } else if (whereToSetting === "Highlight") {
-      node.innerHTML = simplerParagraphs.shift();
-      if (
-        !node.classList.contains(
-          `highlight-simplified-${textSetting.toLowerCase()}`
-        )
-      ) {
+      removeSimplifiedHighlights(node);
+    } else {
+      node.classList.add("swapped");
+      if (highlightReplacedToggle) {
         addSimplifiedHighlights(node);
-      } else {
-        removeSimplifiedHighlights(node);
       }
-      wordSet[0].text += currDoc + "\\n \\n";
+      removeComplexHighlights(node);
     }
+
+    wordSet[0].text += currDoc + "\\n \\n";
   });
   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
 };
-
-// const setToOtherText = function (node) {
-//   const replacedGroups = {
-//     Word: replacedWords,
-//     Sentence: replacedSentences,
-//     Paragraph: replacedParagraphs,
-//   };
-
-//   let id = node.id;
-
-//   let wordSet = replacedGroups[textSetting];
-
-//   let complex = wordSet.find(({ wordID }) => wordID === id);
-//   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
-//   let currWord = node.innerHTML;
-
-//   if (whereToSetting === "InPlace") {
-//     node.innerHTML = complex.text;
-//     if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-//       if (highlightToggle) {
-//         addComplexHighlights(node);
-//       }
-//     } else {
-//       removeComplexHighlights(node);
-//     }
-//     wordSet[foundIndex].text = currWord;
-//   } else if (whereToSetting === "Highlight") {
-//     node.innerHTML = complex.text;
-//     if (
-//       !node.classList.contains(
-//         `highlight-simplified-${textSetting.toLowerCase()}`
-//       )
-//     ) {
-//       addSimplifiedHighlights(node);
-//     } else {
-//       removeSimplifiedHighlights(node);
-//     }
-//     wordSet[foundIndex].text = currWord;
-//   }
-// };
 
 const setToOtherText = function (node) {
   const replacedGroups = {
@@ -919,14 +904,14 @@ const setToOtherText = function (node) {
 
   node.innerHTML = complex.text;
 
-  if (node.classList.contains("simplified")) {
-    node.classList.remove("simplified");
+  if (node.classList.contains("swapped")) {
+    node.classList.remove("swapped");
     if (highlightToggle) {
       addComplexHighlights(node);
     }
     removeSimplifiedHighlights(node);
   } else {
-    node.classList.add("simplified");
+    node.classList.add("swapped");
     if (highlightReplacedToggle) {
       addSimplifiedHighlights(node);
     }
