@@ -919,16 +919,18 @@ const setToOtherText = function (node) {
 
   node.innerHTML = complex.text;
 
-  if (node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-    if (highlightReplacedToggle) {
-      addSimplifiedHighlights(node);
-    }
-    removeComplexHighlights(node);
-  } else {
+  if (node.classList.contains("simplified")) {
+    node.classList.remove("simplified");
     if (highlightToggle) {
       addComplexHighlights(node);
     }
     removeSimplifiedHighlights(node);
+  } else {
+    node.classList.add("simplified");
+    if (highlightReplacedToggle) {
+      addSimplifiedHighlights(node);
+    }
+    removeComplexHighlights(node);
   }
   wordSet[foundIndex].text = currWord;
 };
