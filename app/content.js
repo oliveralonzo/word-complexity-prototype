@@ -295,9 +295,11 @@ function isParent(refNode, otherNode) {
 
 const changeTextOnMouseOver = function (event) {
   if (
+    event.relatedTarget &&
     event.relatedTarget.parentNode &&
     !isParent(this, event.relatedTarget) &&
-    event.target === this
+    event.target === this &&
+    !event.currentTarget.classList.contains("swapped")
   ) {
     let el = document.getElementById(event.currentTarget.id);
     if (textSetting === "Document") {
@@ -309,9 +311,14 @@ const changeTextOnMouseOver = function (event) {
 };
 
 const changeTextOnMouseOut = function (event) {
-  console.log("Mouse out called");
   let el = document.getElementById(event.currentTarget.id);
-  setToOtherWord(el);
+  if (event.currentTarget.classList.contains("swapped")) {
+    if (textSetting === "Document") {
+      setToOtherDocument(el);
+    } else {
+      setToOtherText(el);
+    }
+  }
 };
 
 function addPopupListners(element) {
@@ -826,39 +833,6 @@ function removeSwappedClass() {
     el.classList.remove("swapped");
   });
 }
-// const setToOtherDocument = function (node) {
-//   wordSet = replacedDocumentParagraphs;
-
-//   let simplerParagraphs = wordSet[0].text.split("\\n \\n");
-//   wordSet[0].text = "";
-//   Array.from(complexDocumentParagraphGroup).forEach((node) => {
-//     let currDoc = node.innerHTML;
-//     if (whereToSetting === "InPlace") {
-//       node.innerHTML = simplerParagraphs.shift();
-//       if (!node.classList.contains(`highlight-${textSetting.toLowerCase()}`)) {
-//         if (highlightToggle) {
-//           addComplexHighlights(node);
-//         }
-//       } else {
-//         removeComplexHighlights(node);
-//       }
-//       wordSet[0].text += currDoc + "\\n \\n";
-//     } else if (whereToSetting === "Highlight") {
-//       node.innerHTML = simplerParagraphs.shift();
-//       if (
-//         !node.classList.contains(
-//           `highlight-simplified-${textSetting.toLowerCase()}`
-//         )
-//       ) {
-//         addSimplifiedHighlights(node);
-//       } else {
-//         removeSimplifiedHighlights(node);
-//       }
-//       wordSet[0].text += currDoc + "\\n \\n";
-//     }
-//   });
-//   wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
-// };
 
 const setToOtherDocument = function (node) {
   wordSet = replacedDocumentParagraphs;

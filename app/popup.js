@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         // Notify that we saved.
         sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
       });
-      //sendtoContentJS({ 'textSetting': 'Word' });
     } else if (this.value == 2) {
       chrome.storage.sync.set({ textSetting: "Sentence" }, function () {
         // Notify that we saved.
@@ -96,21 +95,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (!(Object.keys(value).length === 0)) {
       if (value.textSetting === "Sentence") {
         /// tell content js to make sentence level changesw
-        // sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
         textSettingNode.value = 2;
       } else if (value.textSetting === "Word") {
-        // sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
         textSettingNode.value = 1;
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Paragraph") {
-        // sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
         textSettingNode.value = 3;
         /// i want to signal that content js has to make word level changes to do
       } else if (value.textSetting === "Document") {
-        // sendtoContentJS({
-        //   textSetting: "Document",
-        //   settingType: "howMuch",
-        // });
         textSettingNode.value = 4;
         /// i want to signal that content js has to make word level changes to do
       }
@@ -124,53 +116,30 @@ document.addEventListener("DOMContentLoaded", function (event) {
   storageGetHelper("whereToSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
       if (value.whereToSetting === "InPlace") {
-        // sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
         whereToSettingNode.value = 1;
       } else if (value.whereToSetting === "Popup") {
-        // sendtoContentJS({
-        //   whereToSetting: "Popup",
-        //   settingType: "whereTo",
-        // });
         whereToSettingNode.value = 2;
       } else if (value.whereToSetting === "Side") {
-        // sendtoContentJS({
-        //   whereToSetting: "Side",
-        //   settingType: "whereTo",
-        // });
         whereToSettingNode.value = 3;
       }
     } else {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
       whereToSettingNode.value = 1;
-      // sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
     }
   });
 
   storageGetHelper("howLongSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
       if (value.howLongSetting === "Temporary") {
-        // sendtoContentJS({
-        //   howLongSetting: "Temporary",
-        //   settingType: "howLong",
-        // });
         howLongSettingNode.value = 1;
       } else if (value.howLongSetting === "UntilClick") {
-        // sendtoContentJS({
-        //   howLongSetting: "UntilClick",
-        //   settingType: "howLong",
-        // });
         howLongSettingNode.value = 2;
       } else if (value.howLongSetting === "Permanent") {
-        // sendtoContentJS({
-        //   howLongSetting: "Permanent",
-        //   settingType: "howLong",
-        // });
         howLongSettingNode.value = 3;
       }
     } else {
       chrome.storage.sync.set({ howLongSetting: "Temporary" });
       howLongSettingNode.value = 1;
-      // sendtoContentJS({ howLongSetting: "Temporary", settingType: "howLong" });
     }
   });
 
@@ -182,21 +151,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   storageGetHelper("highlight").then(function (value) {
     if (value.highlight === true) {
-      // chrome.runtime.sendMessage({
-      //   highlight: true,
-      //   settingType: "highlightComplex",
-      // });
       checkbox.checked = true;
     }
   });
 
   storageGetHelper("highlightReplaced").then(function (value) {
     if (value.highlightReplaced === true) {
-      // chrome.runtime.sendMessage({
-      //   highlightReplaced: true,
-      //   settingType: "highlightReplaced",
-      // });
       highlightReplacedBtn.checked = true;
+    }
+
+    if (whereToSettingNode.value !== "1") {
+      console.log("Disabling --------> ", whereToSettingNode.value);
+      disableHighlightReplacementSlider();
+    } else {
+      console.log("Enabling --------> ", whereToSettingNode.value);
+      enableHighlightReplacementSlider();
     }
   });
 
@@ -207,7 +176,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (checkbox) {
     checkbox.addEventListener("change", async function () {
       if (checkbox.checked) {
-        console.log("sending highlight", checkbox);
         chrome.runtime.sendMessage({
           highlight: true,
           settingType: "highlightComplex",
