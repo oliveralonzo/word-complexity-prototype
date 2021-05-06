@@ -268,9 +268,23 @@ function addInPlaceListeners(element) {
   } else if (howLongSetting === "UntilClick") {
     addUntilClickInPlaceListeners(element);
   } else if (howLongSetting === "Permanent") {
-    addPermanentInPlaceListeners();
+    addPermanentInPlaceListeners(element);
   }
 }
+
+function addPermanentInPlaceListeners(element) {
+  element.addEventListener("click", permanentInPlaceReplace);
+}
+
+const permanentInPlaceReplace = (event) => {
+  if (!event.currentTarget.classList.contains("swapped")) {
+    if (textSetting !== "Document") {
+      setToOtherText(event.currentTarget);
+    } else {
+      setToOtherDocument(event.currentTarget);
+    }
+  }
+};
 
 function addTemporaryInPlaceListeners(element) {
   element.addEventListener("mouseenter", changeTextOnMouseOver);
@@ -340,6 +354,28 @@ function addUntilClickPopupListners(element) {
   element.addEventListener("click", toggleUntilClickPopup);
 }
 
+const permanentPopup = function (event) {
+  if (textSetting !== "Document") {
+    const tooltip = this.firstChild;
+    const isToolTip =
+      tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
+    if (!isToolTip) {
+      showNonDocumentTooltip(event.currentTarget);
+    }
+  } else {
+    const mainContent = identifyPageMainContent();
+    console.log(mainContent.firstChild);
+    const tooltip = mainContent.firstChild;
+    if (
+      !(
+        tooltip instanceof HTMLElement && tooltip.classList.contains("tooltip1")
+      )
+    ) {
+      toggleUntilClickPopup(mainContent);
+    }
+  }
+};
+
 function findClosestComplexAncestor(el, sel) {
   while (
     (el = el.parentElement) &&
@@ -369,7 +405,7 @@ const toggleUntilClickPopup = function (el) {
 };
 
 function addPermanentPopupListners(element) {
-  console.log("Permanent popup yet to be implemented");
+  element.addEventListener("click", permanentPopup);
 }
 
 function addSideTipListeners(element) {
@@ -444,8 +480,11 @@ function removeInPlaceListeners(element) {
   }
 }
 
+function removePermanentInPlaceListners(element) {
+  element.removeEventListener("click", permanentInPlaceReplace);
+}
+
 function removeTemporaryInPlaceListners(element) {
-  console.log("Removing inplace for ", textSetting);
   // element.removeEventListener("mouseover", changeText);
   // element.removeEventListener("mouseout", changeText);
   element.removeEventListener("mouseenter", changeTextOnMouseOver);
@@ -464,6 +503,10 @@ function removePopupListners(element) {
   } else if (howLongSetting === "Permanent") {
     removePermanentPopupListners(element);
   }
+}
+
+function removePermanentPopupListners(element) {
+  element.removeEventListener("click", permanentPopup);
 }
 
 function removeTemporaryPopupListners(element) {
@@ -562,7 +605,7 @@ const showTemporaryDocumentSideTip = function (node) {
   dialogBox.appendChild(dialogContent);
   dialogBox.classList.add("modal1");
 
-  const mainDiv = identifyPageMainContent(document.body);
+  const mainDiv = identifyPageMainContent();
 
   mainDiv.appendChild(dialogBox);
 };
@@ -604,8 +647,6 @@ const removeSideTip = function () {
 };
 
 function switchHowLongSetting(request) {
-  console.log("from switch how long setting");
-  console.log(request);
   removePopups();
   removeSideTip();
   removeListeners();
@@ -757,7 +798,8 @@ function getPTags(node) {
   }
 }
 
-function identifyPageMainContent(node) {
+function identifyPageMainContent() {
+  node = document.body;
   let queue = [node];
   let mainDiv = node;
   let maxMainCandiates = 0;
@@ -947,7 +989,7 @@ const showDocumentTooltip = function (node) {
   });
 
   tooltipWrap.classList.add("tooltip1", "complex-document");
-  const mainDiv = identifyPageMainContent(document.body);
+  const mainDiv = identifyPageMainContent();
 
   mainDiv.appendChild(tooltipWrap);
   mainDiv.insertBefore(tooltipWrap, mainDiv.firstChild);
