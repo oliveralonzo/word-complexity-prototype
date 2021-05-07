@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (toSendBack.length === keys.length) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
-          type: "InPlace",
+          type: "simplifiedText",
           toChange: toSend,
           textType: type,
         });

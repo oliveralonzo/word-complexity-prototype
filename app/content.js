@@ -68,7 +68,6 @@ chrome.storage.sync.get("highlightReplaced", (status) => {
   if (Object.keys(status).length > 0 && status.highlightReplaced !== null) {
     highlightReplacedToggle = status.highlightReplaced;
   }
-  console.log("calling toggle now");
   toggleHighlightReplaced({
     settingType: "highlightReplaced",
     highlightReplaced: highlightReplacedToggle,
@@ -137,8 +136,6 @@ chrome.runtime.onMessage.addListener(function (request) {
     case "displayConfidence":
       console.log("Display Confidence selected!");
       break;
-    default:
-      console.log("Did not receive any setting!");
   }
 });
 
@@ -148,7 +145,7 @@ chrome.runtime.onMessage.addListener(function (request) {
  * set complexWordGroup, complexSentencesGroup to appropriate element groups
  */
 chrome.runtime.onMessage.addListener(function (request) {
-  if (request.type === "InPlace") {
+  if (request.type === "simplifiedText") {
     newWords = request.toChange;
     newWords = JSON.parse(newWords);
     if (request.textType === "sentence") {
@@ -160,8 +157,6 @@ chrome.runtime.onMessage.addListener(function (request) {
     } else if (request.textType === "document") {
       replacedDocumentParagraphs = JSON.parse(request.toChange);
     }
-  } else {
-    console.log("No words received.");
   }
 });
 
@@ -250,13 +245,11 @@ function addListeners() {
         addInPlaceListeners(element);
         break;
       case "Popup":
-        addPopupListners(element);
+        addPopupListeners(element);
         break;
       case "Side":
         addSideTipListeners(element);
         break;
-      default:
-        console.log("Did not match any setting");
     }
     element.classList.add("clickable-pointer");
   });
@@ -335,22 +328,22 @@ const changeTextOnMouseOut = function (event) {
   }
 };
 
-function addPopupListners(element) {
+function addPopupListeners(element) {
   if (howLongSetting === "Temporary") {
-    addTemporaryPopupListners(element);
+    addTemporaryPopupListeners(element);
   } else if (howLongSetting === "UntilClick") {
-    addUntilClickPopupListners(element);
+    addUntilClickPopupListeners(element);
   } else if (howLongSetting === "Permanent") {
-    addPermanentPopupListners(element);
+    addPermanentPopupListeners(element);
   }
 }
 
-function addTemporaryPopupListners(element) {
+function addTemporaryPopupListeners(element) {
   element.addEventListener("mouseover", showToolTip);
   element.addEventListener("mouseout", removeToolTip);
 }
 
-function addUntilClickPopupListners(element) {
+function addUntilClickPopupListeners(element) {
   element.addEventListener("click", toggleUntilClickPopup);
 }
 
@@ -404,7 +397,7 @@ const toggleUntilClickPopup = function (el) {
   }
 };
 
-function addPermanentPopupListners(element) {
+function addPermanentPopupListeners(element) {
   element.addEventListener("click", permanentPopup);
 }
 
@@ -458,10 +451,10 @@ function removeListeners() {
       //   element.removeEventListener("click", changeText);
       //   break;
       case "Popup":
-        removePopupListners(element);
+        removePopupListeners(element);
         break;
       case "Side":
-        removeSideTipListners(element);
+        removeSideTipListeners(element);
         break;
       default:
         console.log("Did not match any setting");
@@ -472,53 +465,53 @@ function removeListeners() {
 
 function removeInPlaceListeners(element) {
   if (howLongSetting === "Temporary") {
-    removeTemporaryInPlaceListners(element);
+    removeTemporaryInPlaceListeners(element);
   } else if (howLongSetting === "UntilClick") {
-    removeUntilClickInPlaceListners(element);
+    removeUntilClickInPlaceListeners(element);
   } else if (howLongSetting === "Permanent") {
-    removePermanentInPlaceListners(element);
+    removePermanentInPlaceListeners(element);
   }
 }
 
-function removePermanentInPlaceListners(element) {
+function removePermanentInPlaceListeners(element) {
   element.removeEventListener("click", permanentInPlaceReplace);
 }
 
-function removeTemporaryInPlaceListners(element) {
+function removeTemporaryInPlaceListeners(element) {
   // element.removeEventListener("mouseover", changeText);
   // element.removeEventListener("mouseout", changeText);
   element.removeEventListener("mouseenter", changeTextOnMouseOver);
   element.removeEventListener("mouseleave", changeTextOnMouseOut);
 }
 
-function removeUntilClickInPlaceListners(element) {
+function removeUntilClickInPlaceListeners(element) {
   element.removeEventListener("click", changeText);
 }
 
-function removePopupListners(element) {
+function removePopupListeners(element) {
   if (howLongSetting === "Temporary") {
-    removeTemporaryPopupListners(element);
+    removeTemporaryPopupListeners(element);
   } else if (howLongSetting === "UntilClick") {
-    removeUntilClickPopupListners(element);
+    removeUntilClickPopupListeners(element);
   } else if (howLongSetting === "Permanent") {
-    removePermanentPopupListners(element);
+    removePermanentPopupListeners(element);
   }
 }
 
-function removePermanentPopupListners(element) {
+function removePermanentPopupListeners(element) {
   element.removeEventListener("click", permanentPopup);
 }
 
-function removeTemporaryPopupListners(element) {
+function removeTemporaryPopupListeners(element) {
   element.removeEventListener("mouseover", showToolTip);
   element.removeEventListener("mouseout", removeToolTip);
 }
 
-function removeUntilClickPopupListners(element) {
+function removeUntilClickPopupListeners(element) {
   element.removeEventListener("click", toggleUntilClickPopup);
 }
 
-function removeSideTipListners(element) {
+function removeSideTipListeners(element) {
   if (howLongSetting === "Temporary") {
     removeTemporarySideTipListeners(element);
   } else if (howLongSetting === "UntilClick") {
@@ -688,15 +681,12 @@ function toggleHighlightComplex(request) {
 }
 
 function toggleHighlightReplaced(request) {
-  console.log("reached toggle. Request = ", request);
   if (request.settingType == "highlightReplaced") {
     if (request.highlightReplaced === true) {
-      console.log("Its true!!");
       chrome.storage.sync.set({ highlightReplaced: true });
       highlightReplacedToggle = true;
       addReplacedHighlights();
     } else {
-      console.log("Its false!!");
       chrome.storage.sync.set({ highlightReplaced: false });
       highlightReplacedToggle = false;
       removeReplacedHighlights();
@@ -754,7 +744,6 @@ function addHighlights() {
 }
 
 function addReplacedHighlights() {
-  console.log("Adding highlights");
   const group = {
     Word: complexWordGroup,
     Sentence: complexSentencesGroup,
