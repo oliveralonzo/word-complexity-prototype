@@ -411,8 +411,8 @@ function addSideTipListeners(element) {
   }
 }
 
-function addUntilClickSideTipListeners() {
-  console.log("Add until click side tip listeners yet to be implemented");
+function addUntilClickSideTipListeners(element) {
+  element.addEventListener("click", showNonDocumentSideTipUntilClick);
 }
 
 function addPermanentSideTipListeners() {
@@ -447,9 +447,6 @@ function removeListeners() {
       case "InPlace":
         removeInPlaceListeners(element);
         break;
-      // case "Highlight":
-      //   element.removeEventListener("click", changeText);
-      //   break;
       case "Popup":
         removePopupListeners(element);
         break;
@@ -478,8 +475,6 @@ function removePermanentInPlaceListeners(element) {
 }
 
 function removeTemporaryInPlaceListeners(element) {
-  // element.removeEventListener("mouseover", changeText);
-  // element.removeEventListener("mouseout", changeText);
   element.removeEventListener("mouseenter", changeTextOnMouseOver);
   element.removeEventListener("mouseleave", changeTextOnMouseOut);
 }
@@ -572,9 +567,17 @@ const showTemporaryNonDocumentSideTip = function (node) {
 
   dialogBox.appendChild(dialogHeader);
   dialogBox.appendChild(dialogContent);
-
   dialogBox.classList.add("modal1");
-  node.appendChild(dialogBox);
+
+  const modalContainer = document.getElementsByClassName("modal1-container");
+  if (modalContainer.length == 0) {
+    const modalContainer = document.createElement("div");
+    modalContainer.classList.add("modal1-container");
+    modalContainer.appendChild(dialogBox);
+    document.body.insertBefore(modalContainer, document.body.firstChild);
+  } else {
+    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+  }
 };
 
 const showTemporaryDocumentSideTip = function (node) {
@@ -598,9 +601,15 @@ const showTemporaryDocumentSideTip = function (node) {
   dialogBox.appendChild(dialogContent);
   dialogBox.classList.add("modal1");
 
-  const mainDiv = identifyPageMainContent();
-
-  mainDiv.appendChild(dialogBox);
+  const modalContainer = document.getElementsByClassName("modal1-container");
+  if (modalContainer.length == 0) {
+    const modalContainer = document.createElement("div");
+    modalContainer.classList.add("modal1-container");
+    modalContainer.appendChild(dialogBox);
+    document.body.insertBefore(modalContainer, document.body.firstChild);
+  } else {
+    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+  }
 };
 
 function getSideTipHeaderEl() {
@@ -629,7 +638,44 @@ function getSideTipContentEl(text) {
   return dialogContent;
 }
 
-function showNonDocumentSideTipUntilClick(element) {}
+const showNonDocumentSideTipUntilClick = function (node) {
+  const wordSet = {
+    Word: replacedWords,
+    Sentence: replacedSentences,
+    Paragraph: replacedParagraphs,
+    Document: replacedDocumentParagraphs,
+  };
+
+  if (textSetting === "Word") {
+    node = node.target;
+  } else {
+    node = node.currentTarget;
+  }
+
+  let id = node.id;
+  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+
+  const dialogBox = document.createElement("div");
+  const dialogContent = getSideTipContentEl(complex.text);
+  const dialogHeader = getSideTipHeaderEl();
+
+  dialogBox.appendChild(dialogHeader);
+  dialogBox.appendChild(dialogContent);
+
+  dialogBox.classList.add("modal1");
+
+  const modalContainer = document.getElementsByClassName("modal1-container");
+  if (modalContainer.length == 0) {
+    const modalContainer = document.createElement("div");
+    modalContainer.classList.add("modal1-container");
+    modalContainer.appendChild(dialogBox);
+    document.body.insertBefore(modalContainer, document.body.firstChild);
+    // node.insertBefore(modalContainer, node.firstChild);
+  } else {
+    console.log("Else part");
+    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+  }
+};
 
 function showNonDocumentPermanentSideTip(element) {}
 
