@@ -526,6 +526,10 @@ function removeTemporarySideTipListeners(element) {
   }
 }
 
+function removeUntilClickSideTipListeners(element) {
+  element.removeEventListener("click", showNonDocumentSideTipUntilClick);
+}
+
 // function showSideTip(element) {
 //   if (textSetting !== "Document") {
 //     showNonDocumentSideTip(element);
@@ -612,12 +616,31 @@ const showTemporaryDocumentSideTip = function (node) {
   }
 };
 
+// function getSideTipHeaderEl() {
+//   const dialogHeader = document.createElement("div");
+//   const dialogHeading = document.createElement("SPAN");
+//   const closeButton = document.createElement("SPAN");
+//   closeButton.appendChild(document.createTextNode("X"));
+//   closeButton.classList.add("close");
+
+//   let heading = document.createTextNode(
+//     `Simplified ${textSetting.toLowerCase()}`
+//   );
+//   dialogHeading.classList.add("dialogHeading");
+//   dialogHeading.appendChild(heading);
+//   dialogHeader.classList.add("dialogHeader");
+//   dialogHeader.appendChild(dialogHeading);
+//   dialogHeader.appendChild(closeButton);
+//   return dialogHeader;
+// }
+
 function getSideTipHeaderEl() {
   const dialogHeader = document.createElement("div");
   const dialogHeading = document.createElement("SPAN");
   const closeButton = document.createElement("SPAN");
   closeButton.appendChild(document.createTextNode("X"));
   closeButton.classList.add("close");
+  closeButton.addEventListener("click", closeSideTip);
 
   let heading = document.createTextNode(
     `Simplified ${textSetting.toLowerCase()}`
@@ -637,6 +660,18 @@ function getSideTipContentEl(text) {
   dialogContent.appendChild(document.createTextNode(text));
   return dialogContent;
 }
+
+const highlightSideTipMappedText = function (event) {
+  let id = event.currentTarget.id.substring(8);
+  const textEl = document.getElementById(id);
+  textEl.classList.add("sidetip-mapped-text-highlight");
+};
+
+const removeSideTipMappedTextHighlights = function (event) {
+  let id = event.currentTarget.id.substring(8);
+  const textEl = document.getElementById(id);
+  textEl.classList.remove("sidetip-mapped-text-highlight");
+};
 
 const showNonDocumentSideTipUntilClick = function (node) {
   const wordSet = {
@@ -662,6 +697,13 @@ const showNonDocumentSideTipUntilClick = function (node) {
   dialogBox.appendChild(dialogHeader);
   dialogBox.appendChild(dialogContent);
 
+  dialogContent.setAttribute("id", `sidetip-${id}`);
+  dialogContent.addEventListener("mouseenter", highlightSideTipMappedText);
+  dialogContent.addEventListener(
+    "mouseleave",
+    removeSideTipMappedTextHighlights
+  );
+
   dialogBox.classList.add("modal1");
 
   const modalContainer = document.getElementsByClassName("modal1-container");
@@ -670,9 +712,7 @@ const showNonDocumentSideTipUntilClick = function (node) {
     modalContainer.classList.add("modal1-container");
     modalContainer.appendChild(dialogBox);
     document.body.insertBefore(modalContainer, document.body.firstChild);
-    // node.insertBefore(modalContainer, node.firstChild);
   } else {
-    console.log("Else part");
     modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
   }
 };
@@ -680,9 +720,13 @@ const showNonDocumentSideTipUntilClick = function (node) {
 function showNonDocumentPermanentSideTip(element) {}
 
 const removeSideTip = function () {
-  document.querySelectorAll(".modal1").forEach(function (a) {
+  document.querySelectorAll(".modal1-container").forEach(function (a) {
     a.remove();
   });
+};
+
+const closeSideTip = function (event) {
+  event.currentTarget.parentNode.parentNode.remove();
 };
 
 function switchHowLongSetting(request) {
@@ -759,7 +803,6 @@ function switchHowMuchSetting(request) {
   revertContentToOriginal();
 
   textSetting = request.textSetting;
-  console.log("reverted content");
   if (highlightToggle) {
     addHighlights();
   }

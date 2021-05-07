@@ -178,6 +178,10 @@
   font-size: 16px;
 }
 
+.sidetip-mapped-text-highlight {
+  background: #49d0b8;
+}
+
 /* The Close Button */
 .close {
   color: rgb(0, 0, 0);
