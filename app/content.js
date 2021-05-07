@@ -412,7 +412,12 @@ function addSideTipListeners(element) {
 }
 
 function addUntilClickSideTipListeners(element) {
-  element.addEventListener("click", showNonDocumentSideTipUntilClick);
+  if (textSetting !== "Document") {
+    element.addEventListener("click", showNonDocumentSideTipUntilClick);
+  } else {
+    // Using same function as temporary as logic is the same
+    element.addEventListener("click", showTemporaryDocumentSideTip);
+  }
 }
 
 function addPermanentSideTipListeners() {
@@ -530,25 +535,6 @@ function removeUntilClickSideTipListeners(element) {
   element.removeEventListener("click", showNonDocumentSideTipUntilClick);
 }
 
-// function showSideTip(element) {
-//   if (textSetting !== "Document") {
-//     showNonDocumentSideTip(element);
-//   } else {
-//     showDocumentSideTip(element);
-//   }
-// }
-
-// function showNonDocumentSideTip(element) {
-//   if (howLongSetting === "Temporary") {
-//     element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
-//     element.addEventListener("mouseout", removeSideTip);
-//   } else if (howLongSetting === "UntilClick") {
-//     showNonDocumentSideTipUntilClick(element);
-//   } else if (howLongSetting === "Permanent") {
-//     showNonDocumentPermanentSideTip(element);
-//   }
-// }
-
 const showTemporaryNonDocumentSideTip = function (node) {
   const wordSet = {
     Word: replacedWords,
@@ -615,24 +601,6 @@ const showTemporaryDocumentSideTip = function (node) {
     modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
   }
 };
-
-// function getSideTipHeaderEl() {
-//   const dialogHeader = document.createElement("div");
-//   const dialogHeading = document.createElement("SPAN");
-//   const closeButton = document.createElement("SPAN");
-//   closeButton.appendChild(document.createTextNode("X"));
-//   closeButton.classList.add("close");
-
-//   let heading = document.createTextNode(
-//     `Simplified ${textSetting.toLowerCase()}`
-//   );
-//   dialogHeading.classList.add("dialogHeading");
-//   dialogHeading.appendChild(heading);
-//   dialogHeader.classList.add("dialogHeader");
-//   dialogHeader.appendChild(dialogHeading);
-//   dialogHeader.appendChild(closeButton);
-//   return dialogHeader;
-// }
 
 function getSideTipHeaderEl() {
   const dialogHeader = document.createElement("div");
