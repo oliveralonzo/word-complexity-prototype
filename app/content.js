@@ -134,7 +134,9 @@ chrome.runtime.onMessage.addListener(function (request) {
       switchHowLongSetting(request);
       break;
     case "displayConfidence":
-      console.log("Display Confidence selected!");
+      console.log(
+        "Display Confidence selected! Functionality yet to be implemented"
+      );
       break;
   }
 });
@@ -251,6 +253,7 @@ function addListeners() {
         addSideTipListeners(element);
         break;
     }
+    // Get the pointer icon on-hover
     element.classList.add("clickable-pointer");
   });
 }
@@ -420,8 +423,13 @@ function addUntilClickSideTipListeners(element) {
   }
 }
 
-function addPermanentSideTipListeners() {
-  console.log("Add Permanent side tip listeners yet to be implemented");
+function addPermanentSideTipListeners(element) {
+  if (textSetting !== "Document") {
+    element.addEventListener("click", showNonDocumentSideTipUntilClick);
+  } else {
+    // Using same function as temporary as logic is the same
+    element.addEventListener("click", showTemporaryDocumentSideTip);
+  }
 }
 
 function addTemporarySideTipListeners(element) {
@@ -521,6 +529,15 @@ function removeSideTipListeners(element) {
   }
 }
 
+function removePermanentSideTipListeners(element) {
+  if (textSetting !== "Document") {
+    element.removeEventListener("click", showNonDocumentSideTipUntilClick);
+  } else {
+    // Using same function as temporary as logic is the same
+    element.removeEventListener("click", showTemporaryDocumentSideTip);
+  }
+}
+
 function removeTemporarySideTipListeners(element) {
   if (textSetting !== "Document") {
     element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
@@ -532,7 +549,12 @@ function removeTemporarySideTipListeners(element) {
 }
 
 function removeUntilClickSideTipListeners(element) {
-  element.removeEventListener("click", showNonDocumentSideTipUntilClick);
+  if (textSetting === "Document") {
+    element.removeEventListener("click", showNonDocumentSideTipUntilClick);
+  } else {
+    //Using same function as temporary as logic is same
+    element.removeEventListener("click", showTemporaryDocumentSideTip);
+  }
 }
 
 const showTemporaryNonDocumentSideTip = function (node) {
@@ -613,6 +635,11 @@ function getSideTipHeaderEl() {
   let heading = document.createTextNode(
     `Simplified ${textSetting.toLowerCase()}`
   );
+
+  if (howLongSetting === "Permanent") {
+    closeButton.style.display = "none";
+  }
+
   dialogHeading.classList.add("dialogHeading");
   dialogHeading.appendChild(heading);
   dialogHeader.classList.add("dialogHeader");
@@ -1256,15 +1283,3 @@ function replaceText(node) {
     }
   }
 }
-
-// url stuff - not necessary, potentially useful
-// var url = null;
-// console.log("running along fine");
-// chrome.runtime.onMessage.addListener(
-//     function (request) {
-//         if(request.message === "New URL!") {
-//             console.log("passed through");
-//             url = request.url;
-//             console.log(url);
-//         }
-//     });
