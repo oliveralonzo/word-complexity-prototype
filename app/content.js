@@ -77,12 +77,25 @@ chrome.storage.sync.get("highlightReplaced", (status) => {
 var idx = 0; // used for id index of words
 
 // find all <p> tags and highlight words with length greater than 6
-const paragraphs = document.getElementsByTagName("p");
+const mainContent = identifyPageMainContent();
+mainContent.classList.add("mainContentContainer");
+const paragraphs = document.querySelectorAll(".mainContentContainer p");
 
 for (var i = 0; i < paragraphs.length; i++) {
   let currElement = paragraphs[i];
   replaceText(currElement);
 }
+
+identifyParagraphs();
+
+identifyDocument();
+
+complexWordGroup = document.getElementsByClassName("complex-word");
+complexSentencesGroup = document.getElementsByClassName("complex-sentence");
+complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
+complexDocumentParagraphGroup = document.getElementsByClassName(
+  "complex-document"
+);
 
 for (let i = 0; i < complexWordGroup.length; i++) {
   originalComplexWordGroup.push(complexWordGroup[i].innerHTML);
@@ -549,7 +562,7 @@ function removeTemporarySideTipListeners(element) {
 }
 
 function removeUntilClickSideTipListeners(element) {
-  if (textSetting === "Document") {
+  if (textSetting !== "Document") {
     element.removeEventListener("click", showNonDocumentSideTipUntilClick);
   } else {
     //Using same function as temporary as logic is same
@@ -1200,45 +1213,39 @@ function identifySentences(complex) {
 
 function identifyParagraphs() {
   let paraIndex = 0;
-  document.querySelectorAll("p").forEach(function (paragraph) {
-    paraIndex += 1;
-    let paraText = paragraph.innerText;
-    let sentences = paraText.split(".");
-    let count = 0;
-    sentences.forEach((sentence) => {
-      if (sentence.split(" ").length > 20) {
-        count++;
+  document
+    .querySelectorAll(".mainContentContainer p")
+    .forEach(function (paragraph) {
+      paraIndex += 1;
+      let paraText = paragraph.innerText;
+      let sentences = paraText.split(".");
+      let count = 0;
+      sentences.forEach((sentence) => {
+        if (sentence.split(" ").length > 20) {
+          count++;
+        }
+      });
+      if (count > 2) {
+        let paraId = "paragraph" + paraIndex;
+        complexText.currTabParagraphs[paraId] = [paraText];
+        paragraph.setAttribute("id", "paragraph" + paraIndex);
+        paragraph.classList.add("complex-paragraph");
       }
     });
-    if (count > 2) {
-      let paraId = "paragraph" + paraIndex;
-      complexText.currTabParagraphs[paraId] = [paraText];
-      paragraph.setAttribute("id", "paragraph" + paraIndex);
-      paragraph.classList.add("complex-paragraph");
-    }
-  });
 }
 
 function identifyDocument() {
   let complexParagraphs = document.getElementsByClassName("complex-paragraph");
-  let doc = document.getElementById("story_text");
+  let doc = identifyPageMainContent();
+  doc.classList.add("mainContentContainer");
+  let allParagraphs = document.querySelectorAll(".mainContentContainer p");
 
-  let allParagraphs = document.getElementsByTagName("P");
-
-  complexText.currTabDocumentParagraphs["document" + 1] = [doc.textContent];
+  complexText.currTabDocumentParagraphs["document" + 1] = [doc.innerText];
   if (complexParagraphs.length > 2) {
     Array.from(allParagraphs).forEach((node) => {
       if (node.innerText.split(" ").length > 20) getPTags(node);
     });
   }
-
-  // Need to verified what needs to be sent
-  // complexText.currTabDocumentParagraphs["document" + 1] = [doc.textContent];
-  // if (complexParagraphs.length > 2) {
-  //   let content = document.getElementById("story_text");
-  //   // content.classList.add("complex-document");
-  //   getPTags(content);
-  // }
 }
 
 /*
@@ -1262,20 +1269,9 @@ function replaceText(node) {
         return wordWithNewTag;
       });
       identifySentences(complex);
-      identifyParagraphs();
-      identifyDocument();
+      // identifyParagraphs();
       var output = complex.join(" ");
       node.innerHTML = output;
-      complexWordGroup = document.getElementsByClassName("complex-word");
-      complexSentencesGroup = document.getElementsByClassName(
-        "complex-sentence"
-      );
-      complexParagraphGroup = document.getElementsByClassName(
-        "complex-paragraph"
-      );
-      complexDocumentParagraphGroup = document.getElementsByClassName(
-        "complex-document"
-      );
     }
   } else {
     for (let i = 0; i < node.childNodes.length; i++) {
