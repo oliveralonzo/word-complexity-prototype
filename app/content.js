@@ -300,8 +300,12 @@ function addTemporaryInPlaceListeners(element) {
   element.addEventListener("mouseleave", changeTextOnMouseOut);
 }
 
+// function addUntilClickInPlaceListeners(element) {
+//   element.addEventListener("click", changeText);
+// }
+
 function addUntilClickInPlaceListeners(element) {
-  element.addEventListener("click", changeText);
+  element.addEventListener("click", setToOtherWord);
 }
 
 function isParent(refNode, otherNode) {
@@ -505,8 +509,12 @@ function removeTemporaryInPlaceListeners(element) {
   element.removeEventListener("mouseleave", changeTextOnMouseOut);
 }
 
+// function removeUntilClickInPlaceListeners(element) {
+//   element.removeEventListener("click", changeText);
+// }
+
 function removeUntilClickInPlaceListeners(element) {
-  element.removeEventListener("click", changeText);
+  element.removeEventListener("click", setToOtherWord);
 }
 
 function removePopupListeners(element) {
@@ -748,14 +756,20 @@ function switchHowLongSetting(request) {
   revertContentToOriginal();
 
   howLongSetting = request.howLongSetting;
+
   addListeners();
   addHighlights();
 }
 
-const changeText = (event) => {
-  const clickedEl = event.currentTarget;
-  setToOtherWord(clickedEl);
-};
+// const changeText = (event) => {
+//   const clickedEl = event.currentTarget;
+//   setToOtherWord(clickedEl);
+// };
+
+// const changeText = (event) => {
+//   const clickedEl = event.currentTarget;
+//   setToOtherWord(clickedEl);
+// };
 
 /*
 * Adds or removes highlight to/from complex texts based on request
@@ -796,6 +810,9 @@ function switchWhereToSetting(request) {
   removePopups();
   removeSideTip();
   removeListeners();
+  removeHighlights();
+  removeSwappedClass();
+  revertContentToOriginal();
   whereToSetting = request.whereToSetting;
   addListeners();
 }
@@ -1022,7 +1039,8 @@ const setToOtherText = function (node) {
   wordSet[foundIndex].text = currWord;
 };
 
-const setToOtherWord = (node) => {
+const setToOtherWord = (event) => {
+  node = event.currentTarget;
   if (textSetting === "Document") {
     setToOtherDocument(node);
   } else {
