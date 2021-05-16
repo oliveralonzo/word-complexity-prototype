@@ -509,10 +509,6 @@ function removeTemporaryInPlaceListeners(element) {
   element.removeEventListener("mouseleave", changeTextOnMouseOut);
 }
 
-// function removeUntilClickInPlaceListeners(element) {
-//   element.removeEventListener("click", changeText);
-// }
-
 function removeUntilClickInPlaceListeners(element) {
   element.removeEventListener("click", setToOtherWord);
 }
@@ -761,16 +757,6 @@ function switchHowLongSetting(request) {
   addHighlights();
 }
 
-// const changeText = (event) => {
-//   const clickedEl = event.currentTarget;
-//   setToOtherWord(clickedEl);
-// };
-
-// const changeText = (event) => {
-//   const clickedEl = event.currentTarget;
-//   setToOtherWord(clickedEl);
-// };
-
 /*
 * Adds or removes highlight to/from complex texts based on request
 *  - if highlight true
@@ -814,6 +800,9 @@ function switchWhereToSetting(request) {
   removeSwappedClass();
   revertContentToOriginal();
   whereToSetting = request.whereToSetting;
+  if (highlightToggle) {
+    addHighlights();
+  }
   addListeners();
 }
 
