@@ -76,9 +76,11 @@ chrome.storage.sync.get("highlightReplaced", (status) => {
 
 var idx = 0; // used for id index of words
 
-// find all <p> tags and highlight words with length greater than 6
+// Identify page main content
 const mainContent = identifyPageMainContent();
 mainContent.classList.add("mainContentContainer");
+
+// Get all paragraphs within the main content of the page
 const paragraphs = document.querySelectorAll(".mainContentContainer p");
 
 for (var i = 0; i < paragraphs.length; i++) {
@@ -86,17 +88,19 @@ for (var i = 0; i < paragraphs.length; i++) {
   replaceText(currElement);
 }
 
+// Identify complex paragraphs
 identifyParagraphs();
 
+// Identify complex document
 identifyDocument();
 
 complexWordGroup = document.getElementsByClassName("complex-word");
 complexSentencesGroup = document.getElementsByClassName("complex-sentence");
 complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
-complexDocumentParagraphGroup = document.getElementsByClassName(
-  "complex-document"
-);
+complexDocumentParagraphGroup =
+  document.getElementsByClassName("complex-document");
 
+// Store all the original complex text group.
 for (let i = 0; i < complexWordGroup.length; i++) {
   originalComplexWordGroup.push(complexWordGroup[i].innerHTML);
 }
@@ -175,6 +179,9 @@ chrome.runtime.onMessage.addListener(function (request) {
   }
 });
 
+/*
+ * Wrapper function to revert swapped/replaced/simplified text to original text
+ */
 function revertContentToOriginal() {
   const groups = {
     Word: complexWordGroup,
@@ -612,9 +619,8 @@ const showTemporaryNonDocumentSideTip = function (node) {
 const showTemporaryDocumentSideTip = function (node) {
   node = node.target;
 
-  let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
-    "\\n \\n"
-  );
+  let simplifiedParagraphs =
+    replacedDocumentParagraphs[0].text.split("\\n \\n");
   const dialogContent = document.createElement("div");
   const textContent = document.createElement("div");
   dialogContent.classList.add("modal1-content");
@@ -729,8 +735,6 @@ const showNonDocumentSideTipUntilClick = function (node) {
   }
 };
 
-function showNonDocumentPermanentSideTip(element) {}
-
 const removeSideTip = function () {
   document.querySelectorAll(".modal1-container").forEach(function (a) {
     a.remove();
@@ -740,6 +744,16 @@ const removeSideTip = function () {
 const closeSideTip = function (event) {
   event.currentTarget.parentNode.parentNode.remove();
 };
+
+/**
+ * Changes the value of "How long" setting. Removes all the
+ * configurations of previous setting and reverts any changes
+ * to original. Adds listeners for the new setting.
+ * @param {Object}  request   Specifies the value of howLongSetting.
+ *                            Values could be Temporary, UntilClick,
+ *                            Permanent.
+ *
+ */
 
 function switchHowLongSetting(request) {
   removePopups();
@@ -778,6 +792,13 @@ function toggleHighlightComplex(request) {
   }
 }
 
+/**
+ * Adds or removes highlight to/from simplified text based on request
+ *  - if highlightReplaced true
+ *      - Add yellow highlight to the text
+ *  - if highlightReplaced false
+ */
+
 function toggleHighlightReplaced(request) {
   if (request.settingType == "highlightReplaced") {
     if (request.highlightReplaced === true) {
@@ -792,6 +813,15 @@ function toggleHighlightReplaced(request) {
   }
 }
 
+/**
+ * Changes the value of "Where" setting. Removes all the
+ * configurations of previous setting and reverts any changes
+ * to original. Adds listeners for the new setting.
+ * @param {Object}  request   Specifies the value of whereToSetting.
+ *                            Values could be InPlace, Popup, Side.
+ *
+ */
+
 function switchWhereToSetting(request) {
   removePopups();
   removeSideTip();
@@ -805,6 +835,15 @@ function switchWhereToSetting(request) {
   }
   addListeners();
 }
+
+/**
+ * Changes the value of "How much" setting. Removes all the
+ * configurations of previous setting and reverts any changes
+ * to original. Adds listeners for the new setting.
+ * @param {Object}  request   Specifies the value of textSetting.
+ *                            Values are Words, Sentence, Paragraphs,
+ *                            Document
+ */
 
 function switchHowMuchSetting(request) {
   removePopups();
@@ -890,6 +929,12 @@ function getPTags(node) {
   }
 }
 
+/*
+ *  Identifies main textual content of the webpage. Starting from the body tag,
+ *  recursively explores child nodes to coverge at a node (DIV tag) that has maximum
+ *  number of p tag or TEXT_NODES having valid sentences. In this case, valid
+ *  sentence is any sentence that has punctuations and spaces
+ */
 function identifyPageMainContent() {
   node = document.body;
   let queue = [node];
@@ -1072,9 +1117,8 @@ const removeSpecificTooltip = (el) => {
 };
 
 const showDocumentTooltip = function (node) {
-  let simplifiedParagraphs = replacedDocumentParagraphs[0].text.split(
-    "\\n \\n"
-  );
+  let simplifiedParagraphs =
+    replacedDocumentParagraphs[0].text.split("\\n \\n");
   const tooltipWrap = document.createElement("div");
 
   Array.from(simplifiedParagraphs).forEach((para) => {
@@ -1104,7 +1148,6 @@ const showNonDocumentTooltip = function (node) {
   tooltipWrap.setAttribute("data-text", complex.text);
   tooltipWrap.appendChild(document.createTextNode(complex.text));
   node.insertBefore(tooltipWrap, node.firstChild);
-  // node.appendChild(tooltipWrap);
 };
 
 /* helper function to identify words with length above 6 - identify complex words
@@ -1217,7 +1260,11 @@ function identifySentences(complex) {
     }
   }, complex);
 }
-
+/*
+ * Identifies complex paragraphs within the main content of the
+ * webpage. For a paragraph to be complex, at least two sentences
+ * having length greater than 20 words should be present.
+ */
 function identifyParagraphs() {
   let paraIndex = 0;
   document
