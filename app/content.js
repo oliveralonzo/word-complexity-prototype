@@ -94,6 +94,8 @@ identifyParagraphs();
 // Identify complex document
 identifyDocument();
 
+console.log("Number of complex paras = ", complexDocumentParagraphsCount);
+
 complexWordGroup = document.getElementsByClassName("complex-word");
 complexSentencesGroup = document.getElementsByClassName("complex-sentence");
 complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
@@ -122,6 +124,7 @@ for (let i = 0; i < complexDocumentParagraphGroup.length; i++) {
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
   wordUpdate: "True",
+  totalParagraphs: complexDocumentParagraphsCount,
   toSimplify: complexText["currTabWords"],
   toSimplifySentence: complexText["currTabSentences"],
   toSimplifyParagraph: complexText["currTabParagraphs"],
@@ -306,10 +309,6 @@ function addTemporaryInPlaceListeners(element) {
   element.addEventListener("mouseenter", changeTextOnMouseOver);
   element.addEventListener("mouseleave", changeTextOnMouseOut);
 }
-
-// function addUntilClickInPlaceListeners(element) {
-//   element.addEventListener("click", changeText);
-// }
 
 function addUntilClickInPlaceListeners(element) {
   element.addEventListener("click", setToOtherWord);
@@ -901,6 +900,7 @@ function addReplacedHighlights() {
 
   const groupLength = group[textSetting].length;
 
+  // Identify the elements that have been changed and add highlights
   for (let i = 0; i < groupLength; i++) {
     if (group[textSetting][i].innerHTML !== originalGroup[textSetting][i]) {
       addSimplifiedHighlights(group[textSetting][i]);

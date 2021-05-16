@@ -16,6 +16,7 @@ class Replacer(models.Model):
         return word
 
     def replaceSentence(self, to_replace):
+        print("to replace -----> ", to_replace)
         sentence = lorem.sentence()
         return sentence
 
@@ -26,5 +27,5 @@ class Replacer(models.Model):
     def replaceParagraphs(self, to_replace, amount):
 
         paragraphs = lorem.paragraphs(amount)
-        print("Paragraphs from document = ", paragraphs)
+        # print("Paragraphs from document = ", paragraphs)
         return paragraphs

@@ -198,12 +198,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (highlightReplacedBtn) {
     highlightReplacedBtn.addEventListener("change", async function () {
       if (highlightReplacedBtn.checked) {
+        console.log("true clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: true,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: true });
       } else if (highlightReplacedBtn.checked === false) {
+        console.log("fasle clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: false,
           settingType: "highlightReplaced",

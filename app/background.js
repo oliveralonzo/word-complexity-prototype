@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   console.log("background js on");
 
   var toSendBack = [];
+  var totalParagraphs = 0;
 
   /*
    * Listener to capture highlight value from popup.js
@@ -58,10 +59,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
   chrome.runtime.onMessage.addListener(async function (request) {
     if (request.wordUpdate === "True") {
       data = request.toSimplify;
+      totalParagraphs = request.totalParagraphs;
       sentenceData = request.toSimplifySentence;
       paragraphData = request.toSimplifyParagraph;
       documentData = request.toSimplifyDocument;
-      // alert("Got request" + documentData);
       await getNewText(data, "word");
       await getNewText(sentenceData, "sentence");
       await getNewText(paragraphData, "paragraph");
@@ -82,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   async function getSimpleWord(text, wordID, type) {
     let url = "http://127.0.0.1:8000/decomplexify/";
     // Number of paragraphs
-    let amount = type === "document" ? "12/" : "";
+    let amount = type === "document" ? `${totalParagraphs}/` : "";
     let response = await fetch(url + amount, {
       mode: "cors",
       method: "POST",
