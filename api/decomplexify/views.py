@@ -7,11 +7,17 @@ import json
 
 class SupplyLoremIpsum(APIView):
     replaceTool = Replacer()
-    """
-    need - error handling
-    """
+    """Returns the simplified text for given complex text. needs error handling
+
+    Keyword arguments:
+    request -- Request object
+    amount -- Specifies the number of simpliefied paragraphs to be replaced
+            Applicable only to documents.
+    """ 
+
     def post(self, request, amount = None):
         data = self.request.data
+        print("Request = ", request)
         if "type" not in data:
             # no type category
             return Response("No type provided", status=status.HTTP_404_NOT_FOUND)
@@ -19,7 +25,6 @@ class SupplyLoremIpsum(APIView):
             if data["type"] == "word":
                 print(data["type"], data["text"])
                 word = self.replaceTool.replaceWord(data["text"])
-                print(word)
                 return Response(word)
             elif data["type"] == "sentence":
                 sentence = self.replaceTool.replaceSentence(data["text"])
@@ -30,7 +35,7 @@ class SupplyLoremIpsum(APIView):
                 return Response(paragraph)
             elif data["type"] == 'document':
                 print("Successfully routed to document")
-                print("amount = ", amount)
+                print("Amount = ", amount)
                 paragraphs = self.replaceTool.replaceParagraphs(data["text"], amount)
                 return Response(paragraphs)
         except KeyError as e:

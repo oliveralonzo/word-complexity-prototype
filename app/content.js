@@ -35,6 +35,7 @@ var highlightReplacedToggle = false;
 
 var complexDocumentParagraphsCount = 0;
 
+// Check if any user data exists. If it does, set the variables that store the extension setting.
 chrome.storage.sync.get("whereToSetting", (status) => {
   if (Object.keys(status).length > 0 && status.whereToSetting !== null) {
     whereToSetting = status.whereToSetting;
@@ -102,7 +103,7 @@ complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
 complexDocumentParagraphGroup =
   document.getElementsByClassName("complex-document");
 
-// Store all the original complex text group.
+// Store all the original complex text groups.
 for (let i = 0; i < complexWordGroup.length; i++) {
   originalComplexWordGroup.push(complexWordGroup[i].innerHTML);
 }
@@ -220,6 +221,9 @@ function revertContentToOriginal() {
   }
 }
 
+/**
+ * Changes the elements(words, sentences, paragraphs) back to the original text
+ */
 function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
   const groupLength = group.length;
   for (let i = 0; i < groupLength; i++) {
@@ -231,6 +235,9 @@ function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
   }
 }
 
+/**
+ * Changes the entire document back to the original text
+ */
 function revertDocumentToOrginal(group, originalGroup, replacedGroup) {
   let text = "";
   let simplerParagraphs = replacedGroup[0].text.split("\\n \\n");
@@ -281,6 +288,11 @@ function addListeners() {
   });
 }
 
+/**
+ * Wrapper function to add listners to the selected element to
+ * trigger relevant action
+ * @param {HTMLElement} element
+ */
 function addInPlaceListeners(element) {
   if (howLongSetting === "Temporary") {
     addTemporaryInPlaceListeners(element);
@@ -395,14 +407,6 @@ const permanentPopup = function (event) {
   }
 };
 
-function findClosestComplexAncestor(el, sel) {
-  while (
-    (el = el.parentElement) &&
-    !(el.matches || el.matchesSelector).call(el, sel)
-  );
-  return el;
-}
-
 const toggleUntilClickPopup = function (el) {
   if (textSetting !== "Document") {
     const tooltip = this.firstChild;
@@ -468,7 +472,8 @@ function addTemporarySideTipListeners(element) {
 /**
  * Removes eventlistners from elements depending on the type of text
  * previously selected (words, sentences, paragraphs, document) and/or
- * the place selected (In place, highlight, popup, side).
+ * the place selected (In place, popup, side) and the duration selected
+ * (temporary, until click, permanent)
  */
 function removeListeners() {
   const groups = {
@@ -596,6 +601,9 @@ const showTemporaryNonDocumentSideTip = function (node) {
 
   let id = node.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+
+  // Create a dialog box - this box contains "content" and "header".
+  // Header contains the heading and close button
   const dialogBox = document.createElement("div");
   const dialogContent = getSideTipContentEl(complex.text);
   const dialogHeader = getSideTipHeaderEl();
@@ -646,6 +654,9 @@ const showTemporaryDocumentSideTip = function (node) {
   }
 };
 
+/**
+ * Creates a header element containing close button and title.
+ */
 function getSideTipHeaderEl() {
   const dialogHeader = document.createElement("div");
   const dialogHeading = document.createElement("SPAN");
@@ -707,6 +718,8 @@ const showNonDocumentSideTipUntilClick = function (node) {
   let id = node.id;
   let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
 
+  // Create a dialog box - this box contains "content" and "header".
+  // Header contains the heading and close button
   const dialogBox = document.createElement("div");
   const dialogContent = getSideTipContentEl(complex.text);
   const dialogHeader = getSideTipHeaderEl();
@@ -1294,9 +1307,16 @@ function identifyDocument() {
   doc.classList.add("mainContentContainer");
   let allParagraphs = document.querySelectorAll(".mainContentContainer p");
 
-  complexText.currTabDocumentParagraphs["document" + 1] = [doc.innerText];
+  complexText.currTabDocumentParagraphs["document" + 1] = [];
+  Array.from(allParagraphs).forEach((para) => {
+    complexText.currTabDocumentParagraphs["document" + 1].push(para);
+  });
+
+  // As of now, a document is considered complex if it has more than 2 complex paragraphs
   if (complexParagraphs.length > 2) {
     Array.from(allParagraphs).forEach((node) => {
+      // Get all the valid p tags (which has at least 20 over words) within main
+      // content and mark them as complex-document
       if (node.innerText.split(" ").length > 20) getPTags(node);
     });
   }
@@ -1323,7 +1343,6 @@ function replaceText(node) {
         return wordWithNewTag;
       });
       identifySentences(complex);
-      // identifyParagraphs();
       var output = complex.join(" ");
       node.innerHTML = output;
     }
