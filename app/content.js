@@ -26,6 +26,7 @@ var replacedParagraphs = null;
 var replacedDocumentParagraphs = null;
 
 // Extension settings
+var simpSetting = "Lexical";
 var textSetting = "Word";
 var highlightToggle = false;
 var whereToSetting = "InPlace";
@@ -36,6 +37,12 @@ var highlightReplacedToggle = false;
 var complexDocumentParagraphsCount = 0;
 
 // Check if any user data exists. If it does, set the variables that store the extension setting.
+chrome.storage.sync.get("simpSetting", (status) => {
+  if (Object.keys(status).length > 0 && status.simpSetting !== null) {
+    simpSetting = status.simpSetting;
+  }
+});
+
 chrome.storage.sync.get("whereToSetting", (status) => {
   if (Object.keys(status).length > 0 && status.whereToSetting !== null) {
     whereToSetting = status.whereToSetting;
@@ -446,7 +453,9 @@ function addUntilClickSideTipListeners(element) {
     element.addEventListener("click", showNonDocumentSideTipUntilClick);
   } else {
     // Using same function as temporary as logic is the same
-    element.addEventListener("click", showTemporaryDocumentSideTip);
+    element.addEventListener("click", function(node) {
+      showDocumentSideTip(node);
+    });
   }
 }
 
@@ -455,7 +464,7 @@ function addPermanentSideTipListeners(element) {
     element.addEventListener("click", showNonDocumentSideTipUntilClick);
   } else {
     // Using same function as temporary as logic is the same
-    element.addEventListener("click", showTemporaryDocumentSideTip);
+    element.addEventListener("click", showDocumentSideTip);
   }
 }
 
@@ -464,7 +473,7 @@ function addTemporarySideTipListeners(element) {
     element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
     element.addEventListener("mouseout", removeSideTip);
   } else {
-    element.addEventListener("mouseover", showTemporaryDocumentSideTip);
+    element.addEventListener("mouseover", showDocumentSideTip);
     element.addEventListener("mouseout", removeSideTip);
   }
 }
@@ -562,7 +571,7 @@ function removePermanentSideTipListeners(element) {
     element.removeEventListener("click", showNonDocumentSideTipUntilClick);
   } else {
     // Using same function as temporary as logic is the same
-    element.removeEventListener("click", showTemporaryDocumentSideTip);
+    element.removeEventListener("click", showDocumentSideTip);
   }
 }
 
@@ -571,7 +580,7 @@ function removeTemporarySideTipListeners(element) {
     element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
     element.removeEventListener("mouseout", removeSideTip);
   } else {
-    element.removeEventListener("mouseover", showTemporaryDocumentSideTip);
+    element.removeEventListener("mouseover", showDocumentSideTip);
     element.removeEventListener("mouseout", removeSideTip);
   }
 }
@@ -581,7 +590,7 @@ function removeUntilClickSideTipListeners(element) {
     element.removeEventListener("click", showNonDocumentSideTipUntilClick);
   } else {
     //Using same function as temporary as logic is same
-    element.removeEventListener("click", showTemporaryDocumentSideTip);
+    element.removeEventListener("click", showDocumentSideTip);
   }
 }
 
@@ -623,7 +632,7 @@ const showTemporaryNonDocumentSideTip = function (node) {
   }
 };
 
-const showTemporaryDocumentSideTip = function (node) {
+const showDocumentSideTip = function (node, untilClick = false) {
   node = node.target;
 
   let simplifiedParagraphs =
@@ -695,10 +704,12 @@ const highlightSideTipMappedText = function (event) {
   textEl.classList.add("sidetip-mapped-text-highlight");
 };
 
-const removeSideTipMappedTextHighlights = function (event) {
-  let id = event.currentTarget.id.substring(8);
+const removeSideTipMappedTextHighlights = function (event, currTarget = null) {
+  let id = currTarget ? currTarget.id.substring(8) : event.currentTarget.id.substring(8);
   const textEl = document.getElementById(id);
-  textEl.classList.remove("sidetip-mapped-text-highlight");
+  if (textEl) {
+    textEl.classList.remove("sidetip-mapped-text-highlight");
+  }
 };
 
 const showNonDocumentSideTipUntilClick = function (node) {
@@ -727,12 +738,9 @@ const showNonDocumentSideTipUntilClick = function (node) {
   dialogBox.appendChild(dialogHeader);
   dialogBox.appendChild(dialogContent);
 
-  dialogContent.setAttribute("id", `sidetip-${id}`);
-  dialogContent.addEventListener("mouseenter", highlightSideTipMappedText);
-  dialogContent.addEventListener(
-    "mouseleave",
-    removeSideTipMappedTextHighlights
-  );
+  dialogBox.setAttribute("id", `sidetip-${id}`);
+  dialogBox.addEventListener("mouseenter", highlightSideTipMappedText);
+  dialogBox.addEventListener("mouseleave", removeSideTipMappedTextHighlights);
 
   dialogBox.classList.add("modal1");
 
@@ -754,6 +762,7 @@ const removeSideTip = function () {
 };
 
 const closeSideTip = function (event) {
+  removeSideTipMappedTextHighlights(event, event.currentTarget.parentNode.parentNode);
   event.currentTarget.parentNode.parentNode.remove();
 };
 
@@ -1201,7 +1210,7 @@ function identifyWords(word, index) {
 * Identify complex sentences within document
 *  - complex - list of text items from document that have been separated by a space
 *  - This function builds up the sentence variable, checks if a valid ending is seen,
-        then will add that sentence to the final set if the sentence is complex enough 
+        then will add that sentence to the final set if the sentence is complex enough
 *  - current complexity check is number of complex words - likely to be replaced with sending off each sentence to an API potentially
 */
 function identifySentences(complex) {
