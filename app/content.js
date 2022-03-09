@@ -26,7 +26,7 @@ var replacedParagraphs = null;
 var replacedDocumentParagraphs = null;
 
 // Extension settings
-var simpSetting = "Lexical";
+var simpSetting = "lexical";
 var textSetting = "Word";
 var highlightToggle = false;
 var whereToSetting = "InPlace";
@@ -146,6 +146,9 @@ chrome.runtime.sendMessage({
  */
 chrome.runtime.onMessage.addListener(function (request) {
   switch (request.settingType) {
+    case "simpType":
+      switchSimpSetting(request);
+      break;
     case "howMuch":
       switchHowMuchSetting(request);
       break;

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   /* Capture input for simplification type slider
    */
   simpSettingNode = document.getElementById("simpTypeInput");
-  simpSettingValues = ["Lexical", "Both", "Syntactic"];
+  simpSettingValues = ["lexical", "syntactic_and_lexical", "syntactic"];
   simpSettingNode.addEventListener("input", function () {
     simpSetting = simpSettingValues[this.value - 1]
     chrome.storage.sync.set({ simpSetting: simpSetting}, function () {
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         settingType: "simpType"
       });
     });
-    toggleWordReplacement(simpSetting != "Lexical");
+    toggleWordReplacement(simpSetting != "lexical");
     updateTextSetting();
   });
 
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (!(Object.keys(value).length === 0)) {
       simpSettingNode.value = simpSettingValues.indexOf(value.simpSetting) + 1;
     } else {
-      chrome.storage.sync.set({ simpSetting: "Lexical" });
+      chrome.storage.sync.set({ simpSetting: "lexical" });
       simpSettingNode.value = 1;
     }
     toggleWordReplacement(simpSettingNode.value !== "1");
