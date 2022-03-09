@@ -1,12 +1,16 @@
 from django.db import models
 from lorem_text import lorem
-import random
-import re
+import re, json
 
 
 # Create your models here.
 
 class Replacer(models.Model):
+
+    def __init__(self):
+        json_file = open("decomplexify/sentences.json", "r")
+        self.sentences = json.load(json_file)
+        json_file.close()
 
     def replaceWord(self, to_replace):
         print("Word to be replaced -----> ", to_replace)
