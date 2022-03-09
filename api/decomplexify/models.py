@@ -22,8 +22,14 @@ class Replacer(models.Model):
 
     def replaceSentence(self, to_replace):
         print("Sentence to be replaced -----> ", to_replace)
-        sentence = lorem.sentence()
-        return sentence
+        try:
+            sentence = self.sentences[to_replace[0]]
+            print(sentence)
+            return sentence
+        except Exception as ex:
+            print(ex)
+            print("failed")
+            return to_replace[0]
 
     def replaceParagraph(self, to_replace):
         print("Paragraph to be replaced -----> ", to_replace)
