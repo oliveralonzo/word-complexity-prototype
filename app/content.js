@@ -1245,42 +1245,42 @@ function identifySentences(complex) {
 
     if (index === 0) {
       // With the very first item in complex, create a modified start, with an id and a beginning span
-      id = "sentence" + sentenceIDNum;
+      let id = "sentence" + sentenceIDNum;
       sentenceStart[0] = "<span class='complex-sentence' id=" + id + ">" + text;
       sentenceIDNum++;
     } else if (index === sentenceEndIndices[currEndInd]) {
-      if (complexCount >= 7) {
-        // create this sentence, as it qualifies + modify current text to add span
-        this[index] = text + "</span>";
-        currEndInd++;
-        startVals = Object.entries(sentenceStart)[0];
-        this[startVals[0]] = startVals[1];
+        if (complexCount >= 7) {
+          // create this sentence, as it qualifies + modify current text to add span
+          this[index] = text + "</span>";
+          currEndInd++;
+          startVals = Object.entries(sentenceStart)[0];
+          this[startVals[0]] = startVals[1];
 
-        let fullSentence = sentence.join(" ");
-        // create html object to attain clean text
-        var htmlToCleanObject = document.createElement("div");
-        htmlToCleanObject.innerHTML = fullSentence;
-        let cleanSentence = htmlToCleanObject.innerText;
-        htmlToCleanObject.remove();
+          let fullSentence = sentence.join(" ");
+          // create html object to attain clean text
+          var htmlToCleanObject = document.createElement("div");
+          htmlToCleanObject.innerHTML = fullSentence;
+          let cleanSentence = htmlToCleanObject.innerText;
+          htmlToCleanObject.remove();
 
-        let id = "sentence" + (sentenceIDNum - 1);
-        complexText.currTabSentences[id] = [[cleanSentence, fullSentence]];
-      } else {
-        sentenceIDNum--;
+          let id = "sentence" + (sentenceIDNum - 1);
+          complexText.currTabSentences[id] = [[cleanSentence, fullSentence]];
+        } else {
+          sentenceIDNum--;
+        }
+        sentenceStart = {};
+        nextTextInd = index + 1;
+        if (this[nextTextInd] != null) {
+          id = "sentence" + (sentenceIDNum);
+          sentenceStart[nextTextInd] =
+            "<span class='complex-sentence' id=" + id + "> " + this[nextTextInd];
+          sentenceIDNum++;
+        }
+        complexCount = 0;
+
+        sentence = [];
       }
-      sentenceStart = {};
-      nextTextInd = index + 1;
-      if (this[nextTextInd] != null) {
-        id = "sentence" + (sentenceIDNum - 1);
-        sentenceStart[nextTextInd] =
-          "<span class='complex-sentence' id=" + id + "> " + this[nextTextInd];
-        sentenceIDNum++;
-      }
-      complexCount = 0;
-
-      sentence = [];
-    }
-  }, complex);
+    }, complex);
 }
 /*
  * Identifies complex paragraphs within the main content of the
