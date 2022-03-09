@@ -3,7 +3,6 @@
 document.addEventListener("DOMContentLoaded", function (event) {
   console.log("background js on");
 
-  var toSendBack = [];
   var totalParagraphs = 0;
 
   /*
@@ -100,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       // if (type === "document") alert("got " + type);
       freshTextPromise = await response.text();
       freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, "$1");
-      toSendBack.push({ wordID: wordID, text: freshTextPromise });
+      // toSendBack.push({ wordID: wordID, text: freshTextPromise });
       return freshTextPromise;
     }
   }
@@ -111,17 +110,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * type - type of text being requested
    */
   async function getNewText(data, type) {
+    var toSendBack = [];
     if (type === "document") {
       console.log("Received Document data", data);
     }
+
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
       textID = keys[i];
 
-      await getSimpleWord(data[textID][0], textID, type);
+      simple = await getSimpleWord(data[textID][0], textID, type);
+      toSendBack.push({wordID: textID, text: simple});
     }
     // send to content script and modify those words
-    toSend = JSON.stringify(toSendBack);
+    let toSend = JSON.stringify(toSendBack);
+
     if (toSendBack.length === keys.length) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
@@ -131,8 +134,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         });
       });
     }
-
-    toSendBack = [];
   }
 
   /*
