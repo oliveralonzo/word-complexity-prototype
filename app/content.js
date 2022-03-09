@@ -183,6 +183,9 @@ chrome.runtime.onMessage.addListener(function (request) {
     newWords = JSON.parse(newWords);
     if (request.textType === "sentence") {
       replacedSentences = JSON.parse(request.toChange);
+      replacedSentences.forEach(sentence => {
+        sentence.text = JSON.parse(sentence.text);
+      });
     } else if (request.textType === "word") {
       replacedWords = JSON.parse(request.toChange);
     } else if (request.textType === "paragraph") {
@@ -250,22 +253,30 @@ function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
  */
 function revertDocumentToOrginal(group, originalGroup, replacedGroup) {
   let text = "";
-  let simplerParagraphs = replacedGroup[0].text.split("\\n \\n");
+  if (replacedGroup) {
+    try {
+      var simplerParagraphs = replacedGroup[0].text[simpSetting].split("\\n \\n");
+    } catch {
+      var simplerParagraphs = replacedGroup[0].text.split("\\n \\n");
+    }
 
-  const paragraphsGroupLength = originalGroup.length;
 
-  for (let i = 0; i < paragraphsGroupLength; i++) {
-    if (group[i].innerHTML !== originalGroup[i]) {
-      removeSimplifiedHighlights(group[i]);
+    const paragraphsGroupLength = originalGroup.length;
 
-      let currDoc = group[i].innerHTML;
-      group[i].innerHTML = simplerParagraphs[i];
-      text += currDoc + "\\n \\n";
+    for (let i = 0; i < paragraphsGroupLength; i++) {
+      if (group[i].innerHTML !== originalGroup[i]) {
+        removeSimplifiedHighlights(group[i]);
+
+        let currDoc = group[i].innerHTML;
+        group[i].innerHTML = simplerParagraphs[i];
+        text += currDoc + "\\n \\n";
+      }
+    }
+    if (text) {
+      replacedGroup[0].text = text.replace(/^\\n+|\\n \\n+$/g, "");
     }
   }
-  if (text) {
-    replacedGroup[0].text = text.replace(/^\\n+|\\n \\n+$/g, "");
-  }
+
 }
 
 /**
@@ -612,12 +623,12 @@ const showTemporaryNonDocumentSideTip = function (node) {
   }
 
   let id = node.id;
-  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
 
   // Create a dialog box - this box contains "content" and "header".
   // Header contains the heading and close button
   const dialogBox = document.createElement("div");
-  const dialogContent = getSideTipContentEl(complex.text);
+  const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
   const dialogHeader = getSideTipHeaderEl();
 
   dialogBox.appendChild(dialogHeader);
@@ -730,12 +741,12 @@ const showNonDocumentSideTipUntilClick = function (node) {
   }
 
   let id = node.id;
-  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
 
   // Create a dialog box - this box contains "content" and "header".
   // Header contains the heading and close button
   const dialogBox = document.createElement("div");
-  const dialogContent = getSideTipContentEl(complex.text);
+  const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
   const dialogHeader = getSideTipHeaderEl();
 
   dialogBox.appendChild(dialogHeader);
@@ -768,6 +779,33 @@ const closeSideTip = function (event) {
   removeSideTipMappedTextHighlights(event, event.currentTarget.parentNode.parentNode);
   event.currentTarget.parentNode.parentNode.remove();
 };
+
+
+/**
+ * Changes the value of "Simplification" setting. Removes all the
+ * configurations of previous setting and reverts any changes
+ * to original. Adds listeners for the new setting.
+ * @param {Object}  request   Specifies the value of howLongSetting.
+ *                            Values could be Temporary, UntilClick,
+ *                            Permanent.
+ *
+ */
+
+function switchSimpSetting(request) {
+  removePopups();
+  removeSideTip();
+  removeListeners();
+  removeSwappedClass();
+  removeHighlights();
+  removeReplacedHighlights();
+
+  revertContentToOriginal();
+
+  simpSetting = request.simpSetting;
+
+  addListeners();
+  addHighlights();
+}
 
 /**
  * Changes the value of "How long" setting. Removes all the
@@ -1076,11 +1114,11 @@ const setToOtherText = function (node) {
 
   let id = node.id;
   let wordSet = replacedGroups[textSetting];
-  let complex = wordSet.find(({ wordID }) => wordID === id);
+  let simple = wordSet.find(({ wordID }) => wordID === id);
   let foundIndex = wordSet.findIndex((word) => word.wordID == id);
-  let currWord = node.innerHTML;
+  let currText = node.innerHTML;
 
-  node.innerHTML = complex.text;
+  node.innerHTML = simple.text[simpSetting];
 
   if (node.classList.contains("swapped")) {
     node.classList.remove("swapped");
@@ -1095,7 +1133,8 @@ const setToOtherText = function (node) {
     }
     removeComplexHighlights(node);
   }
-  wordSet[foundIndex].text = currWord;
+
+  wordSet[foundIndex].text[simpSetting] = currText;
 };
 
 const setToOtherWord = (event) => {
@@ -1166,12 +1205,12 @@ const showNonDocumentTooltip = function (node) {
   };
 
   let id = node.id;
-  let complex = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
   const tooltipWrap = document.createElement("div");
   tooltipWrap.classList.add("tooltip1");
   tooltipWrap.id = "Popup" + id;
-  tooltipWrap.setAttribute("data-text", complex.text);
-  tooltipWrap.appendChild(document.createTextNode(complex.text));
+  tooltipWrap.setAttribute("data-text", simple.text[simpSetting]);
+  tooltipWrap.appendChild(document.createTextNode(simple.text[simpSetting]));
   node.insertBefore(tooltipWrap, node.firstChild);
 };
 
