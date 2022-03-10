@@ -8,12 +8,7 @@ const textToCheck = {
   currTabDocumentParagraphs: {},
 };
 
-const complexText = {
-  currTabWords: {},
-  currTabSentences: {},
-  currTabParagraphs: {},
-  currTabDocumentParagraphs: {},
-};
+var originalSentences = {};
 
 var sentenceIDNum = 0;
 var complexWordGroup = null;
@@ -104,6 +99,9 @@ for (var i = 0; i < paragraphs.length; i++) {
   collectText(currElement);
 }
 
+document.querySelectorAll('[id*="sentence"]').forEach(function(sentence) {
+  originalSentences[sentence.id] = sentence.innerHTML;
+});
 
 
 complexWordGroup = document.getElementsByClassName("complex-word");
@@ -241,16 +239,11 @@ function revertContentToOriginal() {
  * Changes the elements(words, sentences, paragraphs) back to the original text
  */
 function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
-  if (group) {
-    const groupLength = group.length;
-    for (let i = 0; i < groupLength; i++) {
-      if (group[i].innerHTML !== originalGroup[i]) {
-        removeSimplifiedHighlights(group[i]);
-        replacedGroup[i].text = group[i].innerText;
-      }
-      group[i].innerHTML = originalGroup[i];
-    }
-  }
+  const currSentences = document.querySelectorAll('[id*="sentence"]');
+  currSentences.forEach(function(sentence) {
+    removeSimplifiedHighlights(sentence);
+    sentence.innerHTML = originalSentences[sentence.id];
+  });
 }
 
 /**
@@ -290,14 +283,7 @@ function revertDocumentToOrginal(group, originalGroup, replacedGroup) {
  * (In place, highlight, popup, side).
  */
 function addListeners() {
-  const groups = {
-    Word: complexWordGroup,
-    Sentence: complexSentencesGroup,
-    Paragraph: complexParagraphGroup,
-    Document: complexDocumentParagraphGroup,
-  };
-
-  Array.from(groups[textSetting]).forEach(function (element) {
+  document.querySelectorAll("[class*='complex']").forEach(function (element) {
     switch (whereToSetting) {
       case "InPlace":
         addInPlaceListeners(element);
@@ -505,7 +491,6 @@ function addTemporarySideTipListeners(element) {
  */
 function removeListeners() {
   document.querySelectorAll("[class*='complex']").forEach(function (element) {
-    console.log("Removing listeners for: " + element.id)
     switch (whereToSetting) {
       case "InPlace":
         removeInPlaceListeners(element);
@@ -1336,11 +1321,6 @@ function markupComplexText(complex) {
     }
   });
 
-  complexSentencesGroup = document.getElementsByClassName("complex-sentence");
-  for (let i = 0; i < complexSentencesGroup.length; i++) {
-    originalComplexSentencesGroup.push(complexSentencesGroup[i].innerHTML);
-  }
-
   addListeners();
   toggleHighlightComplex({
     settingType: "highlightComplex",
@@ -1414,7 +1394,7 @@ function collectText(node) {
     // Identify complex document
     identifyDocument();
 
-    console.log("Number of complex paras = ", complexDocumentParagraphsCount);
+    console.log("Number of complex paragraphs = ", complexDocumentParagraphsCount);
   } else {
     for (let i = 0; i < node.childNodes.length; i++) {
       collectText(node.childNodes[i]);
