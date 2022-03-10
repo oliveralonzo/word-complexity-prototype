@@ -1,13 +1,21 @@
 // content.js - modification and behaviors for active tab page
 
 // construct list for id-text association
+const textToCheck = {
+  currTabWords: {},
+  currTabSentences: {},
+  currTabParagraphs: {},
+  currTabDocumentParagraphs: {},
+};
+
 const complexText = {
   currTabWords: {},
   currTabSentences: {},
   currTabParagraphs: {},
   currTabDocumentParagraphs: {},
 };
-var sentenceIDNum = 21;
+
+var sentenceIDNum = 0;
 var complexWordGroup = null;
 var complexSentencesGroup = null;
 var complexParagraphGroup = null;
@@ -59,7 +67,7 @@ chrome.storage.sync.get("textSetting", (status) => {
   if (Object.keys(status).length > 0 && status.textSetting !== null) {
     textSetting = status.textSetting;
   }
-  addListeners();
+  markupComplexText();
 });
 
 chrome.storage.sync.get("highlight", (status) => {
@@ -93,19 +101,13 @@ const paragraphs = document.querySelectorAll(".mainContentContainer p");
 
 for (var i = 0; i < paragraphs.length; i++) {
   let currElement = paragraphs[i];
-  replaceText(currElement);
+  collectText(currElement);
 }
 
-// Identify complex paragraphs
-identifyParagraphs();
 
-// Identify complex document
-identifyDocument();
-
-console.log("Number of complex paras = ", complexDocumentParagraphsCount);
 
 complexWordGroup = document.getElementsByClassName("complex-word");
-complexSentencesGroup = document.getElementsByClassName("complex-sentence");
+
 complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
 complexDocumentParagraphGroup =
   document.getElementsByClassName("complex-document");
@@ -115,9 +117,6 @@ for (let i = 0; i < complexWordGroup.length; i++) {
   originalComplexWordGroup.push(complexWordGroup[i].innerHTML);
 }
 
-for (let i = 0; i < complexSentencesGroup.length; i++) {
-  originalComplexSentencesGroup.push(complexSentencesGroup[i].innerHTML);
-}
 
 for (let i = 0; i < complexParagraphGroup.length; i++) {
   originalComplexParagraphGroup.push(complexParagraphGroup[i].innerHTML);
@@ -129,14 +128,15 @@ for (let i = 0; i < complexDocumentParagraphGroup.length; i++) {
   );
 }
 
+
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
   wordUpdate: "True",
   totalParagraphs: complexDocumentParagraphsCount,
-  toSimplify: complexText["currTabWords"],
-  toSimplifySentence: complexText["currTabSentences"],
-  toSimplifyParagraph: complexText["currTabParagraphs"],
-  toSimplifyDocument: complexText["currTabDocumentParagraphs"],
+  toSimplify: textToCheck["currTabWords"],
+  toSimplifySentence: textToCheck["currTabSentences"],
+  toSimplifyParagraph: textToCheck["currTabParagraphs"],
+  toSimplifyDocument: textToCheck["currTabDocumentParagraphs"],
 });
 
 /*
@@ -181,13 +181,16 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.type === "simplifiedText") {
     newWords = request.toChange;
     newWords = JSON.parse(newWords);
-    if (request.textType === "sentence") {
+    if (request.textType === "word") {
+      replacedWords = JSON.parse(request.toChange);
+    }
+    else if (request.textType === "sentence") {
       replacedSentences = JSON.parse(request.toChange);
       replacedSentences.forEach(sentence => {
+        console.log(sentence)
         sentence.text = JSON.parse(sentence.text);
       });
-    } else if (request.textType === "word") {
-      replacedWords = JSON.parse(request.toChange);
+      markupComplexText();
     } else if (request.textType === "paragraph") {
       replacedParagraphs = JSON.parse(request.toChange);
     } else if (request.textType === "document") {
@@ -238,13 +241,15 @@ function revertContentToOriginal() {
  * Changes the elements(words, sentences, paragraphs) back to the original text
  */
 function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
-  const groupLength = group.length;
-  for (let i = 0; i < groupLength; i++) {
-    if (group[i].innerHTML !== originalGroup[i]) {
-      removeSimplifiedHighlights(group[i]);
-      replacedGroup[i].text = group[i].innerText;
+  if (group) {
+    const groupLength = group.length;
+    for (let i = 0; i < groupLength; i++) {
+      if (group[i].innerHTML !== originalGroup[i]) {
+        removeSimplifiedHighlights(group[i]);
+        replacedGroup[i].text = group[i].innerText;
+      }
+      group[i].innerHTML = originalGroup[i];
     }
-    group[i].innerHTML = originalGroup[i];
   }
 }
 
@@ -499,14 +504,8 @@ function addTemporarySideTipListeners(element) {
  * (temporary, until click, permanent)
  */
 function removeListeners() {
-  const groups = {
-    Word: complexWordGroup,
-    Sentence: complexSentencesGroup,
-    Paragraph: complexParagraphGroup,
-    Document: complexDocumentParagraphGroup,
-  };
-
-  Array.from(groups[textSetting]).forEach(function (element) {
+  document.querySelectorAll("[class*='complex']").forEach(function (element) {
+    console.log("Removing listeners for: " + element.id)
     switch (whereToSetting) {
       case "InPlace":
         removeInPlaceListeners(element);
@@ -623,26 +622,31 @@ const showTemporaryNonDocumentSideTip = function (node) {
   }
 
   let id = node.id;
-  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
 
   // Create a dialog box - this box contains "content" and "header".
   // Header contains the heading and close button
   const dialogBox = document.createElement("div");
-  const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
-  const dialogHeader = getSideTipHeaderEl();
+  let replacement = simple.text[setting];
+  if (replacement) {
+    const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
+    const dialogHeader = getSideTipHeaderEl();
 
-  dialogBox.appendChild(dialogHeader);
-  dialogBox.appendChild(dialogContent);
-  dialogBox.classList.add("modal1");
+    dialogBox.appendChild(dialogHeader);
+    dialogBox.appendChild(dialogContent);
+    dialogBox.classList.add("modal1");
 
-  const modalContainer = document.getElementsByClassName("modal1-container");
-  if (modalContainer.length == 0) {
-    const modalContainer = document.createElement("div");
-    modalContainer.classList.add("modal1-container");
-    modalContainer.appendChild(dialogBox);
-    document.body.insertBefore(modalContainer, document.body.firstChild);
+    const modalContainer = document.getElementsByClassName("modal1-container");
+    if (modalContainer.length == 0) {
+      const modalContainer = document.createElement("div");
+      modalContainer.classList.add("modal1-container");
+      modalContainer.appendChild(dialogBox);
+      document.body.insertBefore(modalContainer, document.body.firstChild);
+    } else {
+      modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+    }
   } else {
-    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+    alert("Error: A simplification wasn't found for this.")
   }
 };
 
@@ -741,32 +745,38 @@ const showNonDocumentSideTipUntilClick = function (node) {
   }
 
   let id = node.id;
-  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
 
   // Create a dialog box - this box contains "content" and "header".
   // Header contains the heading and close button
   const dialogBox = document.createElement("div");
-  const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
-  const dialogHeader = getSideTipHeaderEl();
+  let replacement = simple.text[simpSetting];
+  if (replacement) {
+    const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
+    const dialogHeader = getSideTipHeaderEl();
 
-  dialogBox.appendChild(dialogHeader);
-  dialogBox.appendChild(dialogContent);
+    dialogBox.appendChild(dialogHeader);
+    dialogBox.appendChild(dialogContent);
 
-  dialogBox.setAttribute("id", `sidetip-${id}`);
-  dialogBox.addEventListener("mouseenter", highlightSideTipMappedText);
-  dialogBox.addEventListener("mouseleave", removeSideTipMappedTextHighlights);
+    dialogBox.setAttribute("id", `sidetip-${id}`);
+    dialogBox.addEventListener("mouseenter", highlightSideTipMappedText);
+    dialogBox.addEventListener("mouseleave", removeSideTipMappedTextHighlights);
 
-  dialogBox.classList.add("modal1");
+    dialogBox.classList.add("modal1");
 
-  const modalContainer = document.getElementsByClassName("modal1-container");
-  if (modalContainer.length == 0) {
-    const modalContainer = document.createElement("div");
-    modalContainer.classList.add("modal1-container");
-    modalContainer.appendChild(dialogBox);
-    document.body.insertBefore(modalContainer, document.body.firstChild);
+    const modalContainer = document.getElementsByClassName("modal1-container");
+    if (modalContainer.length == 0) {
+      const modalContainer = document.createElement("div");
+      modalContainer.classList.add("modal1-container");
+      modalContainer.appendChild(dialogBox);
+      document.body.insertBefore(modalContainer, document.body.firstChild);
+    } else {
+      modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+    }
   } else {
-    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
+    alert("Error: A simplification wasn't found for this.")
   }
+
 };
 
 const removeSideTip = function () {
@@ -780,6 +790,14 @@ const closeSideTip = function (event) {
   event.currentTarget.parentNode.parentNode.remove();
 };
 
+function switchingSetting() {
+  removePopups();
+  removeSideTip();
+  removeListeners();
+  removeSwappedClass();
+  removeHighlights();
+  removeReplacedHighlights();
+}
 
 /**
  * Changes the value of "Simplification" setting. Removes all the
@@ -792,19 +810,9 @@ const closeSideTip = function (event) {
  */
 
 function switchSimpSetting(request) {
-  removePopups();
-  removeSideTip();
-  removeListeners();
-  removeSwappedClass();
-  removeHighlights();
-  removeReplacedHighlights();
-
-  revertContentToOriginal();
-
+  switchingSetting();
   simpSetting = request.simpSetting;
-
-  addListeners();
-  addHighlights();
+  markupComplexText();
 }
 
 /**
@@ -818,19 +826,9 @@ function switchSimpSetting(request) {
  */
 
 function switchHowLongSetting(request) {
-  removePopups();
-  removeSideTip();
-  removeListeners();
-  removeSwappedClass();
-  removeHighlights();
-  removeReplacedHighlights();
-
-  revertContentToOriginal();
-
+  switchingSetting();
   howLongSetting = request.howLongSetting;
-
-  addListeners();
-  addHighlights();
+  markupComplexText();
 }
 
 /*
@@ -885,17 +883,10 @@ function toggleHighlightReplaced(request) {
  */
 
 function switchWhereToSetting(request) {
-  removePopups();
-  removeSideTip();
-  removeListeners();
-  removeHighlights();
-  removeSwappedClass();
-  revertContentToOriginal();
+  switchingSetting();
   whereToSetting = request.whereToSetting;
-  if (highlightToggle) {
-    addHighlights();
-  }
-  addListeners();
+  markupComplexText();
+
 }
 
 /**
@@ -908,20 +899,9 @@ function switchWhereToSetting(request) {
  */
 
 function switchHowMuchSetting(request) {
-  removePopups();
-  removeSideTip();
-  removeListeners();
-  removeHighlights();
-  removeSwappedClass();
-  removeReplacedHighlights();
-
-  revertContentToOriginal();
-
+  switchingSetting();
   textSetting = request.textSetting;
-  if (highlightToggle) {
-    addHighlights();
-  }
-  addListeners();
+  markupComplexText();
 }
 
 function removePopups() {
@@ -1114,27 +1094,33 @@ const setToOtherText = function (node) {
 
   let id = node.id;
   let wordSet = replacedGroups[textSetting];
-  let simple = wordSet.find(({ wordID }) => wordID === id);
-  let foundIndex = wordSet.findIndex((word) => word.wordID == id);
+  let simple = wordSet.find(({ sentenceID }) => sentenceID === id);
+  let foundIndex = wordSet.findIndex((word) => word.sentenceID == id);
   let currText = node.innerHTML;
 
-  node.innerHTML = simple.text[simpSetting];
+  const replacement = simple.text[simpSetting];
+  if (replacement) {
+    node.innerHTML = replacement;
 
-  if (node.classList.contains("swapped")) {
-    node.classList.remove("swapped");
-    if (highlightToggle) {
-      addComplexHighlights(node);
+    if (node.classList.contains("swapped")) {
+      node.classList.remove("swapped");
+      if (highlightToggle) {
+        addComplexHighlights(node);
+      }
+      removeSimplifiedHighlights(node);
+    } else {
+      node.classList.add("swapped");
+      if (highlightReplacedToggle) {
+        addSimplifiedHighlights(node);
+      }
+      removeComplexHighlights(node);
     }
-    removeSimplifiedHighlights(node);
+
+    wordSet[foundIndex].text[simpSetting] = currText;
   } else {
-    node.classList.add("swapped");
-    if (highlightReplacedToggle) {
-      addSimplifiedHighlights(node);
-    }
-    removeComplexHighlights(node);
+    alert("Error: A simplification wasn't found for this.")
   }
 
-  wordSet[foundIndex].text[simpSetting] = currText;
 };
 
 const setToOtherWord = (event) => {
@@ -1205,13 +1191,19 @@ const showNonDocumentTooltip = function (node) {
   };
 
   let id = node.id;
-  let simple = wordSet[textSetting].find(({ wordID }) => wordID === id);
+  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
   const tooltipWrap = document.createElement("div");
   tooltipWrap.classList.add("tooltip1");
   tooltipWrap.id = "Popup" + id;
-  tooltipWrap.setAttribute("data-text", simple.text[simpSetting]);
-  tooltipWrap.appendChild(document.createTextNode(simple.text[simpSetting]));
-  node.insertBefore(tooltipWrap, node.firstChild);
+  let replacement = simple.text[simpSetting];
+  if (replacement) {
+    tooltipWrap.setAttribute("data-text", simple.text[simpSetting]);
+    tooltipWrap.appendChild(document.createTextNode(simple.text[simpSetting]));
+    node.insertBefore(tooltipWrap, node.firstChild);
+  } else {
+    alert("Error: A simplification wasn't found for this.")
+  }
+
 };
 
 /* helper function to identify words with length above 6 - identify complex words
@@ -1225,18 +1217,18 @@ function identifyWords(word, index) {
   if (matchData === null) {
     return word;
   }
+
   // word is first match in matchData, matchData.length indicates only one result was found
   // risk - in a scenario where matchData[0].length is greater than one, the data isn't handled
-  wordToCheck = matchData[0];
+  cleanWord = matchData[0];
   matchLength = matchData[0].length;
   if (
-    wordToCheck.length > 6 &&
-    !wordToCheck.includes("http") &&
+    !cleanWord.includes("http") &&
     matchData.length == 1
   ) {
     let id = "id" + index;
-    complexText.currTabWords[id] = [wordToCheck];
-    complexTagged = `<span class='complex-word' id=${id}>${wordToCheck}</span>`;
+    textToCheck.currTabWords[id] = cleanWord;
+    complexTagged = `<span id=${id}>${cleanWord}</span>`;
     freshHTML =
       word.substring(0, matchInd) +
       complexTagged +
@@ -1248,6 +1240,15 @@ function identifyWords(word, index) {
   }
 }
 
+function markupComplexWords(word, index) {
+  complexTagged = `<span class='complex-word' id=${id}>${word}</span>`;
+  freshHTML =
+    word.substring(0, matchInd) +
+    complexTagged +
+    word.substring(matchInd + matchLength, word.length);
+  ++idx;
+}
+
 /*
 * Identify complex sentences within document
 *  - complex - list of text items from document that have been separated by a space
@@ -1255,14 +1256,14 @@ function identifyWords(word, index) {
         then will add that sentence to the final set if the sentence is complex enough
 *  - current complexity check is number of complex words - likely to be replaced with sending off each sentence to an API potentially
 */
-function identifySentences(complex) {
+function identifySentences(words) {
   var sentenceEndIndices = [];
 
   // get indices for any text that includes a ending character ---> [? . !]
-  complex.forEach(function (value, index) {
+  words.forEach(function (word, index) {
     if (index != 0) {
-      lastChar = value.charAt(value.length - 1);
-      var isEnd = /[.!?]$/.test(value);
+      // lastChar = value.charAt(value.length - 1);
+      var isEnd = [".","?","!"].some(v => word.includes(v))
       if (isEnd === true) {
         sentenceEndIndices.push(index);
       }
@@ -1276,54 +1277,78 @@ function identifySentences(complex) {
   var sentence = [];
   var id = null;
 
-  // loop over complex text list
-  complex.forEach(function (text, index) {
-    sentence.push(text);
+  console.log(sentenceEndIndices);
 
-    // check if current text contains a complex word - doesn't handle if multiple complex words in text
-    if (text.includes("class='complex-word'")) {
-      complexCount++;
-    }
+  // loop over words list
+  words.forEach(function (text, index) {
+    sentence.push(text);
 
     if (index === 0) {
       // With the very first item in complex, create a modified start, with an id and a beginning span
       let id = "sentence" + sentenceIDNum;
-      sentenceStart[0] = "<span class='complex-sentence' id=" + id + ">" + text;
+      sentenceStart[0] = "<span id=" + id + ">" + text;
       sentenceIDNum++;
     } else if (index === sentenceEndIndices[currEndInd]) {
-        if (complexCount >= 7) {
-          // create this sentence, as it qualifies + modify current text to add span
-          this[index] = text + "</span>";
-          currEndInd++;
-          startVals = Object.entries(sentenceStart)[0];
-          this[startVals[0]] = startVals[1];
+        // create this sentence, as it qualifies + modify current text to add span
+        this[index] = text + "</span>";
+        currEndInd++;
+        startVals = Object.entries(sentenceStart)[0];
+        this[startVals[0]] = startVals[1];
 
-          let fullSentence = sentence.join(" ");
-          // create html object to attain clean text
-          var htmlToCleanObject = document.createElement("div");
-          htmlToCleanObject.innerHTML = fullSentence;
-          let cleanSentence = htmlToCleanObject.innerText;
-          htmlToCleanObject.remove();
+        let fullSentence = sentence.join(" ");
+        // create html object to attain clean text
+        var htmlToCleanObject = document.createElement("div");
+        htmlToCleanObject.innerHTML = fullSentence;
+        let cleanSentence = htmlToCleanObject.innerText;
+        htmlToCleanObject.remove();
 
-          let id = "sentence" + (sentenceIDNum - 1);
-          complexText.currTabSentences[id] = [[cleanSentence, fullSentence]];
-        } else {
-          sentenceIDNum--;
-        }
+        let id = "sentence" + (sentenceIDNum - 1);
+        textToCheck.currTabSentences[id] = cleanSentence;
+
         sentenceStart = {};
         nextTextInd = index + 1;
         if (this[nextTextInd] != null) {
           id = "sentence" + (sentenceIDNum);
           sentenceStart[nextTextInd] =
-            "<span class='complex-sentence' id=" + id + "> " + this[nextTextInd];
+            "<span id=" + id + "> " + this[nextTextInd];
           sentenceIDNum++;
         }
-        complexCount = 0;
 
         sentence = [];
       }
-    }, complex);
+
+    }, words);
 }
+
+function markupComplexText(complex) {
+  revertContentToOriginal();
+  sentences = document.querySelectorAll('[id*="sentence"]');
+  sentences.forEach(function(sentence) {
+    let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id);
+    try {
+      let replacement = replacements.text[simpSetting];
+      if (typeof(replacement) ===  "object" && Object.keys(replacement).length === 0) {
+        return;
+      }
+      sentence.classList.add("complex-sentence");
+    } catch {
+      return;
+    }
+  });
+
+  complexSentencesGroup = document.getElementsByClassName("complex-sentence");
+  for (let i = 0; i < complexSentencesGroup.length; i++) {
+    originalComplexSentencesGroup.push(complexSentencesGroup[i].innerHTML);
+  }
+
+  addListeners();
+  toggleHighlightComplex({
+    settingType: "highlightComplex",
+    highlight: highlightToggle,
+  });
+}
+
+
 /*
  * Identifies complex paragraphs within the main content of the
  * webpage. For a paragraph to be complex, at least two sentences
@@ -1337,18 +1362,10 @@ function identifyParagraphs() {
       paraIndex += 1;
       let paraText = paragraph.innerText;
       let sentences = paraText.split(".");
-      let count = 0;
-      sentences.forEach((sentence) => {
-        if (sentence.split(" ").length > 20) {
-          count++;
-        }
-      });
-      if (count > 2) {
-        let paraId = "paragraph" + paraIndex;
-        complexText.currTabParagraphs[paraId] = [paraText];
-        paragraph.setAttribute("id", "paragraph" + paraIndex);
-        paragraph.classList.add("complex-paragraph");
-      }
+      let paraId = "paragraph" + paraIndex;
+      textToCheck.currTabParagraphs[paraId] = [paraText];
+      paragraph.setAttribute("id", "paragraph" + paraIndex);
+      // paragraph.classList.add("complex-paragraph");
     });
 }
 
@@ -1358,9 +1375,9 @@ function identifyDocument() {
   doc.classList.add("mainContentContainer");
   let allParagraphs = document.querySelectorAll(".mainContentContainer p");
 
-  complexText.currTabDocumentParagraphs["document" + 1] = [];
+  textToCheck.currTabDocumentParagraphs["document" + 1] = [];
   Array.from(allParagraphs).forEach((para) => {
-    complexText.currTabDocumentParagraphs["document" + 1].push(para);
+    textToCheck.currTabDocumentParagraphs["document" + 1].push(para);
   });
 
   // As of now, a document is considered complex if it has more than 2 complex paragraphs
@@ -1370,6 +1387,38 @@ function identifyDocument() {
       // content and mark them as complex-document
       if (node.innerText.split(" ").length > 20) getPTags(node);
     });
+  }
+}
+
+function collectText(node) {
+  if (node.childNodes.length == 1) {
+    if (node.parentNode && node.parentNode.nodeName === "TEXTAREA") {
+      return;
+    }
+
+    if (
+      node.innerHTML.length <= node.innerText.length + 2 ||
+      node.innerHTML.length >= node.innerText.length
+    ) {
+      var currText = node.innerHTML.split(" ");
+      var words = currText.map((word) => {
+        let wordsWithID =  identifyWords(word, idx);
+        return wordsWithID;
+      });
+      identifySentences(words);
+      node.innerHTML = words.join(" ");
+    }
+    // Identify complex paragraphs
+    identifyParagraphs();
+
+    // Identify complex document
+    identifyDocument();
+
+    console.log("Number of complex paras = ", complexDocumentParagraphsCount);
+  } else {
+    for (let i = 0; i < node.childNodes.length; i++) {
+      collectText(node.childNodes[i]);
+    }
   }
 }
 
@@ -1390,10 +1439,10 @@ function replaceText(node) {
     ) {
       var currText = node.innerHTML.split(" ");
       var complex = currText.map((word) => {
-        var wordWithNewTag = identifyWords(word, idx);
+        var wordWithNewTag = markupComplexWords(word, idx);
         return wordWithNewTag;
       });
-      identifySentences(complex);
+      markupComplexWords(complex);
       var output = complex.join(" ");
       node.innerHTML = output;
     }

@@ -1,6 +1,6 @@
 from django.db import models
 from lorem_text import lorem
-import re, json
+import random, re, json
 
 
 # Create your models here.
@@ -23,13 +23,13 @@ class Replacer(models.Model):
     def replaceSentence(self, to_replace):
         print("Sentence to be replaced -----> ", to_replace)
         try:
-            sentence = self.sentences[to_replace[0]]
+            sentence = self.sentences[to_replace]
             print(sentence)
             return sentence
         except Exception as ex:
             print(ex)
             print("failed")
-            return to_replace[0]
+            return {}
 
     def replaceParagraph(self, to_replace):
         print("Paragraph to be replaced -----> ", to_replace)

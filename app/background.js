@@ -75,11 +75,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * Perform API call to simplify text
    * POST request body example : {"type": "word", "text": "apple" } - stringified
    * - text - "apple" - the full string that needs to be simplified
-   * - wordID - "id50" - the id used to identify this word's span element within the document body
+   * - sentenceID - "id50" - the id used to identify this word's span element within the document body
    * - type - "word" - type of text being sent
    * result: a "simplified" version of the provided text argument
    */
-  async function getSimpleWord(text, wordID, type) {
+  async function getSimpleWord(text, sentenceID, type) {
     let url = "http://127.0.0.1:8000/decomplexify/";
     // Number of paragraphs
     let amount = type === "document" ? `${totalParagraphs}/` : "";
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       // if (type === "document") alert("got " + type);
       freshTextPromise = await response.text();
       freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, "$1");
-      // toSendBack.push({ wordID: wordID, text: freshTextPromise });
+      // toSendBack.push({ sentenceID: sentenceID, text: freshTextPromise });
       return freshTextPromise;
     }
   }
@@ -119,8 +119,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     for (var i = 0; i < keys.length; i++) {
       textID = keys[i];
 
-      let simple = await getSimpleWord(data[textID][0], textID, type);
-      toSendBack.push({wordID: textID, text: simple});
+      let simple = await getSimpleWord(data[textID], textID, type);
+      toSendBack.push({sentenceID: textID, text: simple});
     }
     // send to content script and modify those words
     let toSend = JSON.stringify(toSendBack);
