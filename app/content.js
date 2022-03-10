@@ -242,6 +242,7 @@ function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
   const currSentences = document.querySelectorAll('[id*="sentence"]');
   currSentences.forEach(function(sentence) {
     removeSimplifiedHighlights(sentence);
+    sentence.classList.remove("complex-sentence");
     sentence.innerHTML = originalSentences[sentence.id];
   });
 }
@@ -1314,8 +1315,9 @@ function markupComplexText(complex) {
       let replacement = replacements.text[simpSetting];
       if (typeof(replacement) ===  "object" && Object.keys(replacement).length === 0) {
         return;
+      } else if (replacement) {
+          sentence.classList.add("complex-sentence");
       }
-      sentence.classList.add("complex-sentence");
     } catch {
       return;
     }
