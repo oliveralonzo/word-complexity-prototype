@@ -197,3 +197,7 @@ input[type="range"]:focus::-ms-fill-upper {
   margin: 0 0 20px 0;
   white-space: nowrap;
 }
+
+.disabled {
+  opacity: 0.3;
+}

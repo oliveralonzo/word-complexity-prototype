@@ -6,3 +6,5 @@ api/api/__pycache__
 api/decomplexify/__pycache__
 api/db.sqlite3
 api/api/settings.py
+Dummy Data/Dummy Data/.DS_Store
+.DS_Store

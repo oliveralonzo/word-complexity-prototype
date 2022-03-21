@@ -7,15 +7,39 @@
   <body>
     <div class="container">
       <div class="option-slider">
-        <h2>How much?</h2>
+        <h2>Simplification Type</h2>
+        <input
+          type="range"
+          min="1"
+          max="3"
+          value="1"
+          steps="1"
+          list="simpType"
+          id="simpTypeInput"
+        />
+        <datalist class="datalist">
+          <option value="Lexical" label="Lexical">0</option>
+          <option value="Both" label="Both">1</option>
+          <option value="Syntactic" label="Syntactic">2</option>
+        </datalist>
+
+        <div class="sliderticks">
+          <p>Lexical</p>
+          <p> Both </p>
+          <p>Syntactic</p>
+        </div>
+      </div>
+
+      <div class="option-slider">
+        <h2>Quantity</h2>
         <input
           type="range"
           min="1"
           max="4"
           value="1"
           steps="1"
-          list="textSetting"
-          id="textSettingInput"
+          list="howMuchSetting"
+          id="howMuchSettingInput"
         />
         <datalist class="datalist">
           <option value="Words" label="Words">0</option>
@@ -25,7 +49,7 @@
         </datalist>
 
         <div class="sliderticks">
-          <p>Words</p>
+          <p id="wordsSetting">Words</p>
           <p>Sentences</p>
           <p>Paragraph</p>
           <p>Document</p>
@@ -33,7 +57,7 @@
       </div>
 
       <div id="complexity">
-        <h2>Highlight Complex?</h2>
+        <h2>Highlight Complex</h2>
         <label class="switch"
           ><input type="checkbox" id="togBtn" />
           <div class="slider round"></div>
@@ -41,7 +65,7 @@
       </div>
 
       <div class="option-slider">
-        <h2>Where?</h2>
+        <h2>Location</h2>
         <input
           type="range"
           min="1"
@@ -65,7 +89,7 @@
       </div>
 
       <div id="highlightReplaced">
-        <h2>Highlight Replacement?</h2>
+        <h2>Highlight Replaced</h2>
         <label class="switch"
           ><input type="checkbox" id="highlightReplacedBtn" />
           <div class="slider round"></div>
@@ -73,7 +97,7 @@
       </div>
 
       <div class="option-slider">
-        <h2>How long?</h2>
+        <h2>Duration</h2>
         <input
           type="range"
           min="1"
@@ -85,18 +109,18 @@
         />
         <datalist class="datalist">
           <option label="Temporary">0</option>
-          <option label="Until Click">1</option>
+          <option label="Manually">1</option>
           <option label="Permanent">2</option>
         </datalist>
 
         <div class="sliderticks">
           <p>Temporary</p>
-          <p>Until Click</p>
+          <p>Manual</p>
           <p>Permanent</p>
         </div>
       </div>
 
-      <div class="option-slider" style="opacity: 0.3">
+      <!-- <div class="option-slider" style="opacity: 0.3">
         <h2>Display Confidence</h2>
         <input
           type="range"
@@ -119,7 +143,7 @@
           <p>Discrete</p>
           <p>Continuous</p>
         </div>
-      </div>
+      </div> -->
     </div>
   </body>
 </html>

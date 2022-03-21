@@ -16,14 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from decomplexify.views import SupplyLoremIpsum
+from decomplexify.views import SupplySimplifications
 
 urlpatterns = [
-    
+
     # path(r'^decomplexify\/(\d+|)$', SupplyLoremIpsum.as_view())
     # path(r'^decomplexify\/([0-9]|^$)', SupplyLoremIpsum.as_view()),
-    path('decomplexify/', SupplyLoremIpsum.as_view()),
-    path('decomplexify/<int:amount>/', SupplyLoremIpsum.as_view()),
+    path('decomplexify/', SupplySimplifications.as_view()),
+    path('decomplexify/<int:amount>/', SupplySimplifications.as_view()),
     #path('admin/', admin.site.urls),
 ]
 

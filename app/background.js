@@ -3,7 +3,6 @@
 document.addEventListener("DOMContentLoaded", function (event) {
   console.log("background js on");
 
-  var toSendBack = [];
   var totalParagraphs = 0;
 
   /*
@@ -58,15 +57,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   chrome.runtime.onMessage.addListener(async function (request) {
     if (request.wordUpdate === "True") {
-      data = request.toSimplify;
-      totalParagraphs = request.totalParagraphs;
       sentenceData = request.toSimplifySentence;
-      paragraphData = request.toSimplifyParagraph;
-      documentData = request.toSimplifyDocument;
-      await getNewText(data, "word");
       await getNewText(sentenceData, "sentence");
-      await getNewText(paragraphData, "paragraph");
-      await getNewText(documentData, "document");
     } else {
       console.log("request.wordUpdate not True");
     }
@@ -76,11 +68,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * Perform API call to simplify text
    * POST request body example : {"type": "word", "text": "apple" } - stringified
    * - text - "apple" - the full string that needs to be simplified
-   * - wordID - "id50" - the id used to identify this word's span element within the document body
+   * - sentenceID - "id50" - the id used to identify this word's span element within the document body
    * - type - "word" - type of text being sent
    * result: a "simplified" version of the provided text argument
    */
-  async function getSimpleWord(text, wordID, type) {
+  async function getSimpleWord(text, sentenceID, type) {
     let url = "http://127.0.0.1:8000/decomplexify/";
     // Number of paragraphs
     let amount = type === "document" ? `${totalParagraphs}/` : "";
@@ -100,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       // if (type === "document") alert("got " + type);
       freshTextPromise = await response.text();
       freshTextPromise = freshTextPromise.replace(/^"(.*)"$/, "$1");
-      toSendBack.push({ wordID: wordID, text: freshTextPromise });
+      // toSendBack.push({ sentenceID: sentenceID, text: freshTextPromise });
       return freshTextPromise;
     }
   }
@@ -111,17 +103,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
    * type - type of text being requested
    */
   async function getNewText(data, type) {
+    var toSendBack = [];
     if (type === "document") {
       console.log("Received Document data", data);
     }
+
     var keys = Object.keys(data);
     for (var i = 0; i < keys.length; i++) {
       textID = keys[i];
 
-      await getSimpleWord(data[textID][0], textID, type);
+      let simple = await getSimpleWord(data[textID], textID, type);
+      toSendBack.push({sentenceID: textID, text: simple});
     }
     // send to content script and modify those words
-    toSend = JSON.stringify(toSendBack);
+    let toSend = JSON.stringify(toSendBack);
+
     if (toSendBack.length === keys.length) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
@@ -131,8 +127,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         });
       });
     }
-
-    toSendBack = [];
   }
 
   /*

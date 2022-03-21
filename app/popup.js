@@ -4,112 +4,99 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const checkbox = document.getElementById("togBtn");
   const highlightReplacedBtn = document.getElementById("highlightReplacedBtn");
 
-  /* Capture input for textSetting slider
-   *   - listener open to any change of textSettingSlider
-   *   - currently: only Word/Sentences - aligns to 1 and 2, respectively, in terms
-   *     of input values
+  wordReplacementDisabled = false;
+
+  /* Capture input for simplification type slider
+   */
+  simpSettingNode = document.getElementById("simpTypeInput");
+  simpSettingValues = ["lexical", "syntactic_and_lexical", "syntactic"];
+  simpSettingNode.addEventListener("input", function () {
+    simpSetting = simpSettingValues[this.value - 1]
+    chrome.storage.sync.set({ simpSetting: simpSetting}, function () {
+      sendtoContentJS({
+        simpSetting: simpSetting,
+        settingType: "simpType"
+      });
+    });
+    toggleWordReplacement(simpSetting != "lexical");
+    updateTextSetting();
+  });
+
+  /* Capture input for howMuchSetting slider
+   *   - listener open to any change of howMuchSettingSlider
    *   - sends selected setting to content.js for appropriate changes to be made
    */
-  textSettingNode = document.getElementById("textSettingInput");
-  textSettingNode.addEventListener("input", function () {
-    if (this.value == 1) {
-      chrome.storage.sync.set({ textSetting: "Word" }, function () {
-        // Notify that we saved.
-        sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
-      });
-    } else if (this.value == 2) {
-      chrome.storage.sync.set({ textSetting: "Sentence" }, function () {
-        // Notify that we saved.
-        sendtoContentJS({ textSetting: "Sentence", settingType: "howMuch" });
-      });
-    } else if (this.value == 3) {
-      chrome.storage.sync.set({ textSetting: "Paragraph" }, function () {
-        // Notify that we saved.
-        sendtoContentJS({ textSetting: "Paragraph", settingType: "howMuch" });
-      });
-    } else if (this.value == 4) {
-      chrome.storage.sync.set({ textSetting: "Document" }, function () {
-        // Notify that we saved.
-        sendtoContentJS({ textSetting: "Document", settingType: "howMuch" });
-      });
+
+  howMuchSettingNode = document.getElementById("howMuchSettingInput");
+  howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
+  howMuchSettingNode.addEventListener("input", updateTextSetting);
+
+  function updateTextSetting() {
+    if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
+      howMuchSettingNode.value++;
     }
-  });
+    howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
+    chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
+      sendtoContentJS({
+        howMuchSetting: howMuchSetting,
+        settingType: "howMuch"
+      });
+    })
+  }
 
   /* Capture input for where? slider
    */
   whereToSettingNode = document.getElementById("whereTo");
+  whereToSettingValues = ["InPlace", "Popup", "Side"];
   whereToSettingNode.addEventListener("input", function () {
-    if (this.value == 1) {
-      chrome.storage.sync.set({ whereToSetting: "InPlace" }, function () {
-        sendtoContentJS({ whereToSetting: "InPlace", settingType: "whereTo" });
+    whereToSetting = whereToSettingValues[this.value - 1];
+    chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
+      sendtoContentJS({
+        whereToSetting: whereToSetting,
+        settingType: "whereTo"
       });
-      enableHighlightReplacementSlider();
-    } else if (this.value == 2) {
-      chrome.storage.sync.set({ whereToSetting: "Popup" }, function () {
-        sendtoContentJS({ whereToSetting: "Popup", settingType: "whereTo" });
-      });
-      disableHighlightReplacementSlider();
-    } else if (this.value == 3) {
-      chrome.storage.sync.set({ whereToSetting: "Side" }, function () {
-        sendtoContentJS({ whereToSetting: "Side", settingType: "whereTo" });
-      });
-      disableHighlightReplacementSlider();
-    }
+    });
+    // toggleHighlightReplacement(whereToSetting != "InPlace");
   });
 
   /* Capture input for how long?
    */
   howLongSettingNode = document.getElementById("showDuration");
+  howLongSettingValues = ["Temporary", "UntilClick", "Permanent"];
   howLongSettingNode.addEventListener("input", function () {
-    if (this.value == 1) {
-      chrome.storage.sync.set({ howLongSetting: "Temporary" }, function () {
-        sendtoContentJS({
-          howLongSetting: "Temporary",
-          settingType: "howLong",
-        });
+    howLongSetting = howLongSettingValues[this.value - 1]
+    chrome.storage.sync.set({ howLongSetting: howLongSetting}, function () {
+      sendtoContentJS({
+        howLongSetting: howLongSetting,
+        settingType: "howLong"
       });
-    } else if (this.value == 2) {
-      chrome.storage.sync.set({ howLongSetting: "UntilClick" }, function () {
-        sendtoContentJS({
-          howLongSetting: "UntilClick",
-          settingType: "howLong",
-        });
-      });
-    } else if (this.value == 3) {
-      chrome.storage.sync.set({ howLongSetting: "Permanent" }, function () {
-        sendtoContentJS({
-          howLongSetting: "Permanent",
-          settingType: "howLong",
-        });
-      });
-    }
+    });
   });
 
   /*
-   * storageGetHelper is used to check the current setting for type of text
+   * storageGetHelper is used to check the current setting
    *   - checking chrome storage is asynchronous - which creates the need for the structure seen
    *   - sets value and sends value if nothing is stored yet, otherwise asjusts value to stored
    *   - allow for persisting settings after popup is closed
    */
-  storageGetHelper("textSetting").then(function (value) {
+  storageGetHelper("simpSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
-      if (value.textSetting === "Sentence") {
-        /// tell content js to make sentence level changesw
-        textSettingNode.value = 2;
-      } else if (value.textSetting === "Word") {
-        textSettingNode.value = 1;
-        /// i want to signal that content js has to make word level changes to do
-      } else if (value.textSetting === "Paragraph") {
-        textSettingNode.value = 3;
-        /// i want to signal that content js has to make word level changes to do
-      } else if (value.textSetting === "Document") {
-        textSettingNode.value = 4;
-        /// i want to signal that content js has to make word level changes to do
-      }
+      simpSettingNode.value = simpSettingValues.indexOf(value.simpSetting) + 1;
     } else {
-      chrome.storage.sync.set({ textSetting: "Word" });
-      textSettingNode.value = 1;
-      // sendtoContentJS({ textSetting: "Word", settingType: "howMuch" });
+      chrome.storage.sync.set({ simpSetting: "lexical" });
+      simpSettingNode.value = 1;
+    }
+    toggleWordReplacement(simpSettingNode.value !== "1");
+  });
+
+  storageGetHelper("howMuchSetting").then(function (value) {
+    if (!(Object.keys(value).length === 0)) {
+      console.log("resetting to ", value.howMuchSetting)
+      howMuchSettingNode.value = howMuchSettingValues.indexOf(value.howMuchSetting) + 1;
+    } else {
+      console.log("this is running, too");
+      chrome.storage.sync.set({ howMuchSetting: "Word" });
+      howMuchSettingNode.value = 1;
     }
   });
 
@@ -159,14 +146,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (value.highlightReplaced === true) {
       highlightReplacedBtn.checked = true;
     }
-
-    if (whereToSettingNode.value !== "1") {
-      console.log("Disabling --------> ", whereToSettingNode.value);
-      disableHighlightReplacementSlider();
-    } else {
-      console.log("Enabling --------> ", whereToSettingNode.value);
-      enableHighlightReplacementSlider();
-    }
+    // toggleHighlightReplacement(whereToSettingNode.value !== "1", true);
   });
 
   /*
@@ -198,14 +178,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (highlightReplacedBtn) {
     highlightReplacedBtn.addEventListener("change", async function () {
       if (highlightReplacedBtn.checked) {
-        console.log("true clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: true,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: true });
       } else if (highlightReplacedBtn.checked === false) {
-        console.log("fasle clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: false,
           settingType: "highlightReplaced",
@@ -240,13 +218,24 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
   }
 
-  function disableHighlightReplacementSlider() {
-    highlightReplacedBtn.disabled = true;
-    document.getElementById("highlightReplaced").style.opacity = 0.3;
-  }
+  // function toggleHighlightReplacement(disabled, alreadySet = false) {
+  //   highlightReplacedBtn.disabled = disabled;
+  //   highlightReplacedWrapper = document.getElementById("highlightReplaced");
+  //   highlightReplacedWrapper.classList.toggle("disabled",disabled);
+  //
+  //   let highlightReplaced = alreadySet ? highlightReplacedBtn.checked : true;
+  //
+  //   chrome.runtime.sendMessage({
+  //     highlightReplaced: highlightReplaced,
+  //     settingType: "highlightReplaced",
+  //   });
+  //   chrome.storage.sync.set({ highlightReplaced: highlightReplaced });
+  //   highlightReplacedBtn.checked = highlightReplaced;
+  // }
 
-  function enableHighlightReplacementSlider() {
-    highlightReplacedBtn.disabled = false;
-    document.getElementById("highlightReplaced").style.opacity = 1;
+  function toggleWordReplacement(disabled) {
+    wordsSetting = document.getElementById("wordsSetting");
+    wordsSetting.classList.toggle("disabled",disabled);
+    wordReplacementDisabled = disabled;
   }
 });

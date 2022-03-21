@@ -5,7 +5,7 @@ from .models import Replacer
 import json
 
 
-class SupplyLoremIpsum(APIView):
+class SupplySimplifications(APIView):
     replaceTool = Replacer()
     """Returns the simplified text for given complex text. needs error handling
 
