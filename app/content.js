@@ -1,43 +1,23 @@
 // content.js - modification and behaviors for active tab page
 
 // construct list for id-text association
-const textToCheck = {
-  currTabWords: {},
-  currTabSentences: {},
-  currTabParagraphs: {},
-  currTabDocumentParagraphs: {},
-};
+var sentenceIDNum = 0;
+
+var currTabSentences = {};
 
 var originalSentences = {};
 
-var sentenceIDNum = 0;
-var complexWordGroup = null;
-var complexSentencesGroup = null;
-var complexParagraphGroup = null;
-var complexDocumentParagraphGroup = null;
-
-// Initial values
-var originalComplexWordGroup = [];
-var originalComplexSentencesGroup = [];
-var originalComplexParagraphGroup = [];
-var originalComplexDocumentParagraphGroup = [];
-
 // Replacement values
-var replacedWords = null;
 var replacedSentences = null;
-var replacedParagraphs = null;
-var replacedDocumentParagraphs = null;
 
 // Extension settings
 var simpSetting = "lexical";
-var textSetting = "Word";
-var highlightToggle = false;
+var howMuchSetting = "Word";
+var highlightComplexToggle = false;
 var whereToSetting = "InPlace";
 var howLongSetting = "Temporary";
 var confidenceSetting = "No";
 var highlightReplacedToggle = false;
-
-var complexDocumentParagraphsCount = 0;
 
 // Check if any user data exists. If it does, set the variables that store the extension setting.
 chrome.storage.sync.get("simpSetting", (status) => {
@@ -58,20 +38,19 @@ chrome.storage.sync.get("howLongSetting", (status) => {
   }
 });
 
-chrome.storage.sync.get("textSetting", (status) => {
-  if (Object.keys(status).length > 0 && status.textSetting !== null) {
-    textSetting = status.textSetting;
+chrome.storage.sync.get("howMuchSetting", (status) => {
+  if (Object.keys(status).length > 0 && status.howMuchSetting !== null) {
+    howMuchSetting = status.howMuchSetting;
   }
-  markupComplexText();
 });
 
 chrome.storage.sync.get("highlight", (status) => {
   if (Object.keys(status).length > 0 && status.highlight !== null) {
-    highlightToggle = status.highlight;
+    highlightComplexToggle = status.highlight;
   }
   toggleHighlightComplex({
     settingType: "highlightComplex",
-    highlight: highlightToggle,
+    highlight: highlightComplexToggle,
   });
 });
 
@@ -87,15 +66,19 @@ chrome.storage.sync.get("highlightReplaced", (status) => {
 
 var idx = 0; // used for id index of words
 
+
 // Identify page main content
 const mainContent = identifyPageMainContent();
-mainContent.classList.add("mainContentContainer");
+mainContent.classList.add("document");
+mainContent.setAttribute("id", "document0");
 
 // Get all paragraphs within the main content of the page
-const paragraphs = document.querySelectorAll(".mainContentContainer p");
+const paragraphs = document.querySelectorAll(".document p");
 
 for (var i = 0; i < paragraphs.length; i++) {
   let currElement = paragraphs[i];
+  currElement.classList.add("paragraph");
+  currElement.setAttribute("id", `paragraph${i}`)
   collectText(currElement);
 }
 
@@ -103,39 +86,16 @@ document.querySelectorAll('[id*="sentence"]').forEach(function(sentence) {
   originalSentences[sentence.id] = sentence.innerHTML;
 });
 
-
-complexWordGroup = document.getElementsByClassName("complex-word");
-
-complexParagraphGroup = document.getElementsByClassName("complex-paragraph");
-complexDocumentParagraphGroup =
-  document.getElementsByClassName("complex-document");
-
-// Store all the original complex text groups.
-for (let i = 0; i < complexWordGroup.length; i++) {
-  originalComplexWordGroup.push(complexWordGroup[i].innerHTML);
-}
-
-
-for (let i = 0; i < complexParagraphGroup.length; i++) {
-  originalComplexParagraphGroup.push(complexParagraphGroup[i].innerHTML);
-}
-
-for (let i = 0; i < complexDocumentParagraphGroup.length; i++) {
-  originalComplexDocumentParagraphGroup.push(
-    complexDocumentParagraphGroup[i].innerHTML
-  );
-}
-
-
 // send message to background.js with collected complex words, sentences etc
 chrome.runtime.sendMessage({
   wordUpdate: "True",
-  totalParagraphs: complexDocumentParagraphsCount,
-  toSimplify: textToCheck["currTabWords"],
-  toSimplifySentence: textToCheck["currTabSentences"],
-  toSimplifyParagraph: textToCheck["currTabParagraphs"],
-  toSimplifyDocument: textToCheck["currTabDocumentParagraphs"],
+  toSimplifySentence: currTabSentences
 });
+
+window.addEventListener("load", function load(event){
+    window.removeEventListener("load", load, false); //remove listener, no longer needed
+},false);
+
 
 /*
  * Listen to the settings being changed on extension. Depending on the type of setting,
@@ -177,22 +137,14 @@ chrome.runtime.onMessage.addListener(function (request) {
  */
 chrome.runtime.onMessage.addListener(function (request) {
   if (request.type === "simplifiedText") {
-    newWords = request.toChange;
-    newWords = JSON.parse(newWords);
-    if (request.textType === "word") {
-      replacedWords = JSON.parse(request.toChange);
-    }
-    else if (request.textType === "sentence") {
+    if (request.textType === "sentence") {
       replacedSentences = JSON.parse(request.toChange);
       replacedSentences.forEach(sentence => {
-        console.log(sentence)
         sentence.text = JSON.parse(sentence.text);
       });
+
+      markupComplexWords();
       markupComplexText();
-    } else if (request.textType === "paragraph") {
-      replacedParagraphs = JSON.parse(request.toChange);
-    } else if (request.textType === "document") {
-      replacedDocumentParagraphs = JSON.parse(request.toChange);
     }
   }
 });
@@ -201,588 +153,101 @@ chrome.runtime.onMessage.addListener(function (request) {
  * Wrapper function to revert swapped/replaced/simplified text to original text
  */
 function revertContentToOriginal() {
-  const groups = {
-    Word: complexWordGroup,
-    Sentence: complexSentencesGroup,
-    Paragraph: complexParagraphGroup,
-    Document: complexDocumentParagraphGroup,
-  };
-  const originalGroups = {
-    Word: originalComplexWordGroup,
-    Sentence: originalComplexSentencesGroup,
-    Paragraph: originalComplexParagraphGroup,
-    Document: originalComplexDocumentParagraphGroup,
-  };
-  const replacedGroups = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
-    Document: replacedDocumentParagraphs,
-  };
-
-  if (textSetting !== "Document") {
-    revertNonDocumentsToOrginal(
-      groups[textSetting],
-      originalGroups[textSetting],
-      replacedGroups[textSetting]
-    );
-  } else {
-    revertDocumentToOrginal(
-      groups[textSetting],
-      originalGroups[textSetting],
-      replacedGroups[textSetting]
-    );
-  }
-}
-
-/**
- * Changes the elements(words, sentences, paragraphs) back to the original text
- */
-function revertNonDocumentsToOrginal(group, originalGroup, replacedGroup) {
   const currSentences = document.querySelectorAll('[id*="sentence"]');
   currSentences.forEach(function(sentence) {
-    removeSimplifiedHighlights(sentence);
     sentence.classList.remove("complex-sentence");
     sentence.innerHTML = originalSentences[sentence.id];
   });
 }
 
-/**
- * Changes the entire document back to the original text
- */
-function revertDocumentToOrginal(group, originalGroup, replacedGroup) {
-  let text = "";
-  if (replacedGroup) {
-    try {
-      var simplerParagraphs = replacedGroup[0].text[simpSetting].split("\\n \\n");
-    } catch {
-      var simplerParagraphs = replacedGroup[0].text.split("\\n \\n");
+function toggleListeners(todo) {
+  const className = ".complex-" + howMuchSetting.toLowerCase();
+  document.querySelectorAll(className).forEach(function (element) {
+    let events = [];
+    if (howLongSetting == "Temporary") {
+      events.push("mouseenter", "mouseleave");
+    } else {
+      events.push("click");
     }
-
-
-    const paragraphsGroupLength = originalGroup.length;
-
-    for (let i = 0; i < paragraphsGroupLength; i++) {
-      if (group[i].innerHTML !== originalGroup[i]) {
-        removeSimplifiedHighlights(group[i]);
-
-        let currDoc = group[i].innerHTML;
-        group[i].innerHTML = simplerParagraphs[i];
-        text += currDoc + "\\n \\n";
+    events.forEach(function(evt) {
+      if (todo === "add") {
+        element.addEventListener(evt, toggleReplacement);
+        element.classList.add("clickable-pointer");
+      } else if (todo === "remove") {
+        element.removeEventListener(evt, toggleReplacement);
+        element.classList.remove("clickable-pointer");
       }
-    }
-    if (text) {
-      replacedGroup[0].text = text.replace(/^\\n+|\\n \\n+$/g, "");
-    }
-  }
-
-}
-
-/**
- * Adds eventlistners to elements depending on the type of text selected
- * (words, sentences, paragraphs, document) and the place selected
- * (In place, highlight, popup, side).
- */
-function addListeners() {
-  document.querySelectorAll("[class*='complex']").forEach(function (element) {
-    switch (whereToSetting) {
-      case "InPlace":
-        addInPlaceListeners(element);
-        break;
-      case "Popup":
-        addPopupListeners(element);
-        break;
-      case "Side":
-        addSideTipListeners(element);
-        break;
-    }
-    // Get the pointer icon on-hover
-    element.classList.add("clickable-pointer");
-  });
-}
-
-/**
- * Wrapper function to add listners to the selected element to
- * trigger relevant action
- * @param {HTMLElement} element
- */
-function addInPlaceListeners(element) {
-  if (howLongSetting === "Temporary") {
-    addTemporaryInPlaceListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    addUntilClickInPlaceListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    addPermanentInPlaceListeners(element);
-  }
-}
-
-function addPermanentInPlaceListeners(element) {
-  element.addEventListener("click", permanentInPlaceReplace);
-}
-
-const permanentInPlaceReplace = (event) => {
-  if (!event.currentTarget.classList.contains("swapped")) {
-    if (textSetting !== "Document") {
-      setToOtherText(event.currentTarget);
-    } else {
-      setToOtherDocument(event.currentTarget);
-    }
-  }
-};
-
-function addTemporaryInPlaceListeners(element) {
-  element.addEventListener("mouseenter", changeTextOnMouseOver);
-  element.addEventListener("mouseleave", changeTextOnMouseOut);
-}
-
-function addUntilClickInPlaceListeners(element) {
-  element.addEventListener("click", setToOtherWord);
-}
-
-function isParent(refNode, otherNode) {
-  var parent = otherNode.parentNode;
-  do {
-    if (refNode == parent) {
-      return true;
-    } else {
-      parent = parent.parentNode;
-    }
-  } while (parent);
-  return false;
-}
-
-const changeTextOnMouseOver = function (event) {
-  if (
-    event.relatedTarget &&
-    event.relatedTarget.parentNode &&
-    !isParent(this, event.relatedTarget) &&
-    event.target === this &&
-    !event.currentTarget.classList.contains("swapped")
-  ) {
-    let el = document.getElementById(event.currentTarget.id);
-    if (textSetting === "Document") {
-      setToOtherDocument(el);
-    } else {
-      setToOtherText(el);
-    }
-  }
-};
-
-const changeTextOnMouseOut = function (event) {
-  let el = document.getElementById(event.currentTarget.id);
-  if (event.currentTarget.classList.contains("swapped")) {
-    if (textSetting === "Document") {
-      setToOtherDocument(el);
-    } else {
-      setToOtherText(el);
-    }
-  }
-};
-
-function addPopupListeners(element) {
-  if (howLongSetting === "Temporary") {
-    addTemporaryPopupListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    addUntilClickPopupListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    addPermanentPopupListeners(element);
-  }
-}
-
-function addTemporaryPopupListeners(element) {
-  element.addEventListener("mouseover", showToolTip);
-  element.addEventListener("mouseout", removeToolTip);
-}
-
-function addUntilClickPopupListeners(element) {
-  element.addEventListener("click", toggleUntilClickPopup);
-}
-
-const permanentPopup = function (event) {
-  if (textSetting !== "Document") {
-    const tooltip = this.firstChild;
-    const isToolTip =
-      tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
-    if (!isToolTip) {
-      showNonDocumentTooltip(event.currentTarget);
-    }
-  } else {
-    const mainContent = identifyPageMainContent();
-    console.log(mainContent.firstChild);
-    const tooltip = mainContent.firstChild;
-    if (
-      !(
-        tooltip instanceof HTMLElement && tooltip.classList.contains("tooltip1")
-      )
-    ) {
-      toggleUntilClickPopup(mainContent);
-    }
-  }
-};
-
-const toggleUntilClickPopup = function (el) {
-  if (textSetting !== "Document") {
-    const tooltip = this.firstChild;
-    const isToolTip =
-      tooltip.tagName === "DIV" && tooltip.classList.contains("tooltip1");
-    if (isToolTip) {
-      removeSpecificTooltip(tooltip);
-    } else {
-      showNonDocumentTooltip(el.currentTarget);
-    }
-  } else {
-    const tooltip = document.getElementsByClassName("tooltip1");
-    if (tooltip.length > 0) {
-      removeToolTip();
-    } else {
-      showDocumentTooltip(el.target);
-    }
-  }
-};
-
-function addPermanentPopupListeners(element) {
-  element.addEventListener("click", permanentPopup);
-}
-
-function addSideTipListeners(element) {
-  if (howLongSetting === "Temporary") {
-    addTemporarySideTipListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    addUntilClickSideTipListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    addPermanentSideTipListeners(element);
-  }
-}
-
-function addUntilClickSideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.addEventListener("click", showNonDocumentSideTipUntilClick);
-  } else {
-    // Using same function as temporary as logic is the same
-    element.addEventListener("click", function(node) {
-      showDocumentSideTip(node);
     });
-  }
-}
-
-function addPermanentSideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.addEventListener("click", showNonDocumentSideTipUntilClick);
-  } else {
-    // Using same function as temporary as logic is the same
-    element.addEventListener("click", showDocumentSideTip);
-  }
-}
-
-function addTemporarySideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.addEventListener("mouseover", showTemporaryNonDocumentSideTip);
-    element.addEventListener("mouseout", removeSideTip);
-  } else {
-    element.addEventListener("mouseover", showDocumentSideTip);
-    element.addEventListener("mouseout", removeSideTip);
-  }
-}
-
-/**
- * Removes eventlistners from elements depending on the type of text
- * previously selected (words, sentences, paragraphs, document) and/or
- * the place selected (In place, popup, side) and the duration selected
- * (temporary, until click, permanent)
- */
-function removeListeners() {
-  document.querySelectorAll("[class*='complex']").forEach(function (element) {
-    switch (whereToSetting) {
-      case "InPlace":
-        removeInPlaceListeners(element);
-        break;
-      case "Popup":
-        removePopupListeners(element);
-        break;
-      case "Side":
-        removeSideTipListeners(element);
-        break;
-      default:
-        console.log("Did not match any setting");
-    }
-    element.classList.remove("clickable-pointer");
   });
 }
-
-function removeInPlaceListeners(element) {
-  if (howLongSetting === "Temporary") {
-    removeTemporaryInPlaceListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    removeUntilClickInPlaceListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    removePermanentInPlaceListeners(element);
-  }
-}
-
-function removePermanentInPlaceListeners(element) {
-  element.removeEventListener("click", permanentInPlaceReplace);
-}
-
-function removeTemporaryInPlaceListeners(element) {
-  element.removeEventListener("mouseenter", changeTextOnMouseOver);
-  element.removeEventListener("mouseleave", changeTextOnMouseOut);
-}
-
-function removeUntilClickInPlaceListeners(element) {
-  element.removeEventListener("click", setToOtherWord);
-}
-
-function removePopupListeners(element) {
-  if (howLongSetting === "Temporary") {
-    removeTemporaryPopupListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    removeUntilClickPopupListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    removePermanentPopupListeners(element);
-  }
-}
-
-function removePermanentPopupListeners(element) {
-  element.removeEventListener("click", permanentPopup);
-}
-
-function removeTemporaryPopupListeners(element) {
-  element.removeEventListener("mouseover", showToolTip);
-  element.removeEventListener("mouseout", removeToolTip);
-}
-
-function removeUntilClickPopupListeners(element) {
-  element.removeEventListener("click", toggleUntilClickPopup);
-}
-
-function removeSideTipListeners(element) {
-  if (howLongSetting === "Temporary") {
-    removeTemporarySideTipListeners(element);
-  } else if (howLongSetting === "UntilClick") {
-    removeUntilClickSideTipListeners(element);
-  } else if (howLongSetting === "Permanent") {
-    removePermanentSideTipListeners(element);
-  }
-}
-
-function removePermanentSideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.removeEventListener("click", showNonDocumentSideTipUntilClick);
-  } else {
-    // Using same function as temporary as logic is the same
-    element.removeEventListener("click", showDocumentSideTip);
-  }
-}
-
-function removeTemporarySideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.removeEventListener("mouseover", showTemporaryNonDocumentSideTip);
-    element.removeEventListener("mouseout", removeSideTip);
-  } else {
-    element.removeEventListener("mouseover", showDocumentSideTip);
-    element.removeEventListener("mouseout", removeSideTip);
-  }
-}
-
-function removeUntilClickSideTipListeners(element) {
-  if (textSetting !== "Document") {
-    element.removeEventListener("click", showNonDocumentSideTipUntilClick);
-  } else {
-    //Using same function as temporary as logic is same
-    element.removeEventListener("click", showDocumentSideTip);
-  }
-}
-
-const showTemporaryNonDocumentSideTip = function (node) {
-  const wordSet = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
-    Document: replacedDocumentParagraphs,
-  };
-
-  if (textSetting === "Word") {
-    node = node.target;
-  } else {
-    node = node.currentTarget;
-  }
-
-  let id = node.id;
-  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
-
-  // Create a dialog box - this box contains "content" and "header".
-  // Header contains the heading and close button
-  const dialogBox = document.createElement("div");
-  let replacement = simple.text[setting];
-  if (replacement) {
-    const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
-    const dialogHeader = getSideTipHeaderEl();
-
-    dialogBox.appendChild(dialogHeader);
-    dialogBox.appendChild(dialogContent);
-    dialogBox.classList.add("modal1");
-
-    const modalContainer = document.getElementsByClassName("modal1-container");
-    if (modalContainer.length == 0) {
-      const modalContainer = document.createElement("div");
-      modalContainer.classList.add("modal1-container");
-      modalContainer.appendChild(dialogBox);
-      document.body.insertBefore(modalContainer, document.body.firstChild);
-    } else {
-      modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
-    }
-  } else {
-    alert("Error: A simplification wasn't found for this.")
-  }
-};
-
-const showDocumentSideTip = function (node, untilClick = false) {
-  node = node.target;
-
-  let simplifiedParagraphs =
-    replacedDocumentParagraphs[0].text.split("\\n \\n");
-  const dialogContent = document.createElement("div");
-  const textContent = document.createElement("div");
-  dialogContent.classList.add("modal1-content");
-
-  Array.from(simplifiedParagraphs).forEach((para) => {
-    textContent.innerHTML += `<p>${para}</p>`;
-  });
-  dialogContent.appendChild(textContent);
-  const dialogBox = document.createElement("div");
-  const dialogHeader = getSideTipHeaderEl();
-
-  dialogBox.appendChild(dialogHeader);
-  dialogBox.appendChild(dialogContent);
-  dialogBox.classList.add("modal1");
-
-  const modalContainer = document.getElementsByClassName("modal1-container");
-  if (modalContainer.length == 0) {
-    const modalContainer = document.createElement("div");
-    modalContainer.classList.add("modal1-container");
-    modalContainer.appendChild(dialogBox);
-    document.body.insertBefore(modalContainer, document.body.firstChild);
-  } else {
-    modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
-  }
-};
 
 /**
  * Creates a header element containing close button and title.
  */
-function getSideTipHeaderEl() {
-  const dialogHeader = document.createElement("div");
-  const dialogHeading = document.createElement("SPAN");
-  const closeButton = document.createElement("SPAN");
-  closeButton.appendChild(document.createTextNode("X"));
-  closeButton.classList.add("close");
-  closeButton.addEventListener("click", closeSideTip);
-
-  let heading = document.createTextNode(
-    `Simplified ${textSetting.toLowerCase()}`
-  );
-
-  if (howLongSetting === "Permanent") {
-    closeButton.style.display = "none";
-  }
-
-  dialogHeading.classList.add("dialogHeading");
-  dialogHeading.appendChild(heading);
-  dialogHeader.classList.add("dialogHeader");
-  dialogHeader.appendChild(dialogHeading);
-  dialogHeader.appendChild(closeButton);
-  return dialogHeader;
-}
+// function getSideTipHeaderEl() {
+//   const dialogHeader = document.createElement("div");
+//   const dialogHeading = document.createElement("SPAN");
+//
+//
+//   // let heading = document.createTextNode(
+//   //   `Simplified ${howMuchSetting.toLowerCase()}`
+//   // );
+//
+//   if (howLongSetting != "UntilClick") {
+//     closeButton.style.display = "none";
+//   }
+//
+//   dialogHeading.classList.add("dialogHeading");
+//   // dialogHeading.appendChild(heading);
+//   dialogHeader.classList.add("dialogHeader");
+//   dialogHeader.appendChild(dialogHeading);
+//   dialogHeader.appendChild(closeButton);
+//   return dialogHeader;
+// }
 
 function getSideTipContentEl(text) {
-  const dialogContent = document.createElement("div");
-  dialogContent.classList.add("modal1-content");
+  const dialogContent = createNode("div", "", "modal1-content")
   dialogContent.setAttribute("data-text", text);
-  dialogContent.appendChild(document.createTextNode(text));
+
+  if (howLongSetting == "UntilClick") {
+    const closeButton = createNode("span", "", "close");
+    closeButton.addEventListener("click", closeSideTip);
+    dialogContent.appendChild(closeButton);
+  }
+
+  splitTextIntoNodes(text, dialogContent);
+
   return dialogContent;
 }
 
-const highlightSideTipMappedText = function (event) {
-  let id = event.currentTarget.id.substring(8);
-  const textEl = document.getElementById(id);
-  textEl.classList.add("sidetip-mapped-text-highlight");
-};
-
-const removeSideTipMappedTextHighlights = function (event, currTarget = null) {
-  let id = currTarget ? currTarget.id.substring(8) : event.currentTarget.id.substring(8);
-  const textEl = document.getElementById(id);
-  if (textEl) {
-    textEl.classList.remove("sidetip-mapped-text-highlight");
-  }
-};
-
-const showNonDocumentSideTipUntilClick = function (node) {
-  const wordSet = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
-    Document: replacedDocumentParagraphs,
-  };
-
-  if (textSetting === "Word") {
-    node = node.target;
+function toggleSideTipHighlights(highlight, sideTip = null) {
+  const textEl = getSideTipText(sideTip);
+  const className = "highlight-mapped";
+  if (highlight) {
+    textEl.classList.add(className);
   } else {
-    node = node.currentTarget;
+    textEl.classList.remove(className);
   }
-
-  let id = node.id;
-  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
-
-  // Create a dialog box - this box contains "content" and "header".
-  // Header contains the heading and close button
-  const dialogBox = document.createElement("div");
-  let replacement = simple.text[simpSetting];
-  if (replacement) {
-    const dialogContent = getSideTipContentEl(simple.text[simpSetting]);
-    const dialogHeader = getSideTipHeaderEl();
-
-    dialogBox.appendChild(dialogHeader);
-    dialogBox.appendChild(dialogContent);
-
-    dialogBox.setAttribute("id", `sidetip-${id}`);
-    dialogBox.addEventListener("mouseenter", highlightSideTipMappedText);
-    dialogBox.addEventListener("mouseleave", removeSideTipMappedTextHighlights);
-
-    dialogBox.classList.add("modal1");
-
-    const modalContainer = document.getElementsByClassName("modal1-container");
-    if (modalContainer.length == 0) {
-      const modalContainer = document.createElement("div");
-      modalContainer.classList.add("modal1-container");
-      modalContainer.appendChild(dialogBox);
-      document.body.insertBefore(modalContainer, document.body.firstChild);
-    } else {
-      modalContainer[0].insertBefore(dialogBox, modalContainer[0].firstChild);
-    }
-  } else {
-    alert("Error: A simplification wasn't found for this.")
-  }
-
 };
 
-const removeSideTip = function () {
-  document.querySelectorAll(".modal1-container").forEach(function (a) {
-    a.remove();
-  });
-};
+function getSideTipText(sideTip) {
+  const textID = sideTip.id.replace("sidetip-","");
+  return document.getElementById(textID);
+}
 
 const closeSideTip = function (event) {
-  removeSideTipMappedTextHighlights(event, event.currentTarget.parentNode.parentNode);
-  event.currentTarget.parentNode.parentNode.remove();
+  removeSideTips(event.currentTarget.parentNode.parentNode);
 };
 
-function switchingSetting() {
+function switchingSetting(resetHighlights = false) {
   removePopups();
-  removeSideTip();
-  removeListeners();
-  removeSwappedClass();
-  removeHighlights();
-  removeReplacedHighlights();
+  removeSideTips();
+  toggleListeners("remove");
+  toggleSwappedClass(false);
+  if (resetHighlights) {
+    toggleHighlights(false, "complex");
+    toggleHighlights(false, "simple");
+  }
 }
 
 /**
@@ -796,8 +261,25 @@ function switchingSetting() {
  */
 
 function switchSimpSetting(request) {
-  switchingSetting();
+  switchingSetting(resetHighlights = true);
   simpSetting = request.simpSetting;
+  toggleHighlights(highlightComplexToggle, "complex");
+  toggleHighlights(highlightReplacedToggle, "simple");
+  markupComplexText();
+}
+
+/**
+ * Changes the value of "How much" setting. Removes all the
+ * configurations of previous setting and reverts any changes
+ * to original. Adds listeners for the new setting.
+ * @param {Object}  request   Specifies the value of howMuchSetting.
+ *                            Values are Words, Sentence, Paragraphs,
+ *                            Document
+ */
+
+function switchHowMuchSetting(request) {
+  switchingSetting();
+  howMuchSetting = request.howMuchSetting;
   markupComplexText();
 }
 
@@ -828,13 +310,12 @@ function toggleHighlightComplex(request) {
   if (request.settingType == "highlightComplex") {
     if (request.highlight === true) {
       chrome.storage.sync.set({ highlight: true });
-      highlightToggle = true;
-      addHighlights();
+      highlightComplexToggle = true;
     } else {
       chrome.storage.sync.set({ highlight: false });
-      highlightToggle = false;
-      removeHighlights();
+      highlightComplexToggle = false;
     }
+    toggleHighlights(highlightComplexToggle, "complex");
   }
 }
 
@@ -850,12 +331,11 @@ function toggleHighlightReplaced(request) {
     if (request.highlightReplaced === true) {
       chrome.storage.sync.set({ highlightReplaced: true });
       highlightReplacedToggle = true;
-      addReplacedHighlights();
     } else {
       chrome.storage.sync.set({ highlightReplaced: false });
       highlightReplacedToggle = false;
-      removeReplacedHighlights();
     }
+    toggleHighlights(highlightReplacedToggle, "simple");
   }
 }
 
@@ -869,24 +349,10 @@ function toggleHighlightReplaced(request) {
  */
 
 function switchWhereToSetting(request) {
-  switchingSetting();
+  switchingSetting(resetHighlights = true);
   whereToSetting = request.whereToSetting;
-  markupComplexText();
-
-}
-
-/**
- * Changes the value of "How much" setting. Removes all the
- * configurations of previous setting and reverts any changes
- * to original. Adds listeners for the new setting.
- * @param {Object}  request   Specifies the value of textSetting.
- *                            Values are Words, Sentence, Paragraphs,
- *                            Document
- */
-
-function switchHowMuchSetting(request) {
-  switchingSetting();
-  textSetting = request.textSetting;
+  toggleHighlights(highlightComplexToggle, "complex");
+  toggleHighlights(highlightReplacedToggle, "simple");
   markupComplexText();
 }
 
@@ -896,66 +362,19 @@ function removePopups() {
   });
 }
 
-function removeHighlights() {
-  let className = `highlight-${this.textSetting.toLowerCase()}`;
-  let highlighted = document.getElementsByClassName(className);
-  Array.from(highlighted).forEach((element) => {
-    element.classList.remove(className);
-  });
-}
-
-function addHighlights() {
-  let styleClass = `highlight-${textSetting.toLowerCase()}`;
-  let className = `complex-${textSetting.toLowerCase()}`;
-  elements = document.getElementsByClassName(className);
-  [].forEach.call(elements, function (word) {
-    word.classList.add(styleClass);
-  });
-}
-
-function addReplacedHighlights() {
-  const group = {
-    Word: complexWordGroup,
-    Sentence: complexSentencesGroup,
-    Paragraph: complexParagraphGroup,
-    Document: complexDocumentParagraphGroup,
-  };
-  const originalGroup = {
-    Word: originalComplexWordGroup,
-    Sentence: originalComplexSentencesGroup,
-    Paragraph: originalComplexParagraphGroup,
-    Document: originalComplexDocumentParagraphGroup,
-  };
-
-  const groupLength = group[textSetting].length;
-
-  // Identify the elements that have been changed and add highlights
-  for (let i = 0; i < groupLength; i++) {
-    if (group[textSetting][i].innerHTML !== originalGroup[textSetting][i]) {
-      addSimplifiedHighlights(group[textSetting][i]);
-    }
+function toggleHighlights(highlight, type) {
+  const body = document.querySelector("body");
+  const highlightClass = getHighighlightClass(type);
+  if (highlight) {
+    body.classList.add(highlightClass);
+  } else {
+    body.classList.remove(highlightClass);
   }
 }
 
-function removeReplacedHighlights() {
-  const replacedText = document.getElementsByClassName(
-    `highlight-simplified-${textSetting.toLowerCase()}`
-  );
-  Array.from(replacedText).forEach((el) => {
-    removeSimplifiedHighlights(el);
-  });
-}
-
-function getPTags(node) {
-  if (!node) return;
-  if (node.nodeName === "P") {
-    complexDocumentParagraphsCount += 1;
-    node.classList.add("complex-document");
-  }
-
-  for (let i = 0; i < node.childNodes.length; i++) {
-    getPTags(node.childNodes[i]);
-  }
+function getHighighlightClass(type) {
+  const highlightType = simpSetting == "lexical" ? "words" : "sentences"
+  return "highlight-" + type + "-" + highlightType;
 }
 
 /*
@@ -1035,161 +454,342 @@ function getMainContentCandidateSiblings(node) {
   return siblings;
 }
 
-function removeSwappedClass() {
-  const swappedElements = document.getElementsByClassName("swapped");
-  Array.from(swappedElements).forEach((el) => {
-    el.classList.remove("swapped");
-  });
+function getSwappedClassName() {
+  return `swapped-${whereToSetting.toLowerCase()}`;
 }
 
-const setToOtherDocument = function (node) {
-  wordSet = replacedDocumentParagraphs;
+function toggleSwappedClass(swapped, el = null) {
+  const swappedClass = getSwappedClassName();
+  if (el) {
+    el.classList.toggle(swappedClass, swapped);
+  } else {
+    const swappedElements = document.getElementsByClassName(swappedClass);
+    Array.from(swappedElements).forEach((el) => {
+      el.classList.toggle(swappedClass, swapped);
+    });
+  }
+}
 
-  let simplerParagraphs = wordSet[0].text.split("\\n \\n");
-  wordSet[0].text = "";
-  Array.from(complexDocumentParagraphGroup).forEach((node) => {
-    let currDoc = node.innerHTML;
+function toggleReplacement(node) {
+  let evt = null;
+  let eventType = null;
 
-    node.innerHTML = simplerParagraphs.shift();
+  if (node.target) {
+    evt = node;
+    eventType = evt.type;
+    console.log(eventType);
+    node = evt.currentTarget;
+  }
 
-    if (node.classList.contains("swapped")) {
-      node.classList.remove("swapped");
-      if (highlightToggle) {
-        addComplexHighlights(node);
-      }
-      removeSimplifiedHighlights(node);
-    } else {
-      node.classList.add("swapped");
-      if (highlightReplacedToggle) {
-        addSimplifiedHighlights(node);
-      }
-      removeComplexHighlights(node);
+  const tooltips = node.querySelectorAll(".tooltip1");
+  const sidetip = document.querySelector(`#sidetip-${node.id}`);
+  const swapped = node.classList.contains(getSwappedClassName());
+
+  if (howLongSetting == "Permanent" && swapped) {
+    bringTooltipToFront(node, tooltips);
+    return;
+  }
+
+  if (swapped && eventType != "mouseenter") {
+    switch (whereToSetting) {
+      case "InPlace":
+        removeInPlace(node, evt);
+        break;
+      case "Popup":
+        removeToolTips(tooltips);
+        break;
+      case "Side":
+        removeSideTips(sidetip);
+        break;
     }
 
-    wordSet[0].text += currDoc + "\\n \\n";
-  });
-  wordSet[0].text = wordSet[0].text.replace(/^\\n+|\\n \\n+$/g, "");
-};
+    toggleSwappedClass(false, node);
+    return;
+  }
 
-const setToOtherText = function (node) {
-  const replacedGroups = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
+  let replacement = null;
+  const currText = node.innerText;
+
+  if (node.classList.contains("complex-word")) {
+    var parentID = node.parentElement.id;
+    var simple = replacedSentences.find(({ sentenceID }) => sentenceID === parentID);
+    var foundIndex = replacedSentences.findIndex((text) => text.sentenceID == parentID);
+
+    replacement = simple.text["words"][currText];
+
+  } else if (node.classList.contains("complex-sentence")) {
+    if (simpSetting == "lexical" && whereToSetting == "InPlace") {
+      setChildrenToOtherText(node);
+    } else {
+      var id = node.id;
+      var simple = replacedSentences.find(({ sentenceID }) => sentenceID === id);
+      var foundIndex = replacedSentences.findIndex((text) => text.sentenceID == id);
+
+      replacement = simple.text[simpSetting];
+
+      if (replacement != "") {
+        if (howMuchSetting != "Sentence" && whereToSetting != "InPlace") {
+          return replacement + " ";
+        }
+      }
+    }
+  } else if (node.classList.contains("complex-paragraph") || node.classList.contains("complex-document")) {
+    if (whereToSetting == "InPlace") {
+      removeClickablePointerWhenPermanent(node);
+      setChildrenToOtherText(node);
+    } else {
+      replacement = "";
+      replacement += setChildrenToOtherText(node);
+      if (howMuchSetting == "Document" && node.classList.contains("complex-paragraph")) {
+        return replacement + "\n";
+      }
+    }
+  } else if (node.classList.contains("sentence")) {
+    return node.innerText + " ";
+  }
+
+  if (replacement && eventType != "mouseleave") {
+    switch (whereToSetting) {
+      case "InPlace":
+        replaceInPlace(node, replacement, evt);
+        removeClickablePointerWhenPermanent(node);
+        break;
+      case "Popup":
+        showToolTip(node, replacement);
+        break;
+      case "Side":
+        showSideTip(node, replacement);
+        break;
+    }
+
+    toggleSwappedClass(true, node);
+  }
+}
+
+function setChildrenToOtherText(node) {
+  let replacement = "";
+  const childrenClassNames = {
+    "complex-document": ".complex-paragraph",
+    "complex-paragraph": ".sentence",
+    "complex-sentence": ".complex-word",
   };
 
-  let id = node.id;
-  let wordSet = replacedGroups[textSetting];
-  let simple = wordSet.find(({ sentenceID }) => sentenceID === id);
-  let foundIndex = wordSet.findIndex((word) => word.sentenceID == id);
-  let currText = node.innerHTML;
+  let childrenClassName;
 
-  const replacement = simple.text[simpSetting];
-  if (replacement) {
+  for (let [parent, child] of Object.entries(childrenClassNames)) {
+    if (node.classList.contains(parent)) {
+      childrenClassName = child;
+      break;
+    }
+  }
+
+  Array.from(node.querySelectorAll(childrenClassName)).forEach(function(child) {
+    replacement += toggleReplacement(child);
+  });
+
+  return replacement;
+}
+
+function removeClickablePointerWhenPermanent(node) {
+  if (howLongSetting == "Permanent") {
+    let currNode = node;
+    while (!currNode.classList.contains("clickable-pointer")) {
+      if (currNode.parentNode) {
+        currNode = currNode.parentNode;
+        break;
+      } else {
+        return;
+      }
+    }
+    currNode.classList.remove("clickable-pointer");
+  }
+}
+
+function replaceInPlace(node, replacement, evt = null) {
+  if (!node.getAttribute("original")){
+    node.setAttribute("original", node.innerHTML);
+  }
+
+  if (howLongSetting == "Temporary") {
+    if (node.classList.contains("complex-word")) {
+      const originalWidth = node.offsetWidth;
+      let replacementSpan = createNode("span", replacement, "replacement");
+      replaceHTML(node, replacementSpan);
+
+      const newWidth =  node.offsetWidth;
+
+      let paddingSpan = createNode("span", "", "padding-span");
+      const padding = originalWidth > newWidth ? originalWidth - node.offsetWidth : 0;
+      paddingSpan.style["padding-right"] = padding/2 + "px";
+      node.prepend(paddingSpan);
+      node.appendChild(paddingSpan.cloneNode());
+    } else {
+      node.innerHTML = replacement;
+      let id = howMuchSetting == "Sentence" ? node.id : howMuchSetting == "Paragraph" ? node.parentNode.id : "document0";
+      setTimeout(function(){
+        if (!idIsHovered(id)) {
+          removeInPlace(node, evt);
+          toggleSwappedClass(false, node);
+        };
+      }, 1);
+    }
+  }
+  else {
+    let replacementSpan = createNode("span", replacement, "replacement");
+    replaceHTML(node, replacementSpan);
+  }
+}
+
+function idIsHovered(id){
+    return $("#" + id + ":hover").length > 0;
+}
+
+function createNode(type, content, className = null) {
+  let newSpan = document.createElement(type);
+  if (content.innerHTML) {
+    newSpan.appendChild(content);
+  } else {
+    newSpan.innerHTML = content;
+  }
+
+  if (className) {
+    newSpan.classList.add(className);
+  }
+  return newSpan;
+}
+
+function replaceHTML(node, replacement) {
+  node.innerHTML = "";
+  if (typeof(replacement) == "object") {
+    node.appendChild(replacement);
+  } else {
     node.innerHTML = replacement;
+  }
+}
 
-    if (node.classList.contains("swapped")) {
-      node.classList.remove("swapped");
-      if (highlightToggle) {
-        addComplexHighlights(node);
-      }
-      removeSimplifiedHighlights(node);
+function isParent(refNode, otherNode) {
+  var parent = otherNode.parentNode;
+  do {
+    if (refNode == parent) {
+      return true;
     } else {
-      node.classList.add("swapped");
-      if (highlightReplacedToggle) {
-        addSimplifiedHighlights(node);
-      }
-      removeComplexHighlights(node);
+      parent = parent.parentNode;
     }
+  } while (parent);
+  return false;
+}
 
-    wordSet[foundIndex].text[simpSetting] = currText;
-  } else {
-    alert("Error: A simplification wasn't found for this.")
+function splitTextIntoNodes(text, wrapper) {
+  const br = createNode("br", "");
+
+  text.split("\n").forEach(function(t, i, all) {
+    const newNode = createNode("span", t);
+    if (i != all.length - 1) {
+      newNode.append(br.cloneNode(), br.cloneNode());
+    }
+    wrapper.appendChild(newNode);
+  })
+}
+
+const showToolTip = function (node, replacement) {
+  if (howLongSetting != "Permanent") {
+      removeToolTips();
   }
 
-};
-
-const setToOtherWord = (event) => {
-  node = event.currentTarget;
-  if (textSetting === "Document") {
-    setToOtherDocument(node);
-  } else {
-    setToOtherText(node);
-  }
-};
-
-function addSimplifiedHighlights(element) {
-  element.classList.add(`highlight-simplified-${textSetting.toLowerCase()}`);
-}
-
-function removeSimplifiedHighlights(element) {
-  element.classList.remove(`highlight-simplified-${textSetting.toLowerCase()}`);
-}
-
-function removeComplexHighlights(element) {
-  element.classList.remove(`highlight-${textSetting.toLowerCase()}`);
-}
-
-function addComplexHighlights(element) {
-  element.classList.add(`highlight-${textSetting.toLowerCase()}`);
-}
-
-const showToolTip = function (event) {
-  if (textSetting !== "Document") {
-    showNonDocumentTooltip(event.currentTarget);
-  } else {
-    showDocumentTooltip(event.target);
-  }
-};
-
-const removeToolTip = () => {
-  document.querySelectorAll(".tooltip1").forEach(function (a) {
-    a.remove();
-  });
-};
-
-const removeSpecificTooltip = (el) => {
-  el.remove();
-};
-
-const showDocumentTooltip = function (node) {
-  let simplifiedParagraphs =
-    replacedDocumentParagraphs[0].text.split("\\n \\n");
+  const id = node.id;
   const tooltipWrap = document.createElement("div");
+  splitTextIntoNodes(replacement, tooltipWrap);
 
-  Array.from(simplifiedParagraphs).forEach((para) => {
-    tooltipWrap.innerHTML += `<p>${para}</p>`;
-  });
-
-  tooltipWrap.classList.add("tooltip1", "complex-document");
-  const mainDiv = identifyPageMainContent();
-
-  mainDiv.appendChild(tooltipWrap);
-  mainDiv.insertBefore(tooltipWrap, mainDiv.firstChild);
-};
-
-const showNonDocumentTooltip = function (node) {
-  const wordSet = {
-    Word: replacedWords,
-    Sentence: replacedSentences,
-    Paragraph: replacedParagraphs,
-    Document: replacedDocumentParagraphs,
-  };
-
-  let id = node.id;
-  let simple = wordSet[textSetting].find(({ sentenceID }) => sentenceID === id);
-  const tooltipWrap = document.createElement("div");
   tooltipWrap.classList.add("tooltip1");
   tooltipWrap.id = "Popup" + id;
-  let replacement = simple.text[simpSetting];
+
+  node.insertBefore(tooltipWrap, node.firstChild);
+  bringTooltipToFront(node, [tooltipWrap]);
+};
+
+function bringTooltipToFront(node, tooltips) {
+  // In case it's permanent and there are tooltips, bring the tooltip to the front...
+  Array.from(node.parentNode.querySelectorAll(".tooltip1")).forEach(function(otherTooltip) {
+    otherTooltip.style.zIndex = 2;
+  });
+  // and set the rest of the tooltips behind
+  Array.from(tooltips).forEach(function(currTooltip) {
+    currTooltip.style.zIndex = 3;
+  });
+}
+
+
+const showSideTip = function (node, replacement) {
+  let id = node.id;
+
+  // Create a dialog box - this box contains "content" and "header".
+  // Header contains the heading and close button
+  const dialogBox = document.createElement("div");
   if (replacement) {
-    tooltipWrap.setAttribute("data-text", simple.text[simpSetting]);
-    tooltipWrap.appendChild(document.createTextNode(simple.text[simpSetting]));
-    node.insertBefore(tooltipWrap, node.firstChild);
+    const dialogContent = getSideTipContentEl(replacement);
+
+    dialogBox.appendChild(dialogContent);
+
+    dialogBox.setAttribute("id", `sidetip-${id}`);
+    dialogBox.addEventListener("mouseenter", (event) => toggleSideTipHighlights(true, event.currentTarget));
+    dialogBox.addEventListener("mouseleave", (event) => toggleSideTipHighlights(false, event.currentTarget));
+
+    dialogBox.classList.add("modal1");
+    dialogBox.classList.add("highlight");
+
+    let modalContainer = document.getElementById("modal1-container");
+    if (!modalContainer) {
+      modalContainer = document.createElement("div");
+      modalContainer.setAttribute("id", "modal1-container");
+      modalContainer.appendChild(dialogBox);
+      document.body.insertBefore(modalContainer, document.body.firstChild);
+    } else {
+      modalContainer.insertBefore(dialogBox, modalContainer.firstChild);
+    }
+
+    [...modalContainer.children]
+      .sort((a,b)=> a.id.localeCompare(b.id, undefined, {numeric: true, sensitivity: 'base'}))
+      .forEach(node=>modalContainer.appendChild(node));
+
+    node.addEventListener("mouseenter", (event) => dialogBox.classList.add("highlight"));
+    node.addEventListener("mouseleave", (event) => dialogBox.classList.remove("highlight"));
+
   } else {
     alert("Error: A simplification wasn't found for this.")
   }
+};
 
+function removeInPlace(node, evt) {
+  if (howLongSetting == "Temporary" && howMuchSetting != "Word") {
+    let original = makeCleanText(node.getAttribute("original"));
+    node.innerHTML = original;
+  } else {
+    node.innerHTML = node.getAttribute("original");
+  }
+}
+
+function removeToolTips(tooltips = null) {
+  if (!tooltips) {
+    tooltips = document.querySelectorAll(".tooltip1");
+  }
+
+  Array.from(tooltips).forEach(function(tooltip) {
+    toggleSwappedClass(false, tooltip.parentNode);
+    tooltip.remove();
+  });
+}
+
+function removeSideTips(sideTip = null) {
+  if (sideTip) {
+    toggleSideTipHighlights(false, sideTip);
+    toggleSwappedClass(false, getSideTipText(sideTip));
+    sideTip.remove();
+  } else {
+    const container = document.querySelector("#modal1-container")
+    if (container) {
+      container.remove();
+    }
+  }
 };
 
 /* helper function to identify words with length above 6 - identify complex words
@@ -1197,42 +797,29 @@ const showNonDocumentTooltip = function (node) {
  * add span with id and highlight class for
  */
 function identifyWords(word, index) {
+
   // remove anything from the word that isn't purely the text itself - for instance, "<b>word</b>" should become "word"
-  matchInd = word.search(/\b(\w+)\b/g);
-  matchData = word.match(/\b(\w+)\b/g);
-  if (matchData === null) {
+  let cleanWord = word.replace(/\<(.*?)\>/g, "");
+  // cleanWord = cleanWord.replace(/[.,\/#!$%\^&\*;:{}=\_`~()]/g,"");
+
+  matchInd = word.indexOf(cleanWord);
+
+  if (cleanWord === "") {
     return word;
   }
 
-  // word is first match in matchData, matchData.length indicates only one result was found
-  // risk - in a scenario where matchData[0].length is greater than one, the data isn't handled
-  cleanWord = matchData[0];
-  matchLength = matchData[0].length;
-  if (
-    !cleanWord.includes("http") &&
-    matchData.length == 1
-  ) {
-    let id = "id" + index;
-    textToCheck.currTabWords[id] = cleanWord;
+  if (!cleanWord.includes("http")) {
+    let id = "word" + index;
     complexTagged = `<span id=${id}>${cleanWord}</span>`;
     freshHTML =
       word.substring(0, matchInd) +
       complexTagged +
-      word.substring(matchInd + matchLength, word.length);
+      word.substring(matchInd + cleanWord.length, word.length);
     ++idx;
     return freshHTML;
   } else {
     return word;
   }
-}
-
-function markupComplexWords(word, index) {
-  complexTagged = `<span class='complex-word' id=${id}>${word}</span>`;
-  freshHTML =
-    word.substring(0, matchInd) +
-    complexTagged +
-    word.substring(matchInd + matchLength, word.length);
-  ++idx;
 }
 
 /*
@@ -1243,16 +830,17 @@ function markupComplexWords(word, index) {
 *  - current complexity check is number of complex words - likely to be replaced with sending off each sentence to an API potentially
 */
 function identifySentences(words) {
+  const abbreviationsToAvoid = ["Dr.", "Mr.", "Mrs.", "Ms.", "No.", "Ph.D."];
+
   var sentenceEndIndices = [];
 
   // get indices for any text that includes a ending character ---> [? . !]
   words.forEach(function (word, index) {
-    if (index != 0) {
-      // lastChar = value.charAt(value.length - 1);
-      var isEnd = [".","?","!"].some(v => word.includes(v))
-      if (isEnd === true) {
-        sentenceEndIndices.push(index);
-      }
+    const cleanWord = makeCleanText(word);
+    var re = '(.[.?!])|([.?!]\")';
+    let match = cleanWord.slice(-2).match(re) && !abbreviationsToAvoid.includes(cleanWord);
+    if (match && cleanWord.length > 2) {
+      sentenceEndIndices.push(index);
     }
   });
 
@@ -1263,8 +851,6 @@ function identifySentences(words) {
   var sentence = [];
   var id = null;
 
-  console.log(sentenceEndIndices);
-
   // loop over words list
   words.forEach(function (text, index) {
     sentence.push(text);
@@ -1272,7 +858,7 @@ function identifySentences(words) {
     if (index === 0) {
       // With the very first item in complex, create a modified start, with an id and a beginning span
       let id = "sentence" + sentenceIDNum;
-      sentenceStart[0] = "<span id=" + id + ">" + text;
+      sentenceStart[0] = "<span class=\"sentence\" id=" + id + ">" + text;
       sentenceIDNum++;
     } else if (index === sentenceEndIndices[currEndInd]) {
         // create this sentence, as it qualifies + modify current text to add span
@@ -1281,22 +867,18 @@ function identifySentences(words) {
         startVals = Object.entries(sentenceStart)[0];
         this[startVals[0]] = startVals[1];
 
-        let fullSentence = sentence.join(" ");
-        // create html object to attain clean text
-        var htmlToCleanObject = document.createElement("div");
-        htmlToCleanObject.innerHTML = fullSentence;
-        let cleanSentence = htmlToCleanObject.innerText;
-        htmlToCleanObject.remove();
+        let cleanSentence = makeCleanText(sentence.join(" "));
+        cleanSentence = cleanSentence.replace(/\s+/g, " ");
 
         let id = "sentence" + (sentenceIDNum - 1);
-        textToCheck.currTabSentences[id] = cleanSentence;
+        currTabSentences[id] = cleanSentence;
 
         sentenceStart = {};
         nextTextInd = index + 1;
         if (this[nextTextInd] != null) {
           id = "sentence" + (sentenceIDNum);
           sentenceStart[nextTextInd] =
-            "<span id=" + id + "> " + this[nextTextInd];
+            "<span class=\"sentence\" id=" + id + "> " + this[nextTextInd];
           sentenceIDNum++;
         }
 
@@ -1306,131 +888,154 @@ function identifySentences(words) {
     }, words);
 }
 
-function markupComplexText(complex) {
-  revertContentToOriginal();
-  sentences = document.querySelectorAll('[id*="sentence"]');
+function makeCleanText(text) {
+  var htmlToCleanObject = document.createElement("div");
+  htmlToCleanObject.innerHTML = text;
+  let cleanText = htmlToCleanObject.innerText;
+  htmlToCleanObject.remove();
+  return cleanText;
+}
+
+function markupComplexWords(word, index) {
+  const sentences = document.querySelectorAll('[id*="sentence"]');
   sentences.forEach(function(sentence) {
-    let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id);
     try {
-      let replacement = replacements.text[simpSetting];
-      if (typeof(replacement) ===  "object" && Object.keys(replacement).length === 0) {
-        return;
-      } else if (replacement) {
-          sentence.classList.add("complex-sentence");
-      }
+      let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id).text;
+      let replacement_words = replacements["words"];
+
+      Array.from(sentence.children).forEach(function(child) {
+        try {
+          const word = child.innerText;
+          let replacement_word = replacement_words[word]
+          if (replacement_word) {
+            child.classList.add("complex-word");
+          }
+        } catch {
+          return;
+        }
+
+      });
+
     } catch {
       return;
     }
   });
 
-  addListeners();
+  postMarkUpText();
+}
+
+function markupComplexText(revertToOriginal = true) {
+  if (revertToOriginal) {
+      revertContentToOriginal();
+  }
+  const sentences = document.querySelectorAll('[id*="sentence"]');
+
+  sentences.forEach(function(sentence) {
+    try {
+      let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id).text;
+      let replacement_sentences = replacements[simpSetting];
+      let replacement_words = replacements["words"];
+
+      if (typeof(replacement_sentences) ===  "object" && Object.keys(replacement_sentences).length === 0) {
+        return;
+      } else if (replacement_sentences) {
+          sentence.classList.add("complex-sentence");
+          sentence.closest("p").classList.add("complex-paragraph");
+          document.querySelector(".document").classList.add("complex-document");
+      }
+
+      Array.from(sentence.children).forEach(function(child) {
+        try {
+          const word = child.innerText;
+          let replacement_word = replacement_words[word]
+          if (replacement_word) {
+            child.classList.add("complex-word");
+          }
+        } catch {
+          return;
+        }
+
+      });
+
+    } catch {
+      return;
+    }
+  });
+
+  postMarkUpText();
+}
+
+function postMarkUpText() {
+  let difference = parseInt($(".sentence").css("line-height")) - parseInt($(".sentence").css("font-size"));
+  let padding = Math.ceil(difference/4);
+  $(".sentence").css("padding-bottom", padding);
+  $(".sentence").css("padding-top", padding);
+
+  toggleListeners("add");
   toggleHighlightComplex({
     settingType: "highlightComplex",
-    highlight: highlightToggle,
+    highlight: highlightComplexToggle,
   });
 }
 
-
-/*
- * Identifies complex paragraphs within the main content of the
- * webpage. For a paragraph to be complex, at least two sentences
- * having length greater than 20 words should be present.
- */
-function identifyParagraphs() {
-  let paraIndex = 0;
-  document
-    .querySelectorAll(".mainContentContainer p")
-    .forEach(function (paragraph) {
-      paraIndex += 1;
-      let paraText = paragraph.innerText;
-      let sentences = paraText.split(".");
-      let paraId = "paragraph" + paraIndex;
-      textToCheck.currTabParagraphs[paraId] = [paraText];
-      paragraph.setAttribute("id", "paragraph" + paraIndex);
-      // paragraph.classList.add("complex-paragraph");
-    });
-}
-
-function identifyDocument() {
-  let complexParagraphs = document.getElementsByClassName("complex-paragraph");
-  let doc = identifyPageMainContent();
-  doc.classList.add("mainContentContainer");
-  let allParagraphs = document.querySelectorAll(".mainContentContainer p");
-
-  textToCheck.currTabDocumentParagraphs["document" + 1] = [];
-  Array.from(allParagraphs).forEach((para) => {
-    textToCheck.currTabDocumentParagraphs["document" + 1].push(para);
-  });
-
-  // As of now, a document is considered complex if it has more than 2 complex paragraphs
-  if (complexParagraphs.length > 2) {
-    Array.from(allParagraphs).forEach((node) => {
-      // Get all the valid p tags (which has at least 20 over words) within main
-      // content and mark them as complex-document
-      if (node.innerText.split(" ").length > 20) getPTags(node);
-    });
-  }
-}
 
 function collectText(node) {
-  if (node.childNodes.length == 1) {
-    if (node.parentNode && node.parentNode.nodeName === "TEXTAREA") {
-      return;
-    }
-
-    if (
-      node.innerHTML.length <= node.innerText.length + 2 ||
-      node.innerHTML.length >= node.innerText.length
-    ) {
-      var currText = node.innerHTML.split(" ");
-      var words = currText.map((word) => {
-        let wordsWithID =  identifyWords(word, idx);
-        return wordsWithID;
-      });
-      identifySentences(words);
-      node.innerHTML = words.join(" ");
-    }
-    // Identify complex paragraphs
-    identifyParagraphs();
-
-    // Identify complex document
-    identifyDocument();
-
-    console.log("Number of complex paragraphs = ", complexDocumentParagraphsCount);
-  } else {
-    for (let i = 0; i < node.childNodes.length; i++) {
-      collectText(node.childNodes[i]);
-    }
+  if (node.parentNode && node.parentNode.nodeName === "TEXTAREA") {
+    return;
   }
+
+  let currText;
+  if (node.childNodes.length == 1) {
+    currText = node.innerHTML.split(" ");
+  } else {
+    // Document this clearly because it is confusing, maybe abstract it out into a function
+    currText = [];
+    Array.from(node.childNodes).forEach((child, i) => {
+      let childText;
+      if (child.outerHTML) {
+        childText = [];
+
+        let tags = child.outerHTML.match(/\<(.*?)\>/g);
+        let innerText = child.innerText.split(" ");
+        childText.push(...tags, ...innerText);
+
+        childText.sort(function(a, b) {
+          return child.outerHTML.indexOf(a) - child.outerHTML.indexOf(b);
+        });
+      } else {
+        childText = child.textContent.split(" ");
+      }
+      currText.push(...childText);
+    });
+
+    currText.forEach((child, i) => {
+      // document all these conditions, looking for a single punctuation mark separated
+      // from its original text by a tag
+      if (child.length == 1 && child.match(/[\.,\?\!]/g) && !isTag(child)) {
+        let stepBack = 1;
+        while (isTag(currText[i-stepBack])) {
+            stepBack++;
+            if (i - stepBack < 0) {
+              break;
+            }
+        }
+        currText[i-stepBack] = currText[i-stepBack] + currText[i];
+        currText.splice(i, 1);
+      }
+    });
+  }
+
+
+  var words = currText.map((word) => {
+    let wordsWithID =  identifyWords(word, idx);
+    return wordsWithID;
+  });
+
+  identifySentences(words);
+
+  node.innerHTML = words.join(" ");
 }
 
-/*
- * Drills down to find text within element to replace
- * as of now, only being passed in <p> nodes from document
- * - approach roughly from easier project
- */
-function replaceText(node) {
-  if (node.childNodes.length == 1) {
-    if (node.parentNode && node.parentNode.nodeName === "TEXTAREA") {
-      return;
-    }
-
-    if (
-      node.innerHTML.length <= node.innerText.length + 2 ||
-      node.innerHTML.length >= node.innerText.length
-    ) {
-      var currText = node.innerHTML.split(" ");
-      var complex = currText.map((word) => {
-        var wordWithNewTag = markupComplexWords(word, idx);
-        return wordWithNewTag;
-      });
-      markupComplexWords(complex);
-      var output = complex.join(" ");
-      node.innerHTML = output;
-    }
-  } else {
-    for (let i = 0; i < node.childNodes.length; i++) {
-      replaceText(node.childNodes[i]);
-    }
-  }
+function isTag(el) {
+  return el.match(/\<(.*?)\>/g);
 }
