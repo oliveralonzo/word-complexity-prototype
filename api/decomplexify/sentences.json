@@ -371,14 +371,14 @@
     "syntactic_and_lexical": "But then it turned out that all the pixels were working. I can display the text I signed.",
     "syntactic_and_sentence_paraphrase": "But then it turned out that all the pictures were working. I can show the text I made."
   },
-  "My first reaction was'It is real!'": {
-    "lexical": "My first response was'It is real!'",
+  "My first reaction was 'It is real!'": {
+    "lexical": "My first response was 'It is real!'",
     "words": {
       "reaction": "response"
     },
     "sentence_paraphrase": "My first reaction was\" It is real\"",
     "syntactic": {},
-    "syntactic_and_lexical": "My first response was'It is real!'",
+    "syntactic_and_lexical": "My first response was 'It is real!'",
     "syntactic_and_sentence_paraphrase": "My first reaction was\" It is real\""
   },
   "I was not able to sleep, the whole night.\"": {
@@ -426,8 +426,8 @@
     "syntactic_and_lexical": "According to the scientists, the next step is to 3D print OLED plays. These will have a higher resolution and better brightness.",
     "syntactic_and_sentence_paraphrase": "The next step is to make 3D printed OLED displays. These will have a better picture quality."
   },
-  "\"The nice part about our research is that the manufacturing is all built in, so we're not talking 20 years out with some'pie in the sky' vision,\" McAlpine said.": {
-    "lexical": "\"The nice part about our research is that the produce is all built in, so we're not talking 20 years out with some'pie in the sky' vision,\" McAlpine said.",
+  "\"The nice part about our research is that the manufacturing is all built in, so we're not talking 20 years out with some 'pie in the sky' vision,\" McAlpine said.": {
+    "lexical": "\"The nice part about our research is that the produce is all built in, so we're not talking 20 years out with some 'pie in the sky' vision,\" McAlpine said.",
     "words": {
       "manufacturing": "produce"
     },
@@ -448,12 +448,10 @@
     "syntactic_and_sentence_paraphrase": "This is something we made in the lab. It is not hard to imagine that we could print all kinds of things ourselves at home or on the go in just a few years."
   },
   "In addition to McAlpine and Su, the research team included University of Minnesota mechanical engineering researchers Xia Ouyang, a postdoctoral researcher; Sung Hyun Park, who is now a senior researcher at Korea Institute of Industrial Technology; and Song Ih Ahn, who is now an assistant professor of mechanical engineering at Pusan National University in Korea.": {
-    "lexical": "In addition to McAlpine and Su, the research team included University of Minnesota mechanical design scientists Xia Ouyang, a postdoctoral researcher ; Sung Hyun Park, who is now a senior researcher at Korea Institute of Industrial Technology ; and Song Ih Ahn, who is now an assistant professor of mechanical design at Pusan National University in Korea.",
+    "lexical": "In addition to McAlpine and Su, the research team included University of Minnesota mechanical design scientists Xia Ouyang, a postdoctoral researcher; Sung Hyun Park, who is now a senior researcher at Korea Institute of Industrial Technology; and Song Ih Ahn, who is now an assistant professor of mechanical design at Pusan National University in Korea.",
     "words": {
-      "engineering": ";",
-      "researchers": "scientists",
-      "researcher;": ";",
-      "Technology;": "Technology"
+      "engineering": "design",
+      "researchers": "scientists"
     },
     "sentence_paraphrase": "The team also included University of Minnesota researchers Xia Ouyang, Sung Hyun Park, who is now a senior researcher at Korea Institute of Industrial Technology, and Song Ih Ahn, who is now an assistant professor of mechanical engineering at Pusan National University in Korea.",
     "syntactic": "In addition to McAlpine and Su, the research team included Xia Ouyang, a postdoctoral researcher at the University of Minnesota. Sung Hyun Park, who is now a senior researcher at Korea Institute of Industrial Technology, and Song Ih Ahn, an assistant professor of mechanical engineering at Pusan National University in Korea.",
@@ -499,12 +497,12 @@
     "syntactic_and_lexical": "Thanks to research from Chalmers University of Technology in Sweden. It could soon be a reality.",
     "syntactic_and_sentence_paraphrase": "It comes from Chalmers University of Technology in Sweden. It could soon be a reality."
   },
-  "A new type of reflective screen -- sometimes described as'electronic paper' -- offers optimal colour display, while using ambient light to keep energy consumption to a minimum.": {
-    "lexical": "A new type of reflective screen -- sometimes description as'electronic paper' -- offers optimal colour display, while using ambient light to keep energy consumption to a minimum.",
+  "A new type of reflective screen -- sometimes described as 'electronic paper' -- offers optimal colour display, while using ambient light to keep energy consumption to a minimum.": {
+    "lexical": "A new type of reflective screen -- sometimes description as 'electronic paper' -- offers optimal colour display, while using ambient light to keep energy consumption to a minimum.",
     "words": {
       "described": "description"
     },
-    "sentence_paraphrase": "A new type of screen -- sometimes called'electronic paper'-- gives a better colour display, while using light to keep energy use to a minimum.",
+    "sentence_paraphrase": "A new type of screen -- sometimes called 'electronic paper'-- gives a better colour display, while using light to keep energy use to a minimum.",
     "syntactic": "A new type of reflective screen - sometimes called \"electronic paper\" - offers optimal color display. At the same time, it uses ambient light to keep energy consumption to a minimum.",
     "syntactic_and_lexical": "A new type of reflective screen - sometimes called \"electronic paper\" - offers optimal color display. At the same time, it uses ambient light to keep energy consumption to a minimum.",
     "syntactic_and_sentence_paraphrase": "A new type of screen - sometimes called electronic paper - gives a better color display. It uses light to keep energy consumption to a minimum."
@@ -698,12 +696,12 @@
     "syntactic_and_lexical": "The scientists have high hopes. Eventually it will be possible to considerably reduce the amounts needed for production.",
     "syntactic_and_sentence_paraphrase": "The researchers have high hopes. Eventually it will be possible to reduce the amount needed for production."
   },
-  "\"Our main goal when developing these reflective screens, or'electronic paper' as it is sometimes termed, is to find sustainable, energy-saving solutions.": {
-    "lexical": "\"Our main goal when developing these reflective screens, or'electronic paper' as it is sometimes termed, is to find sustainable, energy-saving solves.",
+  "\"Our main goal when developing these reflective screens, or 'electronic paper' as it is sometimes termed, is to find sustainable, energy-saving solutions.": {
+    "lexical": "\"Our main goal when developing these reflective screens, or 'electronic paper' as it is sometimes termed, is to find sustainable, energy-saving solves.",
     "words": {
       "solutions.": "solves."
     },
-    "sentence_paraphrase": "Our main goal when making these reflective screens, or'electronic paper'as it is sometimes called, is to save energy.",
+    "sentence_paraphrase": "Our main goal when making these reflective screens, or 'electronic paper 'as it is sometimes called, is to save energy.",
     "syntactic": "Our main goal in developing these reflective screens is to find sustainable and energy-saving solutions. This is sometimes called electronic paper.",
     "syntactic_and_lexical": "Our main goal in developing these reflective screens is to find sustainable and energy-saving solves. This is sometimes called electronic paper.",
     "syntactic_and_sentence_paraphrase": "Our main goal in making these screens is to find ways to save energy and money. This is sometimes called electronic."
@@ -800,19 +798,18 @@
     },
     "sentence_paraphrase": "I thought,'if you went to a zoo and saw a chimpanzee building this you'd think that's one amazing and impressive chimpanzee.'",
     "syntactic": "After seeing a spectacular web, I thought: \"If you went to the zoo and saw a chimpanzee building this, you would think. That's an amazing and impressive chimp. \"",
-    "syntactic_and_lexical": "After seeing a spectacular web, I thought : \"If you went to the zoo and saw a chimp building this, you would think. That's an amazing and impressive chimp. ``",
+    "syntactic_and_lexical": "After seeing a spectacular web, I thought: \"If you went to the zoo and saw a chimp building this, you would think. That's an amazing and impressive chimp. ``",
     "syntactic_and_sentence_paraphrase": "I thought,\" If you went to the zoo and saw a chimpanzee building this, you would think. That's a very impressive chimp."
   },
   "Well this is even more amazing because a spider's brain is so tiny and I was frustrated that we didn't know more about how this remarkable behavior occurs,\" said senior author Andrew Gordus, a Johns Hopkins behavioral biologist.": {
-    "lexical": "Well this is even more amazing because a spider's brain is so tiny and I was complicated that we did n't know more about how this notable behavior occurs,\" said senior author Andrew Gordus, a Johns Hopkins behavioral biologist.",
+    "lexical": "Well this is even more amazing because a spider's brain is so tiny and I was complicated that we didn't know more about how this notable behavior occurs,\" said senior author Andrew Gordus, a Johns Hopkins behavioral biologist.",
     "words": {
       "frustrated": "complicated",
-      "didn't": "did",
-      "remarkable": "n't"
+      "remarkable": "notable"
     },
     "sentence_paraphrase": "This is even more amazing because a spider's brain is so tiny and I was frustrated that we didn't know more about how this strange behavior happens, said Andrew Gordus.",
     "syntactic": "This is even more amazing because a spider's brain is so tiny. I was frustrated that we didn't know more about how this remarkable behavior occurs, said lead author Andrew Gordus, a behavioral biologist at Johns Hopkins University.",
-    "syntactic_and_lexical": "This is even more amazing because a spider's brain is so tiny. I was complicated that we did n't know more about how this notable behavior occurs, said lead author Andrew Gordus, a behavioural biologist at Johns Hopkins University.",
+    "syntactic_and_lexical": "This is even more amazing because a spider's brain is so tiny. I was complicated that we didn't know more about how this notable behavior occurs, said lead author Andrew Gordus, a behavioural biologist at Johns Hopkins University.",
     "syntactic_and_sentence_paraphrase": "This is even more amazing because it is so small. I was frustrated that we didn't know more about how this remarkable behavior happens, said lead author Andrew Gordus."
   },
   "\"Now we've defined the entire choreography for web building, which has never been done for any animal architecture at this fine of a resolution.\"": {
@@ -1001,7 +998,7 @@
     "sentence_paraphrase": "The work was made possible by the National Science Foundation Graduate Research Fellowship Program and National Institutes of Health.",
     "syntactic": "The work was supported by the National Science Foundation Graduate Research Fellowship Program. National Institutes of Health grant R35GM124883.",
     "syntactic_and_lexical": "The work was favoured by the National Science Foundation Graduate Research Fellowship Program. National Institutes of Health grant R35GM124883.",
-    "syntactic_and_sentence_paraphrase": "It was funded by the National Science Foundation Graduate Research Fellowship. National Institutes of Health grant :"
+    "syntactic_and_sentence_paraphrase": "It was funded by the National Science Foundation Graduate Research Fellowship. National Institutes of Health grant:"
   },
   "Large land animals have a significant impact on the ecology and biodiversity of the areas they inhabit and traverse.": {
     "lexical": "Large land animals have a important affect on the ecology and biodiversity of the areas they inhabit and traverse.",
@@ -1054,10 +1051,10 @@
   },
   "Example -- the brown bear": {
     "lexical": {},
-    "sentence_paraphrase": "Example : Brown bear",
+    "sentence_paraphrase": "Example: Brown bear",
     "syntactic": {},
     "syntactic_and_lexical": {},
-    "syntactic_and_sentence_paraphrase": "Example : Brown bear"
+    "syntactic_and_sentence_paraphrase": "Example: Brown bear"
   },
   "The Abruzzo region of Italy, the location of the Sirente Velino Regional Park, is home to the endangered and therefore protected Marsican brown bear (Ursus arctos marsicanus).": {
     "lexical": "The Abruzzo region of Italy, the location of the Sirente Velino Regional Park, is home to the threatened and thus proposed Marsican brown bear (Ursus arctos marsicanus).",
@@ -1117,12 +1114,11 @@
     "syntactic_and_sentence_paraphrase": "Traditional methods are hard."
   },
   "Traditional maps of animal movements are mostly based on long-term surveys of so-called telemetry data; this comes from individuals fitted with radio transmitters.": {
-    "lexical": "Traditional maps of animal movements are mostly based on long-term investigations of so-called telemetry data ; this comes from individuals filled with radio transceivers.",
+    "lexical": "Traditional maps of animal movements are mostly based on long-term investigations of so-called telemetry data; this comes from individuals filled with radio transceivers.",
     "words": {
       "surveys": "investigations",
-      "data;": "data",
-      "fitted": ";",
-      "transmitters.": "filled"
+      "fitted": "filled",
+      "transmitters.": "transceivers."
     },
     "sentence_paraphrase": "Traditional maps of animal movements are mostly based on surveys of telemetry data that comes from people with radio transmitters.",
     "syntactic": "Traditional maps of animal movements are mainly based on long-term surveys of so-called telemetry data. These data come from individuals equipped with radio transmitters.",
@@ -1158,16 +1154,16 @@
     "syntactic_and_lexical": "Scientists build an alternative",
     "syntactic_and_sentence_paraphrase": "Researchers made an alternative."
   },
-  "Researchers from iDiv, the Friedrich Schiller University Jena, Aarhus University and the University of Oxford have developed software - named'enerscape' -- with which maps can be created easily and cost-effectively.": {
-    "lexical": "Scientists from iDiv, the Friedrich Schiller University Jena, Aarhus University and the University of Oxford have build software - named'enerscape' -- with which maps can be created easily and profitably.",
+  "Researchers from iDiv, the Friedrich Schiller University Jena, Aarhus University and the University of Oxford have developed software - named 'enerscape' -- with which maps can be created easily and cost-effectively.": {
+    "lexical": "Scientists from iDiv, the Friedrich Schiller University Jena, Aarhus University and the University of Oxford have build software - named 'enerscape' -- with which maps can be created easily and profitably.",
     "words": {
       "Researchers": "Scientists",
       "developed": "build",
       "cost-effectively.": "profitably."
     },
     "sentence_paraphrase": "Researchers from iDiv, the Friedrich Schiller University Jena, Aarhus University and the University of Oxford have developed software called\" Enerscape\".",
-    "syntactic": "Researchers from iDiv, Friedrich Schiller University Jena, Aarhus University and the University of Oxford have developed a software called'enerscape'. With it, maps can be created easily and economically.",
-    "syntactic_and_lexical": "Scientists from iDiv, Friedrich Schiller University Jena, Aarhus University and the University of Oxford have build a software called'enerscape'. With it, maps can be created easily and economically.",
+    "syntactic": "Researchers from iDiv, Friedrich Schiller University Jena, Aarhus University and the University of Oxford have developed a software called 'enerscape'. With it, maps can be created easily and economically.",
+    "syntactic_and_lexical": "Scientists from iDiv, Friedrich Schiller University Jena, Aarhus University and the University of Oxford have build a software called 'enerscape'. With it, maps can be created easily and economically.",
     "syntactic_and_sentence_paraphrase": "Researchers from iDiv, Aarhus University and the University of Oxford have made a software called\" Enerscape\". Maps can be made easily and economically."
   },
   "Dr Emilio Berti is post-doctoral researcher with the Theory in Biodiversity Science research group at iDiv and the Friedrich Schiller University Jena.": {
@@ -1178,13 +1174,13 @@
     "syntactic_and_sentence_paraphrase": "Emilio Berti is a professor at the iDiv and Friedrich Schiller University. He is part of the Theory in Biodiversity Science."
   },
   "As first author of the study he stressed: \"What's special is that the software requires very little data as a basis.\"": {
-    "lexical": "As first author of the study he pressed : \"What's special is that the software requires very little data as a basis.\"",
+    "lexical": "As first author of the study he pressed: \"What's special is that the software requires very little data as a basis.\"",
     "words": {
-      "stressed:": "pressed"
+      "stressed:": "pressed:"
     },
     "sentence_paraphrase": "He said,\" What's special is that the software needs very little data as a basis.",
     "syntactic": "As the first author of the study, he stressed: What is special is that the software requires very little data as a basis.",
-    "syntactic_and_lexical": "As the first author of the study, he pressed : What is special is that the software requires very little data as a basis.",
+    "syntactic_and_lexical": "As the first author of the study, he pressed: What is special is that the software requires very little data as a basis.",
     "syntactic_and_sentence_paraphrase": "He said that what is special is that the software needs very little data as a basis to work."
   },
   "The energy an animal needs to expend to travel a certain distance is calculated, based on the weight of that animal and its general movement behaviour.": {
@@ -1211,8 +1207,8 @@
     "syntactic_and_lexical": "This energy spending is then generated with the topographical info of a region. The energy consumption of an area is estimated.",
     "syntactic_and_sentence_paraphrase": "This energy is then added to the topographic information of a place. The energy use of an area is calculated."
   },
-  "\"From this information we can then create'energy landscape maps' for individuals as well as for groups of animals.": {
-    "lexical": "\"From this info we can then create'energy landscape maps' for exists as well as for groups of animals.",
+  "\"From this information we can then create 'energy landscape maps' for individuals as well as for groups of animals.": {
+    "lexical": "\"From this info we can then create 'energy landscape maps' for exists as well as for groups of animals.",
     "words": {
       "information": "info",
       "individuals": "exists"
@@ -1399,12 +1395,12 @@
     "syntactic_and_lexical": "The development of enerscape was favoured by iDiv. This is refunded by the German Research Foundation.",
     "syntactic_and_sentence_paraphrase": "The development of enerscape was made easy. It is run by the German Research Foundation."
   },
-  "In addition, enerscape is part of the VILLUM Investigator project'Biodiversity Dynamics in a Changing World', which is funded by the Danish VILLUM Foundation and its'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.": {
+  "In addition, enerscape is part of the VILLUM Investigator project 'Biodiversity Dynamics in a Changing World', which is funded by the Danish VILLUM Foundation and its 'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.": {
     "lexical": {},
-    "sentence_paraphrase": "In addition, enerscape is part of the VILLUM Investigator project'Biodiversity Dynamics in a Changing World', which is funded by the Danish VILLUM Foundation.",
-    "syntactic": "In addition, enerscape is part of the VILLUM Investigator project \"Biodiversity Dynamics in a Changing World\". This project is funded by the Danish Villum Foundation and its'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.",
-    "syntactic_and_lexical": "In addition, enerscape is part of the VILLUM Investigator project \"Biodiversity Dynamics in a Changing World\". This project is funded by the Danish Villum Foundation and its'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.",
-    "syntactic_and_sentence_paraphrase": "Enerscape is also part of a project called Biodiversity Dynamics in a Changing World. This project is made possible by the Danish Villum Foundation and its'Independent Research Fund Denmark | Natural Sciences."
+    "sentence_paraphrase": "In addition, enerscape is part of the VILLUM Investigator project 'Biodiversity Dynamics in a Changing World', which is funded by the Danish VILLUM Foundation.",
+    "syntactic": "In addition, enerscape is part of the VILLUM Investigator project \"Biodiversity Dynamics in a Changing World\". This project is funded by the Danish Villum Foundation and its 'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.",
+    "syntactic_and_lexical": "In addition, enerscape is part of the VILLUM Investigator project \"Biodiversity Dynamics in a Changing World\". This project is funded by the Danish Villum Foundation and its 'Independent Research Fund Denmark | Natural Sciences Project MegaComplexity'.",
+    "syntactic_and_sentence_paraphrase": "Enerscape is also part of a project called Biodiversity Dynamics in a Changing World. This project is made possible by the Danish Villum Foundation and its 'Independent Research Fund Denmark | Natural Sciences."
   },
   "Using autonomous vehicle guidelines, a team of UBC Okanagan researchers has developed a system to improve interactions between people and robots.": {
     "lexical": "Using independent vehicle guides, a team of UBC Okanagan scientists has build a system to improve actions between people and robots.",
@@ -1486,17 +1482,16 @@
     "syntactic_and_sentence_paraphrase": "Najjaran is also a professor of engineering. He says the process is not as easy as he thought."
   },
   "\"Robots don't think or feel, so they need systems that capture and analyze their environment enabling them to respond,\" says Dr. Najjaran.": {
-    "lexical": "\"Robots do n't think or feel, so they need systems that caught and analyse their environment encouraging them to react,\" says Dr. Najjaran.",
+    "lexical": "\"Robots don't think or feel, so they need systems that caught and analyse their environment encouraging them to react,\" says Dr. Najjaran.",
     "words": {
-      "don't": "do",
-      "capture": "n't",
-      "analyze": "caught",
-      "enabling": "analyse",
-      "respond,\"": "encouraging"
+      "capture": "caught",
+      "analyze": "analyse",
+      "enabling": "encouraging",
+      "respond,\"": "react,\""
     },
     "sentence_paraphrase": "Robots do not think or feel, so they need systems that capture and analyze their environment so they can respond.",
     "syntactic": "Robots don't think or feel. They need systems that capture and analyze their environment so that they can respond, says Dr. Najjaran.",
-    "syntactic_and_lexical": "Robots do n't think or feel. They need systems that caught and analyse their environment so that they can react, says Dr. Najjaran.",
+    "syntactic_and_lexical": "Robots don't think or feel. They need systems that caught and analyse their environment so that they can react, says Dr. Najjaran.",
     "syntactic_and_sentence_paraphrase": "Robots do not feel. They need systems that take care of their environment so that they can respond."
   },
   "\"Often those responses need to be in hundredths of a second to ensure the safety of humans in their vicinity.\"": {
@@ -1600,8 +1595,8 @@
     },
     "sentence_paraphrase": "Mukherjee says being able to change within an industrial setting is the biggest problem.",
     "syntactic": "However, according to Mukherjee, the biggest obstacle is adapting to uncertainty in an industrial setting. He says:",
-    "syntactic_and_lexical": "However, according to Mukherjee, the biggest barrier is adjusting to uncertainty in an industrial setting. He says :",
-    "syntactic_and_sentence_paraphrase": "Mukherjee says the biggest problem is adapting to uncertainty in an industrial setting. He says :"
+    "syntactic_and_lexical": "However, according to Mukherjee, the biggest barrier is adjusting to uncertainty in an industrial setting. He says:",
+    "syntactic_and_sentence_paraphrase": "Mukherjee says the biggest problem is adapting to uncertainty in an industrial setting. He says:"
   },
   "Using autonomous vehicle guidelines, she introduces some rules for functionality between humans and robots in industrial settings and tests their effectiveness.": {
     "lexical": "Using independent vehicle guides, she produces some rules for functionality between humans and robots in industrial settings and tests their efficiency.",
@@ -1617,13 +1612,12 @@
     "syntactic_and_sentence_paraphrase": "Using guidelines for autonomous vehicles, she shows some rules for working with humans and robots. She tests them."
   },
   "\"Increasing automation levels is standardized and accepted by the automotive industry, but other industrial settings, while relatively static, don't have the same standards,\" she says.": {
-    "lexical": "\"Increasing automation levels is standardised and accepted by the automotive industry, but other industrial buildings, while fairly static, do n't have the same conditions,\" she says.",
+    "lexical": "\"Increasing automation levels is standardised and accepted by the automotive industry, but other industrial buildings, while fairly static, don't have the same conditions,\" she says.",
     "words": {
       "standardized": "standardised",
       "settings,": "buildings,",
       "relatively": "fairly",
-      "don't": "do",
-      "standards,\"": "n't"
+      "standards,\"": "conditions,\""
     },
     "sentence_paraphrase": "Automation is accepted by the automotive industry, but other industries, while relatively static, do not have the same rules.",
     "syntactic": "Increased automation levels are standardized and accepted by the automotive industry. However, other industrial settings, although relatively static, do not have the same standards, she says.",
@@ -1675,12 +1669,12 @@
     "syntactic_and_lexical": "The end goal is to reach the seamless team dynamics and communication fluency of an all-human team. But with robots.",
     "syntactic_and_sentence_paraphrase": "The end goal is to have the team dynamics and communication skills of an all-human team. But with robots."
   },
-  "\"In an'open-world,' robots will need to deal with unexpected variables like people, structures, machines, and wildlife,\" she adds.": {
-    "lexical": "\"In an'open-world,' robots will need to deal with unexpected variables like people, conditions, machines, and wildlife,\" she adds.",
+  "\"In an 'open-world,' robots will need to deal with unexpected variables like people, structures, machines, and wildlife,\" she adds.": {
+    "lexical": "\"In an 'open-world,' robots will need to deal with unexpected variables like people, conditions, machines, and wildlife,\" she adds.",
     "words": {
       "structures,": "conditions,"
     },
-    "sentence_paraphrase": "In an'open-world'robots will need to deal with things like people, buildings, machines, and wildlife.",
+    "sentence_paraphrase": "In an 'open-world' robots will need to deal with things like people, buildings, machines, and wildlife.",
     "syntactic": "In an open world, robots will have to deal with unexpected variables. These include people, structures, machines and wildlife, she adds.",
     "syntactic_and_lexical": "In an open world, robots will have to deal with unexpected variables. These include people, conditions, machines and wildlife, she adds.",
     "syntactic_and_sentence_paraphrase": "In an open world, robots will have to deal with things. These include people, buildings and animals, she says."
@@ -1719,12 +1713,11 @@
     "syntactic_and_sentence_paraphrase": "The robot can combine its visual perception of the environment with its sense of touch. This is first"
   },
   "Steep sections on slippery ground, high steps, scree and forest trails full of roots: the path up the 1,098-metre-high Mount Etzel at the southern end of Lake Zurich is peppered with numerous obstacles.": {
-    "lexical": "Steep sections on slippery ground, high steps, scree and forest trails full of roots : the path up the 1,098-metre-high Mount Etzel at the southern end of Lake Zurich is peppered with numerous barriers.",
+    "lexical": "Steep sections on slippery ground, high steps, scree and forest trails full of roots: the path up the 1,098-metre-high Mount Etzel at the southern end of Lake Zurich is peppered with numerous barriers.",
     "words": {
-      "roots:": "roots",
-      "obstacles.": ":"
+      "obstacles.": "barriers."
     },
-    "sentence_paraphrase": "Steep sections on slippery ground, high steps, scree and forest trails full of roots : the path up Mount Etzel at the southern end of Lake Zurich is very steep.",
+    "sentence_paraphrase": "Steep sections on slippery ground, high steps, scree and forest trails full of roots: the path up Mount Etzel at the southern end of Lake Zurich is very steep.",
     "syntactic": "Steep sections on slippery ground, high steps, scree and forest trails full of roots. The path up to Mount Etzel at the southern end of Lake Zurich, which rises to a height of 1, 098 meters, is full of obstacles.",
     "syntactic_and_lexical": "Steep sections on slippery ground, high steps, scree and forest trails full of roots. The path up to Mount Etzel at the southern end of Lake Zurich, which rises to a height of 1, 098 meters, is full of barriers.",
     "syntactic_and_sentence_paraphrase": "Steep parts on slippery ground, high steps and forest trails. The path up to Mount Etzel at the southern end of Lake Zurich is very steep and has many obstacles."
@@ -1942,11 +1935,8 @@
     "syntactic_and_sentence_paraphrase": "Anymal then plays it safe and uses its brain."
   },
   "According to Hutter, this allows the robot to combine the best of both worlds: the speed and efficiency of external sensing and the safety of proprioceptive sensing.": {
-    "lexical": "According to Hutter, this allows the robot to combine the best of both worlds : the speed and efficiency of external sensing and the safety of proprioceptive sensing.",
-    "words": {
-      "worlds:": "worlds"
-    },
-    "sentence_paraphrase": "According to Hutter, this allows the robot to combine the best of both worlds : the speed and efficiency of external sensing.",
+    "lexical": {},
+    "sentence_paraphrase": "According to Hutter, this allows the robot to combine the best of both worlds: the speed and efficiency of external sensing.",
     "syntactic": {},
     "syntactic_and_lexical": {},
     "syntactic_and_sentence_paraphrase": "This allows the robot to combine the best of both worlds. The speed and efficiency of external sensing and the safety of it."
@@ -1985,18 +1975,17 @@
     "syntactic_and_lexical": "Violent activity on our sun leads to some of the most extreme space weather events on Earth. It affects systems such as satellites, notifications systems, power distribution and aviation.",
     "syntactic_and_sentence_paraphrase": "Violent activity on our sun can cause some of the worst weather on Earth. It affects systems such as satellites and communications systems."
   },
-  "The roughly 11 year cycle of solar activity has three'seasons', each of which affects the space weather felt at Earth differently: (i) solar maximum, the sun is active and disordered, when space weather is stormy and events are irregular (ii) the declining phase, when the sun and solar wind becomes ordered, and space weather is more moderate and (iii) solar minimum, when activity is quiet.": {
-    "lexical": "The roughly 11 year cycle of solar activity has three'seasons', each of which affects the space weather felt at Earth differently : (i) solar maximum, the sun is active and distorted, when space weather is stormy and events are irregular (ii) the dropping stage, when the sun and solar wind becomes ordered, and space weather is more moderate and (iii) solar minimum, when activity is quiet.",
+  "The roughly 11 year cycle of solar activity has three 'seasons', each of which affects the space weather felt at Earth differently: (i) solar maximum, the sun is active and disordered, when space weather is stormy and events are irregular (ii) the declining phase, when the sun and solar wind becomes ordered, and space weather is more moderate and (iii) solar minimum, when activity is quiet.": {
+    "lexical": "The roughly 11 year cycle of solar activity has three 'seasons', each of which affects the space weather felt at Earth differently: (i) solar maximum, the sun is active and distorted, when space weather is stormy and events are irregular (ii) the dropping stage, when the sun and solar wind becomes ordered, and space weather is more moderate and (iii) solar minimum, when activity is quiet.",
     "words": {
-      "differently:": "differently",
-      "disordered,": ":",
-      "declining": "distorted,",
-      "phase,": "dropping"
+      "disordered,": "distorted,",
+      "declining": "dropping",
+      "phase,": "stage,"
     },
-    "sentence_paraphrase": "Each of these seasons affects the space weather felt at Earth in different ways : (i) solar maximum, when the sun is active and disordered, when space weather is stormy and events are irregular (ii) the declining phase, when the sun and solar wind become ordered, and (iii) solar minimum, when activity is quiet.",
+    "sentence_paraphrase": "Each of these seasons affects the space weather felt at Earth in different ways: (i) solar maximum, when the sun is active and disordered, when space weather is stormy and events are irregular (ii) the declining phase, when the sun and solar wind become ordered, and (iii) solar minimum, when activity is quiet.",
     "syntactic": "The roughly 11-year cycle of solar activity has three \"seasons\", each of which affects the space weather felt on Earth differently. (i) solar maximum, when the sun is active and disordered, space weather is stormy and events are irregular; (ii) the declining phase, where the sun and solar wind become orderly, and space Weather is more moderate; and (iv) solar minimum, când activity is quiet.",
-    "syntactic_and_lexical": "The roughly 11-year cycle of solar activity has three \"seasons\", each of which affects the space weather felt on Earth differently. (i) solar maximum, when the sun is active and distorted, space weather is stormy and events are irregular ; (ii) the dropping stage, where the sun and solar wind become orderly, and space Weather is more moderate ; and (iv) solar minimum, când activity is quiet.",
-    "syntactic_and_sentence_paraphrase": "The 11-year cycle of solar activity has three\" seasons\", which affect the weather on Earth differently. (i) solar maximum, when the sun is active and disordered, space weather is stormy and events are not regular ; (ii) the declining phase, where the sun and solar wind become orderly, and space weather is more moderate."
+    "syntactic_and_lexical": "The roughly 11-year cycle of solar activity has three \"seasons\", each of which affects the space weather felt on Earth differently. (i) solar maximum, when the sun is active and distorted, space weather is stormy and events are irregular; (ii) the dropping stage, where the sun and solar wind become orderly, and space Weather is more moderate; and (iv) solar minimum, când activity is quiet.",
+    "syntactic_and_sentence_paraphrase": "The 11-year cycle of solar activity has three\" seasons\", which affect the weather on Earth differently. (i) solar maximum, when the sun is active and disordered, space weather is stormy and events are not regular; (ii) the declining phase, where the sun and solar wind become orderly, and space weather is more moderate."
   },
   "In a new study led by the University of Warwick and published in The Astrophysical Journal, scientists found that the change from solar maximum to the declining phase is fast, happening within a few (27 day) solar rotations.": {
     "lexical": "In a new study led by the University of Warwick and issued in The Astrophysical Journal, technicians found that the change from solar maximum to the dropping stage is fast, happening within a few (27 day) solar rotations.",
@@ -2083,14 +2072,13 @@
     "syntactic_and_lexical": "With the greater detail informed by the sun clock, the technicians were able to see that the transition from the solar maximum to the dropping stage is fast. It produces within a few solar rotations (27 days).",
     "syntactic_and_sentence_paraphrase": "With more detail from the sun clock, the scientists were able to see that the change from the solar maximum to the declining phase is fast. It happens within a few solar rotations."
   },
-  "There was also a clear difference in the duration of the declining phase when the sun's magnetic polarity is'up' compared to'down': in even-numbered cycles it is around twice as long as odd-numbered cycles.": {
-    "lexical": "There was also a clear difference in the duration of the dropping stage when the sun's magnetic polarity is'up' compared to'down' : in even-numbered cycles it is around twice as long as odd-numbered cycles.",
+  "There was also a clear difference in the duration of the declining phase when the sun's magnetic polarity is 'up' compared to 'down': in even-numbered cycles it is around twice as long as odd-numbered cycles.": {
+    "lexical": "There was also a clear difference in the duration of the dropping stage when the sun's magnetic polarity is 'up' compared to 'down': in even-numbered cycles it is around twice as long as odd-numbered cycles.",
     "words": {
       "declining": "dropping",
-      "phase": "stage",
-      "to'down':": "to'down'"
+      "phase": "stage"
     },
-    "sentence_paraphrase": "There was also a difference in the length of the declining phase when the sun's magnetic polarity is\" up\" compared to\" down\" : in even-numbered cycles it is twice as long.",
+    "sentence_paraphrase": "There was also a difference in the length of the declining phase when the sun's magnetic polarity is\" up\" compared to\" down\": in even-numbered cycles it is twice as long.",
     "syntactic": "There is also a clear difference in the duration of the decline phase when the magnetic polarity of the sun is \"up\"compared to\"down\". In even-numbered cycles, it lasts about twice as long as in odd-numbered Cycles.",
     "syntactic_and_lexical": "There is also a clear difference in the duration of the decline stage when the magnetic polarity of the sun is \"up\"compared to\"down\". In even-numbered cycles, it lasts about twice as long as in odd-numbered Cycles.",
     "syntactic_and_sentence_paraphrase": "There is also a difference in the length of the decline phase when the sun is\" up\" and\" down\". Even-numbered cycles last about twice as long as odd-numbered cycles."
@@ -2108,14 +2096,13 @@
     "syntactic_and_sentence_paraphrase": "We are now in cycle 25. Scientists think the next decline phase will be short."
   },
   "Lead author Professor Sandra Chapman of the University of Warwick Department of Physics said: \"By combining well known methods in a new way, our clock resolves changes in the Sun's climate to within a few solar rotations.": {
-    "lexical": "Lead author Professor Sandra Chapman of the University of Warwick Department of Physics said : \"By connecting well known methods in a new way, our clock resolves changes in the Sun's climate to within a few solar rotations.",
+    "lexical": "Lead author Professor Sandra Chapman of the University of Warwick Department of Physics said: \"By connecting well known methods in a new way, our clock resolves changes in the Sun's climate to within a few solar rotations.",
     "words": {
-      "said:": "said",
-      "combining": ":"
+      "combining": "connecting"
     },
-    "sentence_paraphrase": "Professor Sandra Chapman of the University of Warwick Department of Physics said :\" By using well known methods in a new way, our clock changes the climate of the Sun.\"",
+    "sentence_paraphrase": "Professor Sandra Chapman of the University of Warwick Department of Physics said:\" By using well known methods in a new way, our clock changes the climate of the Sun.\"",
     "syntactic": "Lead author Professor Sandra Chapman from the Department of Physics at the University of Warwick said: By combining well-known methods in a new way, our clock resolves changes in the sun's climate within a few solar rotations.",
-    "syntactic_and_lexical": "Lead author Professor Sandra Chapman from the Department of Physics at the University of Warwick said : By connecting well-known methods in a new way, our clock resolves changes in the sun's climate within a few solar rotations.",
+    "syntactic_and_lexical": "Lead author Professor Sandra Chapman from the Department of Physics at the University of Warwick said: By connecting well-known methods in a new way, our clock resolves changes in the sun's climate within a few solar rotations.",
     "syntactic_and_sentence_paraphrase": "Professor Sandra Chapman from the Department of Physics at the University of Warwick said that by using well-known methods in a new way we can change the climate of the sun."
   },
   "Then you find the changes between some phases can be really sharp.": {
@@ -2164,23 +2151,22 @@
     "syntactic_and_sentence_paraphrase": "The results also show how the Sun changes polarity after each cycle. How does the sun change?"
   },
   "Professor Chapman adds: \"I also think it is remarkable that something the size of the sun can flip its magnetic field every 11 years, and going down-up is different to going up-down.": {
-    "lexical": "Professor Chapman adds : \"I also think it is notable that something the size of the sun can flip its magnetic field every 11 years, and going down-up is different to going up-down.",
+    "lexical": "Professor Chapman adds: \"I also think it is notable that something the size of the sun can flip its magnetic field every 11 years, and going down-up is different to going up-down.",
     "words": {
-      "adds:": "adds",
-      "remarkable": ":"
+      "remarkable": "notable"
     },
-    "sentence_paraphrase": "Professor Chapman says :\" I also think it is remarkable that something the size of the sun can flip its magnetic field every 11 years.\"",
+    "sentence_paraphrase": "Professor Chapman says:\" I also think it is remarkable that something the size of the sun can flip its magnetic field every 11 years.\"",
     "syntactic": "Professor Chapman adds: I also think it is remarkable that something the size of the sun can flip its magnetic field every 11 years. And going down is different from going up.",
-    "syntactic_and_lexical": "Professor Chapman adds : I also think it is notable that something the size of the sun can flip its magnetic field every 11 years. And going down is different from going up.",
+    "syntactic_and_lexical": "Professor Chapman adds: I also think it is notable that something the size of the sun can flip its magnetic field every 11 years. And going down is different from going up.",
     "syntactic_and_sentence_paraphrase": "I also think it is remarkable that something the size of the sun can change its magnetic field every 11 years. Going down is different from going up."
   },
-  "Somehow the sun'knows which way up it is', and this is an intriguing problem, at the heart of how the sun generates its magnetic field.\"": {
-    "lexical": "Somehow the sun'knows which way up it is', and this is an interesting problem, at the heart of how the sun creates its magnetic field.\"",
+  "Somehow the sun 'knows which way up it is', and this is an intriguing problem, at the heart of how the sun generates its magnetic field.\"": {
+    "lexical": "Somehow the sun 'knows which way up it is', and this is an interesting problem, at the heart of how the sun creates its magnetic field.\"",
     "words": {
       "intriguing": "interesting",
       "generates": "creates"
     },
-    "sentence_paraphrase": "Somehow the sun'knows which way up it is, and this is an interesting problem, at the heart of how the sun works.",
+    "sentence_paraphrase": "Somehow the sun 'knows which way up it is, and this is an interesting problem, at the heart of how the sun works.",
     "syntactic": "Somehow the sun \"knows which way up it is\". This is an intriguing problem, at the heart of how the sun generates its magnetic field.",
     "syntactic_and_lexical": "Somehow the sun \"knows which way up it is\". This is an interesting problem, at the heart of how the sun creates its magnetic field.",
     "syntactic_and_sentence_paraphrase": "The sun knows which way up it is. This is an interesting problem because of how the sun makes its magnetic field."
@@ -2311,8 +2297,8 @@
     "syntactic_and_lexical": "To understand how social impressions guide decision. The scientists asked partners to play a removed \"ultimatum game\".",
     "syntactic_and_sentence_paraphrase": "To understand how social impressions make decisions. The researchers asked people to play a different game."
   },
-  "\"In the typical game, a'proposer' player offers to split $10 with you,\" Moore said.": {
-    "lexical": "\"In the typical game, a'proposer' player offers to split $ 10 with you,\" Moore said.",
+  "\"In the typical game, a 'proposer' player offers to split $10 with you,\" Moore said.": {
+    "lexical": "\"In the typical game, a 'proposer' player offers to split $ 10 with you,\" Moore said.",
     "words": {
       "$10": "$"
     },
@@ -2347,14 +2333,13 @@
     "syntactic_and_sentence_paraphrase": "The goal of the game is to win as much money. Moore said."
   },
   "But people are often influenced by other people's behavior, and don't always choose to accept unfair offers, even though it would maximize their own gains in the game.": {
-    "lexical": "But people are often impacted by other people's behavior, and do n't always choose to accept unfair offers, even though it would maximize their own gains in the game.",
+    "lexical": "But people are often impacted by other people's behavior, and don't always choose to accept unfair offers, even though it would maximize their own gains in the game.",
     "words": {
-      "influenced": "impacted",
-      "don't": "do"
+      "influenced": "impacted"
     },
     "sentence_paraphrase": "But people are often influenced by other people's behavior, and don't always choose to accept bad offers, even if it makes them rich.",
     "syntactic": "But people are often influenced by other people's behavior. They don't always choose to accept unfair offers, even if it would maximize their own gains in the game.",
-    "syntactic_and_lexical": "But people are often impacted by other people's behavior. They do n't always choose to accept unfair offers, even if it would maximize their own gains in the game.",
+    "syntactic_and_lexical": "But people are often impacted by other people's behavior. They don't always choose to accept unfair offers, even if it would maximize their own gains in the game.",
     "syntactic_and_sentence_paraphrase": "People are often influenced by other people's. They don't always choose to accept bad offers, even if it would make more money."
   },
   "For the new study, participants watched a \"responder\"avatar engaging with an animated\"proposer\" avatar.": {
@@ -2582,12 +2567,12 @@
     "syntactic_and_lexical": "Its recently issued research may offer another way to measure the factors that cause ice to melt. The ice melts.",
     "syntactic_and_sentence_paraphrase": "Its research may offer a new way to measure the things that make ice melt. It melts."
   },
-  "\"The shapes and patterning of ice are sensitive indicators of the environmental conditions at which it melted, allowing us to'read' the shape to infer factors such as the ambient water temperature,\" explains Leif Ristroph, an associate professor at New York University's Courant Institute of Mathematical Sciences and one of the authors of the paper, which appears in the journal Physical Review Letters.": {
-    "lexical": "\"The shapes and patterning of ice are sensitive factors of the environmental situations at which it melted, allowing us to'read' the shape to infer factors such as the ambient water temperature,\" explains Leif Ristroph, an associate professor at New York University's Courant Institute of Mathematical Sciences and one of the authors of the paper, which appears in the journal Physical Review Letters.",
+  "\"The shapes and patterning of ice are sensitive indicators of the environmental conditions at which it melted, allowing us to 'read' the shape to infer factors such as the ambient water temperature,\" explains Leif Ristroph, an associate professor at New York University's Courant Institute of Mathematical Sciences and one of the authors of the paper, which appears in the journal Physical Review Letters.": {
+    "lexical": "\"The shapes and patterning of ice are sensitive factors of the environmental situations at which it melted, allowing us to 'read' the shape to infer factors such as the ambient water temperature,\" explains Leif Ristroph, an associate professor at New York University's Courant Institute of Mathematical Sciences and one of the authors of the paper, which appears in the journal Physical Review Letters.",
     "words": {},
-    "sentence_paraphrase": "The shapes and patterning of ice are sensitive indicators of the conditions at which it melted, allowing us to \"read\" the shape to infer factors such as the ambient water temperature, explains Leif Ristroph. Ristroph is an associate professor at New York University's Courant Institute of Mathematical Sciences.",
-    "syntactic": "The shapes and patterns of ice are sensitive indicators of the environmental conditions in which it melted. They allow us to'read' the shape to infer factors such as ambient water temperature, explains Leif Ristroph, associate professor at the Courant Institute of Mathematical Sciences at New York University and one of the authors of the paper, which appears in the journal Physical Review Letters .",
-    "syntactic_and_lexical": "The shapes and models of ice are sensitive factors of the environmental situations in which it melted. They allow us to'read' the shape to infer factors such as ambient water temperature, excuses Leif Ristroph, associate professor at the Courant Institute of Mathematical Sciences at New York University and one of the authors of the paper, which appears in the journal Physical Review Letters .",
+    "sentence_paraphrase": "The shapes and patterning of ice are sensitive indicators of the conditions at which it melted, allowing us to 'read' the shape to infer factors such as the ambient water temperature, explains Leif Ristroph. Ristroph is an associate professor at New York University's Courant Institute of Mathematical Sciences.",
+    "syntactic": "The shapes and patterns of ice are sensitive indicators of the environmental conditions in which it melted. They allow us to 'read' the shape to infer factors such as ambient water temperature, explains Leif Ristroph, associate professor at the Courant Institute of Mathematical Sciences at New York University and one of the authors of the paper, which appears in the journal Physical Review Letters .",
+    "syntactic_and_lexical": "The shapes and models of ice are sensitive factors of the environmental situations in which it melted. They allow us to 'read' the shape to infer factors such as ambient water temperature, excuses Leif Ristroph, associate professor at the Courant Institute of Mathematical Sciences at New York University and one of the authors of the paper, which appears in the journal Physical Review Letters .",
     "syntactic_and_sentence_paraphrase": "The shapes and patterns of ice are important for the conditions in which it melted. Leif Ristroph is a professor at the Courant Institute of Mathematical Sciences at New York University and one of the people who wrote the paper, which appears in the journal Physical Review Letters ."
   },
   "\"Our work helps to understand how melting induces unusual flow patterns that in turn affect melting, which is one of the many complexities affecting the ice on our planet,\" adds author Alexandra Zidovska, an associate professor in NYU's Department of Physics.": {
@@ -2730,8 +2715,8 @@
     "syntactic_and_lexical": "The weird thing about physics is that fluid water has a very unusual dependence of density on temperature. In specific, it reaches its maximum density at about 4 levels C, he adds.",
     "syntactic_and_sentence_paraphrase": "The strange thing about physics is that the density of liquid water depends on temperature. It gets its maximum density at about 4 degrees C, he says."
   },
-  "\"This'density anomaly' makes water unique in comparison to other fluids.\"": {
-    "lexical": "\"This'density anomaly' makes water unique in compare to other fluids.\"",
+  "\"This 'density anomaly' makes water unique in comparison to other fluids.\"": {
+    "lexical": "\"This 'density anomaly' makes water unique in compare to other fluids.\"",
     "words": {
       "comparison": "compare"
     },
