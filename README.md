@@ -14,4 +14,4 @@ api:
 			- django-cors-headers
 			- lorem
 
-\* *note that, depending on your setup, you might need to type "python3" instead of "python" when typing the commands above*
+\* *note that, depending on your setup, you might need to type "python3" instead of "python" and "pip3" instead of "pip" when typing the commands above*
