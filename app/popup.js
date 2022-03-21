@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (value.highlightReplaced === true) {
       highlightReplacedBtn.checked = true;
     }
-    toggleHighlightReplacement(whereToSettingNode.value !== "1");
+    // toggleHighlightReplacement(whereToSettingNode.value !== "1", true);
   });
 
   /*
@@ -178,14 +178,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
   if (highlightReplacedBtn) {
     highlightReplacedBtn.addEventListener("change", async function () {
       if (highlightReplacedBtn.checked) {
-        console.log("true clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: true,
           settingType: "highlightReplaced",
         });
         chrome.storage.sync.set({ highlightReplaced: true });
       } else if (highlightReplacedBtn.checked === false) {
-        console.log("fasle clicked");
         chrome.runtime.sendMessage({
           highlightReplaced: false,
           settingType: "highlightReplaced",
@@ -220,11 +218,20 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
   }
 
-  function toggleHighlightReplacement(disabled) {
-    highlightReplacedBtn.disabled = disabled;
-    highlightReplaced = document.getElementById("highlightReplaced");
-    highlightReplaced.classList.toggle("disabled",disabled);
-  }
+  // function toggleHighlightReplacement(disabled, alreadySet = false) {
+  //   highlightReplacedBtn.disabled = disabled;
+  //   highlightReplacedWrapper = document.getElementById("highlightReplaced");
+  //   highlightReplacedWrapper.classList.toggle("disabled",disabled);
+  //
+  //   let highlightReplaced = alreadySet ? highlightReplacedBtn.checked : true;
+  //
+  //   chrome.runtime.sendMessage({
+  //     highlightReplaced: highlightReplaced,
+  //     settingType: "highlightReplaced",
+  //   });
+  //   chrome.storage.sync.set({ highlightReplaced: highlightReplaced });
+  //   highlightReplacedBtn.checked = highlightReplaced;
+  // }
 
   function toggleWordReplacement(disabled) {
     wordsSetting = document.getElementById("wordsSetting");
