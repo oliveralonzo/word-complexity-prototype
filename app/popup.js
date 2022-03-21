@@ -22,23 +22,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
     updateTextSetting();
   });
 
-  /* Capture input for textSetting slider
-   *   - listener open to any change of textSettingSlider
+  /* Capture input for howMuchSetting slider
+   *   - listener open to any change of howMuchSettingSlider
    *   - sends selected setting to content.js for appropriate changes to be made
    */
 
-  textSettingNode = document.getElementById("textSettingInput");
-  textSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
-  textSettingNode.addEventListener("input", updateTextSetting);
+  howMuchSettingNode = document.getElementById("howMuchSettingInput");
+  howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
+  howMuchSettingNode.addEventListener("input", updateTextSetting);
 
   function updateTextSetting() {
-    if (textSettingNode.value == 1 && wordReplacementDisabled) {
-      textSettingNode.value++;
+    if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
+      howMuchSettingNode.value++;
     }
-    textSetting = textSettingValues[textSettingNode.value - 1];
-    chrome.storage.sync.set({ textSetting: textSetting}, function () {
+    howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
+    chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
       sendtoContentJS({
-        textSetting: textSetting,
+        howMuchSetting: howMuchSetting,
         settingType: "howMuch"
       });
     })
@@ -49,14 +49,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
   whereToSettingNode = document.getElementById("whereTo");
   whereToSettingValues = ["InPlace", "Popup", "Side"];
   whereToSettingNode.addEventListener("input", function () {
-    whereToSetting = whereToSettingValues[this.value - 1]
+    whereToSetting = whereToSettingValues[this.value - 1];
     chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
       sendtoContentJS({
         whereToSetting: whereToSetting,
         settingType: "whereTo"
       });
     });
-    toggleHighlightReplacement(whereToSetting != "InPlace");
+    // toggleHighlightReplacement(whereToSetting != "InPlace");
   });
 
   /* Capture input for how long?
@@ -89,14 +89,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
     toggleWordReplacement(simpSettingNode.value !== "1");
   });
 
-  storageGetHelper("textSetting").then(function (value) {
+  storageGetHelper("howMuchSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
-      console.log("resetting to ", value.textSetting)
-      textSettingNode.value = textSettingValues.indexOf(value.textSetting) + 1;
+      console.log("resetting to ", value.howMuchSetting)
+      howMuchSettingNode.value = howMuchSettingValues.indexOf(value.howMuchSetting) + 1;
     } else {
       console.log("this is running, too");
-      chrome.storage.sync.set({ textSetting: "Word" });
-      textSettingNode.value = 1;
+      chrome.storage.sync.set({ howMuchSetting: "Word" });
+      howMuchSettingNode.value = 1;
     }
   });
 
