@@ -4,9 +4,6 @@
 app:
 - Open Chrome extension settings, turn on developer mode, select "Load Unpacked", navigate to \word-complexity-prototype\ and select app
 
-Dummy site:
-- Navigate to Dummy Data\Dummy Data and run 'python -m http.server'
-
 api:
 - If django is set up and activated, navigate to \word-complexity-prototype\api and run 'python manage.py runserver'
 - To set up django:

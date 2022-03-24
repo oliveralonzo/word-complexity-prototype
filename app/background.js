@@ -57,15 +57,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   chrome.runtime.onMessage.addListener(async function (request) {
     if (request.wordUpdate === "True") {
-      data = request.toSimplify;
-      totalParagraphs = request.totalParagraphs;
       sentenceData = request.toSimplifySentence;
-      paragraphData = request.toSimplifyParagraph;
-      documentData = request.toSimplifyDocument;
-      await getNewText(data, "word");
       await getNewText(sentenceData, "sentence");
-      await getNewText(paragraphData, "paragraph");
-      await getNewText(documentData, "document");
     } else {
       console.log("request.wordUpdate not True");
     }
