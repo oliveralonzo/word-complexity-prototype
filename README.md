@@ -12,6 +12,5 @@ api:
 		- You might need to install some dependencies for django and the api
 			- djangorestframework
 			- django-cors-headers
-			- lorem
 
 \* *note that, depending on your setup, you might need to type "python3" instead of "python" when typing the commands above*
