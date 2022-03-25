@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "Word Complexity Prototype",
+    "name": "Simplification Tool",
     "version": "0.0.1",
     "description": "Highlight and replace complex words/paragraph/sentences",
     "short_name": "WC Prototype",
