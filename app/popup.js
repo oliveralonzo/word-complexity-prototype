@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         settingType: "simpType"
       });
     });
+    highlightSlidertick(simpSettingNode, this.value - 1);
     toggleWordReplacement(simpSetting != "lexical");
     updateTextSetting();
   });
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         settingType: "howMuch"
       });
     })
+    highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
   }
 
   /* Capture input for where? slider
@@ -56,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         settingType: "whereTo"
       });
     });
-    // toggleHighlightReplacement(whereToSetting != "InPlace");
+    highlightSlidertick(whereToSettingNode, this.value - 1);
   });
 
   /* Capture input for how long?
@@ -71,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         settingType: "howLong"
       });
     });
+    highlightSlidertick(howLongSettingNode, this.value - 1);
   });
 
   /*
@@ -86,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ simpSetting: "lexical" });
       simpSettingNode.value = 1;
     }
+    highlightSlidertick(simpSettingNode, simpSettingNode.value - 1);
     toggleWordReplacement(simpSettingNode.value !== "1");
   });
 
@@ -98,6 +102,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ howMuchSetting: "Word" });
       howMuchSettingNode.value = 1;
     }
+    highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
   });
 
   storageGetHelper("whereToSetting").then(function (value) {
@@ -113,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
       whereToSettingNode.value = 1;
     }
+    highlightSlidertick(whereToSettingNode, whereToSettingNode.value - 1);
   });
 
   storageGetHelper("howLongSetting").then(function (value) {
@@ -128,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       chrome.storage.sync.set({ howLongSetting: "Temporary" });
       howLongSettingNode.value = 1;
     }
+    highlightSlidertick(howLongSettingNode, howLongSettingNode.value - 1);
   });
 
   /*
@@ -237,5 +244,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     wordsSetting = document.getElementById("wordsSetting");
     wordsSetting.classList.toggle("disabled",disabled);
     wordReplacementDisabled = disabled;
+  }
+
+  function highlightSlidertick(inputNode, index) {
+    let sliderticks = inputNode.parentNode.querySelectorAll(".sliderticks p");
+    Array.from(sliderticks).forEach(function(tick) {
+      tick.classList.remove("selected");
+    });
+    sliderticks[index].classList.add("selected");
   }
 });

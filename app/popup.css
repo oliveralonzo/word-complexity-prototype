@@ -198,6 +198,10 @@ input[type="range"]:focus::-ms-fill-upper {
   white-space: nowrap;
 }
 
+.sliderticks p.selected {
+  font-weight: bold;
+}
+
 .disabled {
   opacity: 0.3;
 }
