@@ -19,50 +19,78 @@ var howLongSetting = "Temporary";
 var confidenceSetting = "No";
 var highlightReplacedToggle = false;
 
+var USE_PRESET = true;
+
+var PRESET_VALUES = {
+  "lexical": {
+    "howMuchSetting": "Word",
+    "highlight": true,
+    "whereToSetting": "Popup",
+    "howLongSetting": "UntilClick",
+    "highlightReplaced": true
+  },
+  "syntactic_and_lexical": {
+    "howMuchSetting": "Sentence",
+    "highlight": true,
+    "whereToSetting": "InPlace",
+    "howLongSetting": "UntilClick",
+    "highlightReplaced": true
+  },
+  "syntactic": {
+    "howMuchSetting": "Sentence",
+    "highlight": true,
+    "whereToSetting": "InPlace",
+    "howLongSetting": "UntilClick",
+    "highlightReplaced": true
+  }
+}
+
 // Check if any user data exists. If it does, set the variables that store the extension setting.
 chrome.storage.sync.get("simpSetting", (status) => {
   if (Object.keys(status).length > 0 && status.simpSetting !== null) {
-    simpSetting = status.simpSetting;
+    switchSimpSetting(status);
   }
 });
 
-chrome.storage.sync.get("whereToSetting", (status) => {
-  if (Object.keys(status).length > 0 && status.whereToSetting !== null) {
-    whereToSetting = status.whereToSetting;
-  }
-});
-
-chrome.storage.sync.get("howLongSetting", (status) => {
-  if (Object.keys(status).length > 0 && status.howLongSetting !== null) {
-    howLongSetting = status.howLongSetting;
-  }
-});
-
-chrome.storage.sync.get("howMuchSetting", (status) => {
-  if (Object.keys(status).length > 0 && status.howMuchSetting !== null) {
-    howMuchSetting = status.howMuchSetting;
-  }
-});
-
-chrome.storage.sync.get("highlight", (status) => {
-  if (Object.keys(status).length > 0 && status.highlight !== null) {
-    highlightComplexToggle = status.highlight;
-  }
-  toggleHighlightComplex({
-    settingType: "highlightComplex",
-    highlight: highlightComplexToggle,
+if (!USE_PRESET) {
+  chrome.storage.sync.get("whereToSetting", (status) => {
+    if (Object.keys(status).length > 0 && status.whereToSetting !== null) {
+      whereToSetting = status.whereToSetting;
+    }
   });
-});
 
-chrome.storage.sync.get("highlightReplaced", (status) => {
-  if (Object.keys(status).length > 0 && status.highlightReplaced !== null) {
-    highlightReplacedToggle = status.highlightReplaced;
-  }
-  toggleHighlightReplaced({
-    settingType: "highlightReplaced",
-    highlightReplaced: highlightReplacedToggle,
+  chrome.storage.sync.get("howLongSetting", (status) => {
+    if (Object.keys(status).length > 0 && status.howLongSetting !== null) {
+      howLongSetting = status.howLongSetting;
+    }
   });
-});
+
+  chrome.storage.sync.get("howMuchSetting", (status) => {
+    if (Object.keys(status).length > 0 && status.howMuchSetting !== null) {
+      howMuchSetting = status.howMuchSetting;
+    }
+  });
+
+  chrome.storage.sync.get("highlight", (status) => {
+    if (Object.keys(status).length > 0 && status.highlight !== null) {
+      highlightComplexToggle = status.highlight;
+    }
+    toggleHighlightComplex({
+      settingType: "highlightComplex",
+      highlight: highlightComplexToggle,
+    });
+  });
+
+  chrome.storage.sync.get("highlightReplaced", (status) => {
+    if (Object.keys(status).length > 0 && status.highlightReplaced !== null) {
+      highlightReplacedToggle = status.highlightReplaced;
+    }
+    toggleHighlightReplaced({
+      settingType: "highlightReplaced",
+      highlightReplaced: highlightReplacedToggle,
+    });
+  });
+}
 
 var idx = 0; // used for id index of words
 
@@ -263,9 +291,18 @@ function switchingSetting(resetHighlights = false) {
 function switchSimpSetting(request) {
   switchingSetting(resetHighlights = true);
   simpSetting = request.simpSetting;
+  if (USE_PRESET) switchToPreset(PRESET_VALUES[simpSetting]);
   toggleHighlights(highlightComplexToggle, "complex");
   toggleHighlights(highlightReplacedToggle, "simple");
   markupComplexText();
+}
+
+function switchToPreset(settings) {
+  switchHowMuchSetting(settings);
+  toggleHighlightComplex(settings);
+  switchWhereToSetting(settings);
+  toggleHighlightReplaced(settings);
+  switchHowLongSetting(settings);
 }
 
 /**
@@ -307,16 +344,14 @@ function switchHowLongSetting(request) {
 *       - remove highlight class from words/sentences/paragraphs/Document
 */
 function toggleHighlightComplex(request) {
-  if (request.settingType == "highlightComplex") {
-    if (request.highlight === true) {
-      chrome.storage.sync.set({ highlight: true });
-      highlightComplexToggle = true;
-    } else {
-      chrome.storage.sync.set({ highlight: false });
-      highlightComplexToggle = false;
-    }
-    toggleHighlights(highlightComplexToggle, "complex");
+  if (request.highlight === true) {
+    chrome.storage.sync.set({ highlight: true });
+    highlightComplexToggle = true;
+  } else {
+    chrome.storage.sync.set({ highlight: false });
+    highlightComplexToggle = false;
   }
+  toggleHighlights(highlightComplexToggle, "complex");
 }
 
 /**
@@ -327,16 +362,14 @@ function toggleHighlightComplex(request) {
  */
 
 function toggleHighlightReplaced(request) {
-  if (request.settingType == "highlightReplaced") {
-    if (request.highlightReplaced === true) {
-      chrome.storage.sync.set({ highlightReplaced: true });
-      highlightReplacedToggle = true;
-    } else {
-      chrome.storage.sync.set({ highlightReplaced: false });
-      highlightReplacedToggle = false;
-    }
-    toggleHighlights(highlightReplacedToggle, "simple");
+  if (request.highlightReplaced === true) {
+    chrome.storage.sync.set({ highlightReplaced: true });
+    highlightReplacedToggle = true;
+  } else {
+    chrome.storage.sync.set({ highlightReplaced: false });
+    highlightReplacedToggle = false;
   }
+  toggleHighlights(highlightReplacedToggle, "simple");
 }
 
 /**

@@ -28,53 +28,68 @@ document.addEventListener("DOMContentLoaded", function (event) {
    *   - sends selected setting to content.js for appropriate changes to be made
    */
 
-  howMuchSettingNode = document.getElementById("howMuchSettingInput");
-  howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
-  howMuchSettingNode.addEventListener("input", updateTextSetting);
+  try {
+    howMuchSettingNode = document.getElementById("howMuchSettingInput");
+    howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
+    howMuchSettingNode.addEventListener("input", updateTextSetting);
 
-  function updateTextSetting() {
-    if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
-      howMuchSettingNode.value++;
+    function updateTextSetting() {
+      if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
+        howMuchSettingNode.value++;
+      }
+      howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
+      chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
+        sendtoContentJS({
+          howMuchSetting: howMuchSetting,
+          settingType: "howMuch"
+        });
+      })
+      highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
     }
-    howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
-    chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
-      sendtoContentJS({
-        howMuchSetting: howMuchSetting,
-        settingType: "howMuch"
-      });
-    })
-    highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
+  } catch(error) {
+    console.log("The quantity setting may not be set up");
   }
+
 
   /* Capture input for where? slider
    */
-  whereToSettingNode = document.getElementById("whereTo");
-  whereToSettingValues = ["InPlace", "Popup", "Side"];
-  whereToSettingNode.addEventListener("input", function () {
-    whereToSetting = whereToSettingValues[this.value - 1];
-    chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
-      sendtoContentJS({
-        whereToSetting: whereToSetting,
-        settingType: "whereTo"
+  try {
+    whereToSettingNode = document.getElementById("whereTo");
+    whereToSettingValues = ["InPlace", "Popup", "Side"];
+    whereToSettingNode.addEventListener("input", function () {
+      whereToSetting = whereToSettingValues[this.value - 1];
+      chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
+        sendtoContentJS({
+          whereToSetting: whereToSetting,
+          settingType: "whereTo"
+        });
       });
+      highlightSlidertick(whereToSettingNode, this.value - 1);
     });
-    highlightSlidertick(whereToSettingNode, this.value - 1);
-  });
+  } catch(error) {
+    console.log("The location setting may not be set up");
+  }
+
 
   /* Capture input for how long?
    */
-  howLongSettingNode = document.getElementById("showDuration");
-  howLongSettingValues = ["Temporary", "UntilClick", "Permanent"];
-  howLongSettingNode.addEventListener("input", function () {
-    howLongSetting = howLongSettingValues[this.value - 1]
-    chrome.storage.sync.set({ howLongSetting: howLongSetting}, function () {
-      sendtoContentJS({
-        howLongSetting: howLongSetting,
-        settingType: "howLong"
+  try {
+    howLongSettingNode = document.getElementById("showDuration");
+    howLongSettingValues = ["Temporary", "UntilClick", "Permanent"];
+    howLongSettingNode.addEventListener("input", function () {
+      howLongSetting = howLongSettingValues[this.value - 1]
+      chrome.storage.sync.set({ howLongSetting: howLongSetting}, function () {
+        sendtoContentJS({
+          howLongSetting: howLongSetting,
+          settingType: "howLong"
+        });
       });
+      highlightSlidertick(howLongSettingNode, this.value - 1);
     });
-    highlightSlidertick(howLongSettingNode, this.value - 1);
-  });
+  } catch(error) {
+    console.log("The duration setting may not be set up");
+  }
+
 
   /*
    * storageGetHelper is used to check the current setting
@@ -96,45 +111,51 @@ document.addEventListener("DOMContentLoaded", function (event) {
   storageGetHelper("howMuchSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
       console.log("resetting to ", value.howMuchSetting)
-      howMuchSettingNode.value = howMuchSettingValues.indexOf(value.howMuchSetting) + 1;
+      if (howMuchSettingNode) howMuchSettingNode.value = howMuchSettingValues.indexOf(value.howMuchSetting) + 1;
+
     } else {
       console.log("this is running, too");
       chrome.storage.sync.set({ howMuchSetting: "Word" });
-      howMuchSettingNode.value = 1;
+      if (howMuchSettingNode) howMuchSettingNode.value = 1;
     }
-    highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
+    if (howMuchSettingNode) highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
   });
 
   storageGetHelper("whereToSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
-      if (value.whereToSetting === "InPlace") {
-        whereToSettingNode.value = 1;
-      } else if (value.whereToSetting === "Popup") {
-        whereToSettingNode.value = 2;
-      } else if (value.whereToSetting === "Side") {
-        whereToSettingNode.value = 3;
+      if (whereToSettingNode) {
+        if (value.whereToSetting === "InPlace") {
+          whereToSettingNode.value = 1;
+        } else if (value.whereToSetting === "Popup") {
+          whereToSettingNode.value = 2;
+        } else if (value.whereToSetting === "Side") {
+          whereToSettingNode.value = 3;
+        }
       }
+
     } else {
       chrome.storage.sync.set({ whereToSetting: "InPlace" });
-      whereToSettingNode.value = 1;
+      if (whereToSettingNode) whereToSettingNode.value = 1;
     }
-    highlightSlidertick(whereToSettingNode, whereToSettingNode.value - 1);
+    if (whereToSettingNode) highlightSlidertick(whereToSettingNode, whereToSettingNode.value - 1);
   });
 
   storageGetHelper("howLongSetting").then(function (value) {
     if (!(Object.keys(value).length === 0)) {
-      if (value.howLongSetting === "Temporary") {
-        howLongSettingNode.value = 1;
-      } else if (value.howLongSetting === "UntilClick") {
-        howLongSettingNode.value = 2;
-      } else if (value.howLongSetting === "Permanent") {
-        howLongSettingNode.value = 3;
+      if (howLongSettingNode) {
+        if (value.howLongSetting === "Temporary") {
+          howLongSettingNode.value = 1;
+        } else if (value.howLongSetting === "UntilClick") {
+          howLongSettingNode.value = 2;
+        } else if (value.howLongSetting === "Permanent") {
+          howLongSettingNode.value = 3;
+        }
       }
     } else {
       chrome.storage.sync.set({ howLongSetting: "Temporary" });
-      howLongSettingNode.value = 1;
+      if (howLongSettingNode) howLongSettingNode.value = 1;
     }
-    highlightSlidertick(howLongSettingNode, howLongSettingNode.value - 1);
+    if (howLongSettingNode) highlightSlidertick(howLongSettingNode, howLongSettingNode.value - 1);
   });
 
   /*
@@ -145,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
    */
   storageGetHelper("highlight").then(function (value) {
     if (value.highlight === true) {
-      checkbox.checked = true;
+      if (checkbox) checkbox.checked = true;
     }
   });
 
@@ -241,16 +262,24 @@ document.addEventListener("DOMContentLoaded", function (event) {
   // }
 
   function toggleWordReplacement(disabled) {
-    wordsSetting = document.getElementById("wordsSetting");
-    wordsSetting.classList.toggle("disabled",disabled);
-    wordReplacementDisabled = disabled;
+    try {
+      wordsSetting = document.getElementById("wordsSetting");
+      wordsSetting.classList.toggle("disabled",disabled);
+      wordReplacementDisabled = disabled;
+    } catch(error) {
+      console.log("The quantity setting may not be set up");
+    }
   }
 
   function highlightSlidertick(inputNode, index) {
-    let sliderticks = inputNode.parentNode.querySelectorAll(".sliderticks p");
-    Array.from(sliderticks).forEach(function(tick) {
-      tick.classList.remove("selected");
-    });
-    sliderticks[index].classList.add("selected");
+    try {
+      let sliderticks = inputNode.parentNode.querySelectorAll(".sliderticks p");
+      Array.from(sliderticks).forEach(function(tick) {
+        tick.classList.remove("selected");
+      });
+      sliderticks[index].classList.add("selected");
+    } catch(error) {
+      console.log("The current slidertick may not be set up");
+    }
   }
 });
