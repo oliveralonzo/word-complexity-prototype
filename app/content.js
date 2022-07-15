@@ -19,7 +19,8 @@ var howLongSetting = "Temporary";
 var confidenceSetting = "No";
 var highlightReplacedToggle = false;
 
-var USE_PRESET = true;
+let USE_PRESET = true;
+let FIREBASE_URL = 'https://text-simplification-2723f-default-rtdb.firebaseio.com/fireblog/interaction.json';
 
 var PRESET_VALUES = {
   "lexical": {
@@ -265,12 +266,14 @@ function switchingSetting(resetHighlights = false) {
  */
 
 function switchSimpSetting(request) {
+  let prevSimpSetting = simpSetting;
   switchingSetting(resetHighlights = true);
   simpSetting = request.simpSetting;
   if (USE_PRESET) switchToPreset(PRESET_VALUES[simpSetting]);
   toggleHighlights(highlightComplexToggle, "complex");
   toggleHighlights(highlightReplacedToggle, "simple");
   markupComplexText();
+  logChange("switching simp setting", prevSimpSetting, simpSetting)
 }
 
 function switchToPreset(settings) {
@@ -487,16 +490,12 @@ function toggleSwappedClass(swapped, el = null) {
   }
 }
 
-function toggleReplacement(node) {
-  let evt = null;
-  let eventType = null;
+function toggleReplacement(evt) {
+  eventType = evt.type;
 
-  if (node.target) {
-    evt = node;
-    eventType = evt.type;
-    console.log(eventType);
-    node = evt.currentTarget;
-  }
+  // Check the name of these variables, not quite capturing what's happening
+  // When undoing, currentNode will have the value of the replacement
+  node = evt.currentTarget;
 
   const tooltips = node.querySelectorAll(".tooltip1");
   const sidetip = document.querySelector(`#sidetip-${node.id}`);
@@ -508,6 +507,8 @@ function toggleReplacement(node) {
   }
 
   if (swapped && eventType != "mouseenter") {
+    let replacement = node.querySelector(".replacement").innerText;
+    console.log(replacement);
     switch (whereToSetting) {
       case "InPlace":
         removeInPlace(node, evt);
@@ -521,6 +522,8 @@ function toggleReplacement(node) {
     }
 
     toggleSwappedClass(false, node);
+
+    logChange("undoing", node.innerText, replacement);
     return;
   }
 
@@ -568,6 +571,8 @@ function toggleReplacement(node) {
   }
 
   if (replacement && eventType != "mouseleave") {
+    let original = node.innerText;
+
     switch (whereToSetting) {
       case "InPlace":
         replaceInPlace(node, replacement, evt);
@@ -582,7 +587,33 @@ function toggleReplacement(node) {
     }
 
     toggleSwappedClass(true, node);
+    logChange("simplifying", original, replacement);
   }
+}
+
+async function logChange(type, old = null, updated = null) {
+  var dataToLog = {
+    "article_title": window.location.href,
+    "current_setting": simpSetting,
+    "type": type,
+    "timestamp": Date.now
+  }
+
+  if (type == "simplifying" || type == "undoing") {
+    dataToLog.complex = old;
+    dataToLog.replacement = updated;
+  } else if (type.includes("switching")) {
+    dataToLog.from = old;
+    dataToLog.to = updated;
+  }
+
+  fetch(FIREBASE_URL ,{
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify(dataToLog)
+  }).
+  then(response=>response.json())
+  .then(data=>console.log(data));
 }
 
 function setChildrenToOtherText(node) {
@@ -719,6 +750,7 @@ const showToolTip = function(node, replacement) {
   splitTextIntoNodes(replacement, tooltipWrap);
 
   tooltipWrap.classList.add("tooltip1");
+  tooltipWrap.classList.add("replacement");
   tooltipWrap.id = "Popup" + id;
 
   node.insertBefore(tooltipWrap, node.firstChild);
