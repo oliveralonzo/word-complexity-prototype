@@ -120,9 +120,9 @@ chrome.runtime.sendMessage({
   toSimplifySentence: currTabSentences
 });
 
-window.addEventListener("load", function load(event){
-    window.removeEventListener("load", load, false); //remove listener, no longer needed
-},false);
+window.addEventListener("load", function load(event) {
+  window.removeEventListener("load", load, false); //remove listener, no longer needed
+}, false);
 
 
 /*
@@ -130,7 +130,7 @@ window.addEventListener("load", function load(event){
  * appropriate actions are taken. The setting types are - "How Much", "Where",
  * "Highlight Complex", "How Long", "Display Confidence"
  */
-chrome.runtime.onMessage.addListener(function (request) {
+chrome.runtime.onMessage.addListener(function(request) {
   switch (request.settingType) {
     case "simpType":
       switchSimpSetting(request);
@@ -163,7 +163,7 @@ chrome.runtime.onMessage.addListener(function (request) {
  * expects {type: "InPlace", sentenceStart: stringified list of new words, textType: "word"/"sentence"/etc}
  * set complexWordGroup, complexSentencesGroup to appropriate element groups
  */
-chrome.runtime.onMessage.addListener(function (request) {
+chrome.runtime.onMessage.addListener(function(request) {
   if (request.type === "simplifiedText") {
     if (request.textType === "sentence") {
       replacedSentences = JSON.parse(request.toChange);
@@ -190,7 +190,7 @@ function revertContentToOriginal() {
 
 function toggleListeners(todo) {
   const className = ".complex-" + howMuchSetting.toLowerCase();
-  document.querySelectorAll(className).forEach(function (element) {
+  document.querySelectorAll(className).forEach(function(element) {
     let events = [];
     if (howLongSetting == "Temporary") {
       events.push("mouseenter", "mouseleave");
@@ -235,11 +235,11 @@ function toggleSideTipHighlights(highlight, sideTip = null) {
 };
 
 function getSideTipText(sideTip) {
-  const textID = sideTip.id.replace("sidetip-","");
+  const textID = sideTip.id.replace("sidetip-", "");
   return document.getElementById(textID);
 }
 
-const closeSideTip = function (event) {
+const closeSideTip = function(event) {
   removeSideTips(event.currentTarget.parentNode.parentNode);
 };
 
@@ -321,10 +321,14 @@ function switchHowLongSetting(request) {
 */
 function toggleHighlightComplex(request) {
   if (request.highlight === true) {
-    chrome.storage.sync.set({ highlight: true });
+    chrome.storage.sync.set({
+      highlight: true
+    });
     highlightComplexToggle = true;
   } else {
-    chrome.storage.sync.set({ highlight: false });
+    chrome.storage.sync.set({
+      highlight: false
+    });
     highlightComplexToggle = false;
   }
   toggleHighlights(highlightComplexToggle, "complex");
@@ -339,10 +343,14 @@ function toggleHighlightComplex(request) {
 
 function toggleHighlightReplaced(request) {
   if (request.highlightReplaced === true) {
-    chrome.storage.sync.set({ highlightReplaced: true });
+    chrome.storage.sync.set({
+      highlightReplaced: true
+    });
     highlightReplacedToggle = true;
   } else {
-    chrome.storage.sync.set({ highlightReplaced: false });
+    chrome.storage.sync.set({
+      highlightReplaced: false
+    });
     highlightReplacedToggle = false;
   }
   toggleHighlights(highlightReplacedToggle, "simple");
@@ -366,7 +374,7 @@ function switchWhereToSetting(request) {
 }
 
 function removePopups() {
-  document.querySelectorAll(".tooltip1").forEach(function (a) {
+  document.querySelectorAll(".tooltip1").forEach(function(a) {
     a.remove();
   });
 }
@@ -521,8 +529,9 @@ function toggleReplacement(node) {
 
   if (node.classList.contains("complex-word")) {
     var parentID = node.parentElement.id;
-    var simple = replacedSentences.find(({ sentenceID }) => sentenceID === parentID);
-    var foundIndex = replacedSentences.findIndex((text) => text.sentenceID == parentID);
+    var simple = replacedSentences.find(({
+      sentenceID
+    }) => sentenceID === parentID);
 
     replacement = simple.text["words"][currText];
 
@@ -531,8 +540,9 @@ function toggleReplacement(node) {
       setChildrenToOtherText(node);
     } else {
       var id = node.id;
-      var simple = replacedSentences.find(({ sentenceID }) => sentenceID === id);
-      var foundIndex = replacedSentences.findIndex((text) => text.sentenceID == id);
+      var simple = replacedSentences.find(({
+        sentenceID
+      }) => sentenceID === id);
 
       replacement = simple.text[simpSetting];
 
@@ -615,7 +625,7 @@ function removeClickablePointerWhenPermanent(node) {
 }
 
 function replaceInPlace(node, replacement, evt = null) {
-  if (!node.getAttribute("original")){
+  if (!node.getAttribute("original")) {
     node.setAttribute("original", node.innerHTML);
   }
 
@@ -625,32 +635,31 @@ function replaceInPlace(node, replacement, evt = null) {
       let replacementSpan = createNode("span", replacement, "replacement");
       replaceHTML(node, replacementSpan);
 
-      const newWidth =  node.offsetWidth;
+      const newWidth = node.offsetWidth;
 
       let paddingSpan = createNode("span", "", "padding-span");
       const padding = originalWidth > newWidth ? originalWidth - node.offsetWidth : 0;
-      paddingSpan.style["padding-right"] = padding/2 + "px";
+      paddingSpan.style["padding-right"] = padding / 2 + "px";
       node.prepend(paddingSpan);
       node.appendChild(paddingSpan.cloneNode());
     } else {
       node.innerHTML = replacement;
       let id = howMuchSetting == "Sentence" ? node.id : howMuchSetting == "Paragraph" ? node.parentNode.id : "document0";
-      setTimeout(function(){
+      setTimeout(function() {
         if (!idIsHovered(id)) {
           removeInPlace(node, evt);
           toggleSwappedClass(false, node);
         };
       }, 1);
     }
-  }
-  else {
+  } else {
     let replacementSpan = createNode("span", replacement, "replacement");
     replaceHTML(node, replacementSpan);
   }
 }
 
-function idIsHovered(id){
-    return $("#" + id + ":hover").length > 0;
+function idIsHovered(id) {
+  return $("#" + id + ":hover").length > 0;
 }
 
 function createNode(type, content, className = null) {
@@ -700,9 +709,9 @@ function splitTextIntoNodes(text, wrapper) {
   })
 }
 
-const showToolTip = function (node, replacement) {
+const showToolTip = function(node, replacement) {
   if (howLongSetting != "Permanent") {
-      removeToolTips();
+    removeToolTips();
   }
 
   const id = node.id;
@@ -728,7 +737,7 @@ function bringTooltipToFront(node, tooltips) {
 }
 
 
-const showSideTip = function (node, replacement) {
+const showSideTip = function(node, replacement) {
   let id = node.id;
 
   // Create a dialog box - this box contains "content" and "header".
@@ -757,8 +766,11 @@ const showSideTip = function (node, replacement) {
     }
 
     [...modalContainer.children]
-      .sort((a,b)=> a.id.localeCompare(b.id, undefined, {numeric: true, sensitivity: 'base'}))
-      .forEach(node=>modalContainer.appendChild(node));
+    .sort((a, b) => a.id.localeCompare(b.id, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      }))
+      .forEach(node => modalContainer.appendChild(node));
 
     node.addEventListener("mouseenter", (event) => dialogBox.classList.add("highlight"));
     node.addEventListener("mouseleave", (event) => dialogBox.classList.remove("highlight"));
@@ -844,7 +856,7 @@ function identifySentences(words) {
   var sentenceEndIndices = [];
 
   // get indices for any text that includes a ending character ---> [? . !]
-  words.forEach(function (word, index) {
+  words.forEach(function(word, index) {
     const cleanWord = makeCleanText(word);
     var re = '(.[.?!])|([.?!]\")';
     let match = cleanWord.slice(-2).match(re) && !abbreviationsToAvoid.includes(cleanWord);
@@ -861,7 +873,7 @@ function identifySentences(words) {
   var id = null;
 
   // loop over words list
-  words.forEach(function (text, index) {
+  words.forEach(function(text, index) {
     sentence.push(text);
 
     if (index === 0) {
@@ -870,31 +882,31 @@ function identifySentences(words) {
       sentenceStart[0] = "<span class=\"sentence\" id=" + id + ">" + text;
       sentenceIDNum++;
     } else if (index === sentenceEndIndices[currEndInd]) {
-        // create this sentence, as it qualifies + modify current text to add span
-        this[index] = text + "</span>";
-        currEndInd++;
-        startVals = Object.entries(sentenceStart)[0];
-        this[startVals[0]] = startVals[1];
+      // create this sentence, as it qualifies + modify current text to add span
+      this[index] = text + "</span>";
+      currEndInd++;
+      startVals = Object.entries(sentenceStart)[0];
+      this[startVals[0]] = startVals[1];
 
-        let cleanSentence = makeCleanText(sentence.join(" "));
-        cleanSentence = cleanSentence.replace(/\s+/g, " ");
+      let cleanSentence = makeCleanText(sentence.join(" "));
+      cleanSentence = cleanSentence.replace(/\s+/g, " ");
 
-        let id = "sentence" + (sentenceIDNum - 1);
-        currTabSentences[id] = cleanSentence;
+      let id = "sentence" + (sentenceIDNum - 1);
+      currTabSentences[id] = cleanSentence;
 
-        sentenceStart = {};
-        nextTextInd = index + 1;
-        if (this[nextTextInd] != null) {
-          id = "sentence" + (sentenceIDNum);
-          sentenceStart[nextTextInd] =
-            "<span class=\"sentence\" id=" + id + "> " + this[nextTextInd];
-          sentenceIDNum++;
-        }
-
-        sentence = [];
+      sentenceStart = {};
+      nextTextInd = index + 1;
+      if (this[nextTextInd] != null) {
+        id = "sentence" + (sentenceIDNum);
+        sentenceStart[nextTextInd] =
+          "<span class=\"sentence\" id=" + id + "> " + this[nextTextInd];
+        sentenceIDNum++;
       }
 
-    }, words);
+      sentence = [];
+    }
+
+  }, words);
 }
 
 function makeCleanText(text) {
@@ -909,7 +921,9 @@ function markupComplexWords(word, index) {
   const sentences = document.querySelectorAll('[id*="sentence"]');
   sentences.forEach(function(sentence) {
     try {
-      let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id).text;
+      let replacements = replacedSentences.find(({
+        sentenceID
+      }) => sentenceID === sentence.id).text;
       let replacement_words = replacements["words"];
 
       Array.from(sentence.children).forEach(function(child) {
@@ -935,22 +949,24 @@ function markupComplexWords(word, index) {
 
 function markupComplexText(revertToOriginal = true) {
   if (revertToOriginal) {
-      revertContentToOriginal();
+    revertContentToOriginal();
   }
   const sentences = document.querySelectorAll('[id*="sentence"]');
 
   sentences.forEach(function(sentence) {
     try {
-      let replacements = replacedSentences.find(({ sentenceID }) => sentenceID === sentence.id).text;
+      let replacements = replacedSentences.find(({
+        sentenceID
+      }) => sentenceID === sentence.id).text;
       let replacement_sentences = replacements[simpSetting];
       let replacement_words = replacements["words"];
 
-      if (typeof(replacement_sentences) ===  "object" && Object.keys(replacement_sentences).length === 0) {
+      if (typeof(replacement_sentences) === "object" && Object.keys(replacement_sentences).length === 0) {
         return;
       } else if (replacement_sentences) {
-          sentence.classList.add("complex-sentence");
-          sentence.closest("p").classList.add("complex-paragraph");
-          document.querySelector(".document").classList.add("complex-document");
+        sentence.classList.add("complex-sentence");
+        sentence.closest("p").classList.add("complex-paragraph");
+        document.querySelector(".document").classList.add("complex-document");
       }
 
       Array.from(sentence.children).forEach(function(child) {
@@ -976,7 +992,7 @@ function markupComplexText(revertToOriginal = true) {
 
 function postMarkUpText() {
   let difference = parseInt($(".sentence").css("line-height")) - parseInt($(".sentence").css("font-size"));
-  let padding = Math.ceil(difference/4);
+  let padding = Math.ceil(difference / 4);
   $(".sentence").css("padding-bottom", padding);
   $(".sentence").css("padding-top", padding);
 
@@ -1022,13 +1038,13 @@ function collectText(node) {
       // from its original text by a tag
       if (child.length == 1 && child.match(/[\.,\?\!]/g) && !isTag(child)) {
         let stepBack = 1;
-        while (isTag(currText[i-stepBack])) {
-            stepBack++;
-            if (i - stepBack < 0) {
-              break;
-            }
+        while (isTag(currText[i - stepBack])) {
+          stepBack++;
+          if (i - stepBack < 0) {
+            break;
+          }
         }
-        currText[i-stepBack] = currText[i-stepBack] + currText[i];
+        currText[i - stepBack] = currText[i - stepBack] + currText[i];
         currText.splice(i, 1);
       }
     });
@@ -1036,7 +1052,7 @@ function collectText(node) {
 
 
   var words = currText.map((word) => {
-    let wordsWithID =  identifyWords(word, idx);
+    let wordsWithID = identifyWords(word, idx);
     return wordsWithID;
   });
 
