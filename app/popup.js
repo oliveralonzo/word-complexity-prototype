@@ -6,91 +6,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   wordReplacementDisabled = false;
 
-  /* Capture input for simplification type slider
-   */
-  simpSettingNode = document.getElementById("simpTypeInput");
-  simpSettingValues = ["lexical", "syntactic_and_lexical", "syntactic"];
-  simpSettingNode.addEventListener("input", function () {
-    simpSetting = simpSettingValues[this.value - 1]
-    chrome.storage.sync.set({ simpSetting: simpSetting}, function () {
-      sendtoContentJS({
-        simpSetting: simpSetting,
-        settingType: "simpType"
-      });
-    });
-    highlightSlidertick(simpSettingNode, this.value - 1);
-    toggleWordReplacement(simpSetting != "lexical");
-    updateTextSetting();
-  });
-
-  /* Capture input for howMuchSetting slider
-   *   - listener open to any change of howMuchSettingSlider
-   *   - sends selected setting to content.js for appropriate changes to be made
-   */
-
-  try {
-    howMuchSettingNode = document.getElementById("howMuchSettingInput");
-    howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
-    howMuchSettingNode.addEventListener("input", updateTextSetting);
-
-    function updateTextSetting() {
-      if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
-        howMuchSettingNode.value++;
-      }
-      howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
-      chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
-        sendtoContentJS({
-          howMuchSetting: howMuchSetting,
-          settingType: "howMuch"
-        });
-      })
-      highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
-    }
-  } catch(error) {
-    console.log("The quantity setting may not be set up");
-  }
-
-
-  /* Capture input for where? slider
-   */
-  try {
-    whereToSettingNode = document.getElementById("whereTo");
-    whereToSettingValues = ["InPlace", "Popup", "Side"];
-    whereToSettingNode.addEventListener("input", function () {
-      whereToSetting = whereToSettingValues[this.value - 1];
-      chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
-        sendtoContentJS({
-          whereToSetting: whereToSetting,
-          settingType: "whereTo"
-        });
-      });
-      highlightSlidertick(whereToSettingNode, this.value - 1);
-    });
-  } catch(error) {
-    console.log("The location setting may not be set up");
-  }
-
-
-  /* Capture input for how long?
-   */
-  try {
-    howLongSettingNode = document.getElementById("showDuration");
-    howLongSettingValues = ["Temporary", "UntilClick", "Permanent"];
-    howLongSettingNode.addEventListener("input", function () {
-      howLongSetting = howLongSettingValues[this.value - 1]
-      chrome.storage.sync.set({ howLongSetting: howLongSetting}, function () {
-        sendtoContentJS({
-          howLongSetting: howLongSetting,
-          settingType: "howLong"
-        });
-      });
-      highlightSlidertick(howLongSettingNode, this.value - 1);
-    });
-  } catch(error) {
-    console.log("The duration setting may not be set up");
-  }
-
-
   /*
    * storageGetHelper is used to check the current setting
    *   - checking chrome storage is asynchronous - which creates the need for the structure seen
@@ -98,14 +13,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
    *   - allow for persisting settings after popup is closed
    */
   storageGetHelper("simpSetting").then(function (value) {
-    if (!(Object.keys(value).length === 0)) {
-      simpSettingNode.value = simpSettingValues.indexOf(value.simpSetting) + 1;
+    if (Object.keys(value).length === 0) {
+      value.simpSetting = "lexical";
     } else {
-      chrome.storage.sync.set({ simpSetting: "lexical" });
-      simpSettingNode.value = 1;
+      chrome.storage.sync.set({ simpSetting: value.simpSetting });
+      simpSettingNode.querySelector("#" + value.simpSetting).checked = true;
     }
-    highlightSlidertick(simpSettingNode, simpSettingNode.value - 1);
-    toggleWordReplacement(simpSettingNode.value !== "1");
+    // highlightSlidertick(simpSettingNode, simpSettingNode.value - 1);
+    toggleWordReplacement(value.simpSetting !== "lexical");
   });
 
   storageGetHelper("howMuchSetting").then(function (value) {
@@ -172,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   storageGetHelper("highlightReplaced").then(function (value) {
     if (value.highlightReplaced === true) {
-      highlightReplacedBtn.checked = true;
+      if (highlightReplacedBtn) highlightReplacedBtn.checked = true;
     }
     // toggleHighlightReplacement(whereToSettingNode.value !== "1", true);
   });
@@ -233,6 +148,94 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     const value = await valuePromise;
     return value;
+  }
+
+  /* Capture input for simplification type slider
+   */
+  simpSettingNode = document.getElementById("simpTypeInput");
+  simpSettingValues = ["lexical", "syntactic_and_lexical", "syntactic"];
+  simpSettingNode.addEventListener("input", function () {
+    console.log(this);
+    simpSetting = this.querySelector("input:checked").id;
+    console.log(simpSetting);
+    chrome.storage.sync.set({ simpSetting: simpSetting}, function () {
+      sendtoContentJS({
+        simpSetting: simpSetting,
+        settingType: "simpType"
+      });
+    });
+    toggleWordReplacement(simpSetting != "lexical");
+    updateTextSetting();
+  });
+
+  /* Capture input for howMuchSetting slider
+   *   - listener open to any change of howMuchSettingSlider
+   *   - sends selected setting to content.js for appropriate changes to be made
+   */
+
+  try {
+    howMuchSettingNode = document.getElementById("howMuchSettingInput");
+    howMuchSettingValues = ["Word", "Sentence", "Paragraph", "Document"];
+    howMuchSettingNode.addEventListener("input", updateTextSetting);
+  } catch(error) {
+    console.log("The quantity setting may not be set up");
+  }
+
+  function updateTextSetting() {
+    if (howLongSettingNode) {
+      if (howMuchSettingNode.value == 1 && wordReplacementDisabled) {
+        howMuchSettingNode.value++;
+      }
+      howMuchSetting = howMuchSettingValues[howMuchSettingNode.value - 1];
+      chrome.storage.sync.set({ howMuchSetting: howMuchSetting}, function () {
+        sendtoContentJS({
+          howMuchSetting: howMuchSetting,
+          settingType: "howMuch"
+        });
+      })
+      highlightSlidertick(howMuchSettingNode, howMuchSettingNode.value - 1);
+    }
+  }
+
+
+
+  /* Capture input for where? slider
+   */
+  try {
+    whereToSettingNode = document.getElementById("whereTo");
+    whereToSettingValues = ["InPlace", "Popup", "Side"];
+    whereToSettingNode.addEventListener("input", function () {
+      whereToSetting = whereToSettingValues[this.value - 1];
+      chrome.storage.sync.set({ whereToSetting: whereToSetting}, function () {
+        sendtoContentJS({
+          whereToSetting: whereToSetting,
+          settingType: "whereTo"
+        });
+      });
+      highlightSlidertick(whereToSettingNode, this.value - 1);
+    });
+  } catch(error) {
+    console.log("The location setting may not be set up");
+  }
+
+
+  /* Capture input for how long?
+   */
+  try {
+    howLongSettingNode = document.getElementById("showDuration");
+    howLongSettingValues = ["Temporary", "UntilClick", "Permanent"];
+    howLongSettingNode.addEventListener("input", function () {
+      howLongSetting = howLongSettingValues[this.value - 1]
+      chrome.storage.sync.set({ howLongSetting: howLongSetting}, function () {
+        sendtoContentJS({
+          howLongSetting: howLongSetting,
+          settingType: "howLong"
+        });
+      });
+      highlightSlidertick(howLongSettingNode, this.value - 1);
+    });
+  } catch(error) {
+    console.log("The duration setting may not be set up");
   }
 
   /*
