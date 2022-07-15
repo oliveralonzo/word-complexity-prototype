@@ -209,30 +209,6 @@ function toggleListeners(todo) {
   });
 }
 
-/**
- * Creates a header element containing close button and title.
- */
-// function getSideTipHeaderEl() {
-//   const dialogHeader = document.createElement("div");
-//   const dialogHeading = document.createElement("SPAN");
-//
-//
-//   // let heading = document.createTextNode(
-//   //   `Simplified ${howMuchSetting.toLowerCase()}`
-//   // );
-//
-//   if (howLongSetting != "UntilClick") {
-//     closeButton.style.display = "none";
-//   }
-//
-//   dialogHeading.classList.add("dialogHeading");
-//   // dialogHeading.appendChild(heading);
-//   dialogHeader.classList.add("dialogHeader");
-//   dialogHeader.appendChild(dialogHeading);
-//   dialogHeader.appendChild(closeButton);
-//   return dialogHeader;
-// }
-
 function getSideTipContentEl(text) {
   const dialogContent = createNode("div", "", "modal1-content")
   dialogContent.setAttribute("data-text", text);
