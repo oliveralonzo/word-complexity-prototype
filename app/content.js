@@ -20,7 +20,7 @@ var confidenceSetting = "No";
 var highlightReplacedToggle = false;
 
 let USE_PRESET = true;
-let FIREBASE_URL = 'https://text-simplification-2723f-default-rtdb.firebaseio.com/fireblog/interaction.json';
+let FIREBASE_URL = 'https://text-simplification-2723f-default-rtdb.firebaseio.com/fireblog/{path}.json';
 
 var PRESET_VALUES = {
   "lexical": {
@@ -492,6 +492,8 @@ function toggleSwappedClass(swapped, el = null) {
 
 function toggleReplacement(evt) {
   eventType = evt.type;
+  eventX = evt.clientX;
+  eventY = evt.clientY;
 
   // Check the name of these variables, not quite capturing what's happening
   // When undoing, currentNode will have the value of the replacement
@@ -523,7 +525,7 @@ function toggleReplacement(evt) {
 
     toggleSwappedClass(false, node);
 
-    logChange("undoing", node.innerText, replacement);
+    logChange("undoing", node.innerText, replacement, eventX, eventY);
     return;
   }
 
@@ -587,11 +589,11 @@ function toggleReplacement(evt) {
     }
 
     toggleSwappedClass(true, node);
-    logChange("simplifying", original, replacement);
+    logChange("simplifying", original, replacement, eventX, eventY);
   }
 }
 
-async function logChange(type, old = null, updated = null) {
+async function logChange(type, old = null, updated = null, x = null, y = null) {
   var dataToLog = {
     "article_title": window.location.href,
     "current_setting": simpSetting,
@@ -602,12 +604,16 @@ async function logChange(type, old = null, updated = null) {
   if (type == "simplifying" || type == "undoing") {
     dataToLog.complex = old;
     dataToLog.replacement = updated;
+    dataToLog.coordinates = {
+      "x": x,
+      "y": y
+    }
   } else if (type.includes("switching")) {
     dataToLog.from = old;
     dataToLog.to = updated;
   }
 
-  fetch(FIREBASE_URL ,{
+  fetch(FIREBASE_URL.replace("{path}", "/" + getParticipant() + "/interactions"),{
     method: 'POST',
     headers: {'content-type': 'application/json'},
     body: JSON.stringify(dataToLog)
@@ -615,6 +621,16 @@ async function logChange(type, old = null, updated = null) {
   then(response=>response.json())
   .then(data=>console.log(data));
 }
+
+function getParticipant() {
+  let url  = window.location.search;
+  let urlParams = new URLSearchParams(url);
+  let participant = urlParams.get('participant');
+  console.log(participant);
+  return participant ? participant : "";
+}
+
+
 
 function setChildrenToOtherText(node) {
   let replacement = "";
