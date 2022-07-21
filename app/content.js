@@ -20,7 +20,7 @@ var confidenceSetting = "No";
 var highlightReplacedToggle = false;
 
 let USE_PRESET = true;
-let FIREBASE_URL = 'https://text-simplification-2723f-default-rtdb.firebaseio.com/fireblog/{path}.json';
+let FIREBASE_URL = '';
 
 var PRESET_VALUES = {
   "lexical": {
